@@ -1,0 +1,11 @@
+{
+"metaDataVersion": "1.0",
+"pluginName": "PANMgrPlugin",
+"jarFilename": "PANMgrPlugin.jar",
+"applianceManagerApiClass": "com.paloaltonetworks.osc.api.PANApplianceManagerApi", 
+"minIscVersion": {
+	"major": 2, 
+	"minor": 0, 
+	"build": 2370
+} 
+}

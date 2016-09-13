@@ -1,0 +1,28 @@
+{
+	"metaDataVersion": "1.1",
+	"model": "PAN-OS NGFW",
+	"managerType": "PANMgrPlugin",
+	"managerVersion": "1.0",
+	"virtualizationType": "OPENSTACK",
+	"virtualizationVersion": "Icehouse",
+	"softwareVersion": "8.1.0",
+	"imageName": "PA-VM-KVM-8.1.0-c4222.dev.qcow2",
+	"minIscVersion": {
+		"major": 2,
+		"minor": 5,
+		"build": 3651,
+		"versionStr": ""
+	},
+	"minCpus": 4,
+	"memoryInMb": 10240,
+	"diskSizeInGb": 60,
+	"encapsulationTypes": ["VLAN"],
+        "additionalNicForInspection": true,
+	"imageProperties": {
+		"hw_disk_bus": "ide"
+	},
+	"configProperties": {
+		"applianceModel": "PAN-OS",
+		"applianceSoftwareVersion": "8.1.0"
+	}
+}
