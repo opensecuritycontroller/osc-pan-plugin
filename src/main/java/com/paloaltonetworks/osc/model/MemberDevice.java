@@ -14,7 +14,7 @@
  */
 package com.paloaltonetworks.osc.model;
 
-import com.intelsecurity.isc.plugin.manager.element.ManagerDeviceMemberElement;
+import org.osc.sdk.manager.element.ManagerDeviceMemberElement;
 
 public class MemberDevice extends BaseIdNameObject implements ManagerDeviceMemberElement {
 

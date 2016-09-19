@@ -14,8 +14,8 @@
  */
 package com.paloaltonetworks.panorama.api.methods;
 
-import java.util.Iterator;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 
 public class TestApp {
@@ -24,24 +24,21 @@ public class TestApp {
 		// TODO Auto-generated method stub
 		String status = "failure";
 		ShowOperations operations = new ShowOperations("10.4.33.201", "admin", "admin");
-		String key = operations.getApiKey();
-		System.out.println(key);
-		
-		
+
 	    ArrayList<String> devices = operations.ShowDevices();
 	    Iterator<String> deviceIterator = devices.iterator();
 		while (deviceIterator.hasNext()){
 			System.out.println(deviceIterator.next());
-			
+
 		}
-		
+
 		ArrayList<String> deviceGroups = operations.ShowDeviceGroups();
 	    Iterator<String> deviceGroupsIterator = deviceGroups.iterator();
 		while (deviceGroupsIterator.hasNext()){
 			System.out.println(deviceGroupsIterator.next());
-			
+
 		}
-		
+
 		String dg = "testing";
 		status = operations.DeleteDeviceGroup(dg);
 		if (status.equals("success")){

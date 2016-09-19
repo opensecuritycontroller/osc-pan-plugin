@@ -19,8 +19,8 @@ package com.paloaltonetworks.osc.api;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.intelsecurity.isc.plugin.manager.api.ManagerDomainApi;
-import com.intelsecurity.isc.plugin.manager.element.ApplianceManagerConnectorElement;
+import org.osc.sdk.manager.api.ManagerDomainApi;
+import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
 import com.paloaltonetworks.osc.model.Domain;
 import com.paloaltonetworks.osc.model.DomainListElement;
 

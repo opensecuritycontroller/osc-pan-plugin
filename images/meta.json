@@ -9,8 +9,8 @@
 	"imageName": "PA-VM-KVM-8.1.0-c4222.dev.qcow2",
 	"minIscVersion": {
 		"major": 2,
-		"minor": 5,
-		"build": 3651,
+		"minor": 6,
+		"build": 3812,
 		"versionStr": ""
 	},
 	"minCpus": 4,

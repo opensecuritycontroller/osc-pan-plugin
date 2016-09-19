@@ -18,12 +18,13 @@ package com.paloaltonetworks.osc.api;
 
 
 import java.util.List;
-import org.apache.log4j.Logger;
 
-import com.intelsecurity.isc.plugin.manager.api.*;
-import com.intelsecurity.isc.plugin.manager.element.ApplianceManagerConnectorElement;
-import com.intelsecurity.isc.plugin.manager.element.ManagerSecurityGroupInterfaceElement;
-import com.intelsecurity.isc.plugin.manager.element.VirtualSystemElement;
+import org.apache.log4j.Logger;
+import org.osc.sdk.manager.api.ManagerSecurityGroupInterfaceApi;
+import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
+import org.osc.sdk.manager.element.ManagerSecurityGroupInterfaceElement;
+import org.osc.sdk.manager.element.VirtualSystemElement;
+
 import com.paloaltonetworks.panorama.api.methods.ShowOperations;
 
 
@@ -32,50 +33,48 @@ import com.paloaltonetworks.panorama.api.methods.ShowOperations;
  */
 public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfaceApi  {
 
-	
+
     Logger log = Logger.getLogger(PANManagerSecurityGroupInterfaceApi.class);
     static String apiKey = null;
 	VirtualSystemElement vs;
 	ApplianceManagerConnectorElement mc;
 	public ShowOperations showOperations = null;
-  
-    
+
+
     private PANManagerSecurityGroupInterfaceApi(ApplianceManagerConnectorElement mc,VirtualSystemElement vs) {
     	this.vs = vs;
 		this.mc = mc;
-		showOperations = new ShowOperations(mc.getIpAddress(), mc.getUsername(), mc.getPassword());
-		
-		apiKey = showOperations.getApiKey();
-		log.info("API Key is: "+ apiKey);
+		this.showOperations = new ShowOperations(mc.getIpAddress(), mc.getUsername(), mc.getPassword());
+
 	}
 
 	public static ManagerSecurityGroupInterfaceApi create(ApplianceManagerConnectorElement mc,VirtualSystemElement vs) throws Exception {
         return new PANManagerSecurityGroupInterfaceApi(mc,vs);
     }
-    
-  
-    
+
+
+
 	@Override
 	public String createSecurityGroupInterface(String name, String policyId, String tag) throws Exception {
-		String status = showOperations.AddDAGTag(tag);
+		String status = this.showOperations.AddDAGTag(tag);
 		if (status.equals("success")){
 			return name;
 		} else {
 			return null;
-			
+
 		}
 	}
 
 	@Override
 	public void updateSecurityGroupInterface(String id, String name, String policyId, String tag) throws Exception {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void deleteSecurityGroupInterface(String id) throws Exception {
-		showOperations.DeleteDAGTag(id);
-		
+		this.showOperations.DeleteDAGTag(id);
+
 	}
 
 	@Override
@@ -99,6 +98,6 @@ public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroup
 	@Override
 	public void close() {
 		// TODO Auto-generated method stub
-		
+
 	}
 }

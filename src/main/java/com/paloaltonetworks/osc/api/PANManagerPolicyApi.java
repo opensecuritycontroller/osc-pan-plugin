@@ -20,10 +20,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.osc.sdk.manager.api.ManagerPolicyApi;
+import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
+import org.osc.sdk.manager.element.VirtualSystemElement;
 
-import com.intelsecurity.isc.plugin.manager.api.ManagerPolicyApi;
-import com.intelsecurity.isc.plugin.manager.element.ApplianceManagerConnectorElement;
-import com.intelsecurity.isc.plugin.manager.element.VirtualSystemElement;
 import com.paloaltonetworks.osc.model.PolicyListElement;
 import com.paloaltonetworks.panorama.api.methods.ShowOperations;
 
@@ -38,7 +38,7 @@ public class PANManagerPolicyApi implements ManagerPolicyApi  {
 	 VirtualSystemElement vs;
 	 ApplianceManagerConnectorElement mc;
 	 ShowOperations showOperations = null;
-		
+
 	    private static ArrayList<PolicyListElement> policyList = new ArrayList<PolicyListElement>();
 	    static {
 	        policyList.add(new PolicyListElement("Platinum", "Platinum"));
@@ -47,19 +47,17 @@ public class PANManagerPolicyApi implements ManagerPolicyApi  {
 	        policyList.add(new PolicyListElement("Bronze", "Bronze"));
 	    }
     private PANManagerPolicyApi(ApplianceManagerConnectorElement mc) {
-  
+
 		this.mc = mc;
 		log.info("new show operaitons in Policy");
-		showOperations = new ShowOperations(mc.getIpAddress(), mc.getUsername(), mc.getPassword());
-		
-		apiKey = showOperations.getApiKey();
-		log.info("API Key is: "+ apiKey);
+		this.showOperations = new ShowOperations(mc.getIpAddress(), mc.getUsername(), mc.getPassword());
+
 	}
 	public static PANManagerPolicyApi create(ApplianceManagerConnectorElement mc) throws Exception {
 		log.info("Creating new PANManagerPolicy api");
         return new PANManagerPolicyApi(mc);
     }
-    
+
 	@Override
     public PolicyListElement getPolicy(String policyId, String domainId) throws Exception {
         return policyList.get(Integer.valueOf(policyId));

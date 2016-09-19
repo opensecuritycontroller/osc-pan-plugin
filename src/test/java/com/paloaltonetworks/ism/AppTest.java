@@ -14,91 +14,74 @@
  */
 package com.paloaltonetworks.ism;
 
-import java.util.Iterator;
-import java.util.ArrayList;
+import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+
+import org.junit.Test;
 
 import com.paloaltonetworks.panorama.api.methods.ShowOperations;
-
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
 /**
  * Unit test for simple App.
  */
-public class AppTest 
-    extends TestCase
-{
-    /**
-     * Create the test case
-     *
-     * @param testName name of the test case
-     */
-    public AppTest( String testName )
-    {
-        super( testName );
-    }
+public class AppTest
 
-    /**
-     * @return the suite of tests being tested
-     */
-    public static Test suite()
-    {
-        return new TestSuite( AppTest.class );
-    }
+{
+
+    private static final String PANORAMA_IP = "10.71.85.99";
 
     /**
      * Rigourous Test :-)
      */
-    public void testApp()
-    {
-        assertTrue( true );
-      
-        
-    		// TODO Auto-generated method stub
-    		String status = "failure";
-    		ShowOperations operations = new ShowOperations("10.4.33.201", "admin", "admin");
-    		String key = operations.getApiKey();
-    		System.out.println(key);
-    		
-    		// Get auth key
-        	String vmAuthKey = operations.getVMAuthKey("8760");
-    		System.out.println("VM Auth Key: "+ vmAuthKey);
-        	
-    	    ArrayList<String> devices = operations.ShowDevices();
-    	    Iterator<String> deviceIterator = devices.iterator();
-    		while (deviceIterator.hasNext()){
-    			System.out.println(deviceIterator.next());
-    			
-    		}
-    		
-    		ArrayList<String> deviceGroups = operations.ShowDeviceGroups();
-    	    Iterator<String> deviceGroupsIterator = deviceGroups.iterator();
-    		while (deviceGroupsIterator.hasNext()){
-    			System.out.println(deviceGroupsIterator.next());
-    			
-    		}
-    		
-    		String dg = "testing";
-    		status = operations.DeleteDeviceGroup(dg);
-    		if (status.equals("success")){
-    			System.out.println("Successfully deleted device group: " + dg);
-    		}
-    		status = operations.AddDeviceGroup(dg, "testing dg");
-    		if (status.equals("success")){
-    			System.out.println("Successfully added device group: " + dg);
-    		}
-    		
-    		String dgTag = "testTAG";
-    		status = operations.DeleteDAGTag(dgTag);
-    		if (status.equals("success")){
-    			System.out.println("Successfully deleted device group TAG: " + dgTag);
-    		}
-    		status = operations.AddDAGTag(dgTag);
-    		if (status.equals("success")){
-    			System.out.println("Successfully added device group: " + dgTag);
-    		}
-    	}
-    
+    // Ignoring test since its environment specific, comment ignore to run the test
+//    @Ignore
+    @Test
+    public void testApp() {
+        assertTrue(true);
+
+        // TODO Auto-generated method stub
+        String status = "failure";
+        ShowOperations operations = new ShowOperations(PANORAMA_IP, "admin", "admin");
+
+        // Get auth key
+        String vmAuthKey = operations.getVMAuthKey("8760");
+        System.out.println("VM Auth Key: " + vmAuthKey);
+
+        ArrayList<String> devices = operations.ShowDevices();
+        Iterator<String> deviceIterator = devices.iterator();
+        while (deviceIterator.hasNext()) {
+            System.out.println(deviceIterator.next());
+
+        }
+
+        ArrayList<String> deviceGroups = operations.ShowDeviceGroups();
+        Iterator<String> deviceGroupsIterator = deviceGroups.iterator();
+        while (deviceGroupsIterator.hasNext()) {
+            System.out.println(deviceGroupsIterator.next());
+
+        }
+
+        String dg = "testing";
+        status = operations.DeleteDeviceGroup(dg);
+        if (status.equals("success")) {
+            System.out.println("Successfully deleted device group: " + dg);
+        }
+        status = operations.AddDeviceGroup(dg, "testing dg");
+        if (status.equals("success")) {
+            System.out.println("Successfully added device group: " + dg);
+        }
+
+        String dgTag = "testTAG";
+        status = operations.DeleteDAGTag(dgTag);
+        if (status.equals("success")) {
+            System.out.println("Successfully deleted device group TAG: " + dgTag);
+        }
+        status = operations.AddDAGTag(dgTag);
+        if (status.equals("success")) {
+            System.out.println("Successfully added device group: " + dgTag);
+        }
+    }
+
 }

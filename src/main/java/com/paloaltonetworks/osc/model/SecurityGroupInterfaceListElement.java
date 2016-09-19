@@ -14,7 +14,7 @@
  */
 package com.paloaltonetworks.osc.model;
 
-import com.intelsecurity.isc.plugin.manager.element.ManagerSecurityGroupInterfaceElement;
+import org.osc.sdk.manager.element.ManagerSecurityGroupInterfaceElement;
 
 public class SecurityGroupInterfaceListElement extends BaseIdNameObject implements ManagerSecurityGroupInterfaceElement {
 

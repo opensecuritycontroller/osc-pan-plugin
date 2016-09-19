@@ -17,7 +17,7 @@ package com.paloaltonetworks.osc.api;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.intelsecurity.isc.plugin.manager.element.ApplianceBootstrapInformationElement;
+import org.osc.sdk.manager.element.ApplianceBootstrapInformationElement;
 
 public class PANApplianceBootstrapInformationElement implements ApplianceBootstrapInformationElement {
 

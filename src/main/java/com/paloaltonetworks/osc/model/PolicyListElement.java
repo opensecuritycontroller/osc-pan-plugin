@@ -14,7 +14,7 @@
  */
 package com.paloaltonetworks.osc.model;
 
-import com.intelsecurity.isc.plugin.manager.element.ManagerPolicyElement;
+import org.osc.sdk.manager.element.ManagerPolicyElement;
 
 public class PolicyListElement extends BaseIdNameObject implements ManagerPolicyElement {
 

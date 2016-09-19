@@ -16,19 +16,19 @@ package com.paloaltonetworks.osc.api;
 
 import org.apache.log4j.Logger;
 
-import com.intelsecurity.isc.plugin.manager.ManagerAuthenticationType;
-import com.intelsecurity.isc.plugin.manager.ManagerNotificationSubscriptionType;
-import com.intelsecurity.isc.plugin.manager.api.ApplianceManagerApi;
-import com.intelsecurity.isc.plugin.manager.api.IscJobNotificationApi;
-import com.intelsecurity.isc.plugin.manager.api.ManagerCallbackNotificationApi;
-import com.intelsecurity.isc.plugin.manager.api.ManagerDeviceApi;
-import com.intelsecurity.isc.plugin.manager.api.ManagerDomainApi;
-import com.intelsecurity.isc.plugin.manager.api.ManagerPolicyApi;
-import com.intelsecurity.isc.plugin.manager.api.ManagerSecurityGroupApi;
-import com.intelsecurity.isc.plugin.manager.api.ManagerSecurityGroupInterfaceApi;
-import com.intelsecurity.isc.plugin.manager.api.ManagerWebSocketNotificationApi;
-import com.intelsecurity.isc.plugin.manager.element.ApplianceManagerConnectorElement;
-import com.intelsecurity.isc.plugin.manager.element.VirtualSystemElement;
+import org.osc.sdk.manager.ManagerAuthenticationType;
+import org.osc.sdk.manager.ManagerNotificationSubscriptionType;
+import org.osc.sdk.manager.api.ApplianceManagerApi;
+import org.osc.sdk.manager.api.IscJobNotificationApi;
+import org.osc.sdk.manager.api.ManagerCallbackNotificationApi;
+import org.osc.sdk.manager.api.ManagerDeviceApi;
+import org.osc.sdk.manager.api.ManagerDomainApi;
+import org.osc.sdk.manager.api.ManagerPolicyApi;
+import org.osc.sdk.manager.api.ManagerSecurityGroupApi;
+import org.osc.sdk.manager.api.ManagerSecurityGroupInterfaceApi;
+import org.osc.sdk.manager.api.ManagerWebSocketNotificationApi;
+import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
+import org.osc.sdk.manager.element.VirtualSystemElement;
 
 import com.paloaltonetworks.panorama.api.methods.ShowOperations;
 

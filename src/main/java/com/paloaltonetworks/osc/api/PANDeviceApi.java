@@ -25,15 +25,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.osc.sdk.manager.api.ManagerDeviceApi;
+import org.osc.sdk.manager.element.ApplianceBootstrapInformationElement;
+import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
+import org.osc.sdk.manager.element.BootStrapInfoProviderElement;
+import org.osc.sdk.manager.element.DistributedApplianceInstanceElement;
+import org.osc.sdk.manager.element.ManagerDeviceElement;
+import org.osc.sdk.manager.element.ManagerDeviceMemberElement;
+import org.osc.sdk.manager.element.VirtualSystemElement;
 
-import com.intelsecurity.isc.plugin.manager.api.ManagerDeviceApi;
-import com.intelsecurity.isc.plugin.manager.element.ApplianceBootstrapInformationElement;
-import com.intelsecurity.isc.plugin.manager.element.ApplianceManagerConnectorElement;
-import com.intelsecurity.isc.plugin.manager.element.BootStrapInfoProviderElement;
-import com.intelsecurity.isc.plugin.manager.element.DistributedApplianceInstanceElement;
-import com.intelsecurity.isc.plugin.manager.element.ManagerDeviceElement;
-import com.intelsecurity.isc.plugin.manager.element.ManagerDeviceMemberElement;
-import com.intelsecurity.isc.plugin.manager.element.VirtualSystemElement;
 import com.paloaltonetworks.osc.model.Device;
 import com.paloaltonetworks.panorama.api.methods.ShowOperations;
 import com.sun.jersey.core.util.Base64;
@@ -49,22 +49,19 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 	VirtualSystemElement vs;
 	ApplianceManagerConnectorElement mc;
 	public ShowOperations showOperations = null;
-	
+
 	public static ManagerDeviceApi create(ApplianceManagerConnectorElement mc,VirtualSystemElement vs) throws Exception {
 
 		return new PANDeviceApi(mc, vs);
 	}
-	
+
 	private PANDeviceApi(ApplianceManagerConnectorElement mc,VirtualSystemElement vs) {
 		this.vs = vs;
 		this.mc = mc;
-		showOperations = new ShowOperations(mc.getIpAddress(), mc.getUsername(), mc.getPassword());
-		
-		apiKey = showOperations.getApiKey();
-		vmAuthKey = showOperations.getVMAuthKey("8760");
-		log.info("API Key is: "+ apiKey);
+		this.showOperations = new ShowOperations(mc.getIpAddress(), mc.getUsername(), mc.getPassword());
+		vmAuthKey = this.showOperations.getVMAuthKey("8760");
 	}
-	
+
 	@Override
 	public boolean isDeviceGroupSupported() {
 		// TODO Auto-generated method stub
@@ -73,7 +70,7 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 
 	@Override
 	public ManagerDeviceElement getDeviceById(String id) throws Exception {
-		ArrayList<String> deviceGroups = showOperations.ShowDeviceGroups();
+		ArrayList<String> deviceGroups = this.showOperations.ShowDeviceGroups();
 		for (String deviceGroupName : deviceGroups) {
 			if (deviceGroupName.equals(id)) {
 				System.out.println("Device Group Name: " + deviceGroupName);
@@ -94,7 +91,7 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 	public List<? extends ManagerDeviceElement> listDevices() throws Exception {
 		// TODO Auto-generated method stub
 		List<Device> deviceGroups = new ArrayList<Device>();
-		ArrayList<String> panDeviceGroups = showOperations.ShowDeviceGroups();
+		ArrayList<String> panDeviceGroups = this.showOperations.ShowDeviceGroups();
 		for(String deviceGroupName: panDeviceGroups){
 			System.out.println("Device Group Name: "+deviceGroupName);
 			deviceGroups.add(new Device(deviceGroupName, deviceGroupName));
@@ -108,20 +105,20 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 		// Create a device group in panorama
 		// Information passed in by VSS to create device group
 		// VSS is the device group
-		
-		return showOperations.AddDeviceGroup(vs.getName(), vs.getName());
+
+		return this.showOperations.AddDeviceGroup(this.vs.getName(), this.vs.getName());
 	}
 
 	@Override
 	public void updateVSSDevice(ManagerDeviceElement device) throws Exception {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void deleteVSSDevice() throws Exception {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -130,8 +127,8 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 		// TODO Auto-generated method stub
 		// OSC calls this method to create a NGFW - pass this to panorama
 		// Return panoamora device id
-		String panDeviceGroup = vs.getMgrId();
-		
+		String panDeviceGroup = this.vs.getMgrId();
+
 		return null;
 	}
 
@@ -192,17 +189,17 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 		return null;
 	}
 
-	
-	protected byte[] readFile(String path, Charset encoding) 
-			  throws IOException 
+
+	protected byte[] readFile(String path, Charset encoding)
+			  throws IOException
 			{
 			  byte[] encoded = Files.readAllBytes(Paths.get(path));
 			  return Base64.encode(new String(encoded, encoding));
 			}
-	
+
 	@Override
 	public ApplianceBootstrapInformationElement getBootstrapinfo(BootStrapInfoProviderElement bootStrapInfo) {
-	
+
 		PANApplianceBootstrapInformationElement bootstrapElement = new PANApplianceBootstrapInformationElement();
 		byte [] nullEntry = Base64.encode("");
 		try {
@@ -218,7 +215,7 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 		}
 		return bootstrapElement;
 	}
-	
+
 /*
 	@Override
 	public byte[] getBootstrapinfo(ApplianceBootStrapElement bootStrapInfo) {
@@ -248,15 +245,15 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 		configString.append("dhcp-accept-server-hostname=yes"+System.lineSeparator());
 		configString.append("dhcp-accept-server-domain=yes"+System.lineSeparator());
 		configString.append("vm-auth-key="+this.vmAuthKey+System.lineSeparator());
-		
+
 		return Base64.encode(configString.toString());
 	}
 */
 	@Override
 	public void close() {
 		// TODO Auto-generated method stub
-		
+
 	}
-	
-	
+
+
 }

@@ -15,7 +15,7 @@
 
 package com.paloaltonetworks.osc.model;
 
-import com.intelsecurity.isc.plugin.manager.element.ManagerDomainElement;
+import org.osc.sdk.manager.element.ManagerDomainElement;
 
 public class DomainListElement extends BaseIdNameObject implements ManagerDomainElement {
 
