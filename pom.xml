@@ -10,11 +10,6 @@
 	<url>http://maven.apache.org</url>
 	<dependencies>
 		<dependency>
-			<groupId>org.osc.core</groupId>
-			<artifactId>IscMgrPlugin</artifactId>
-			<version>1.0</version>
-		</dependency>
-		<dependency>
 			<groupId>com.sun.jersey</groupId>
 			<artifactId>jersey-bundle</artifactId>
 			<version>1.12</version>

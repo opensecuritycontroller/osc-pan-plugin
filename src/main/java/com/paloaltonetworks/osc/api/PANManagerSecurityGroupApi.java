@@ -54,13 +54,32 @@ public class PANManagerSecurityGroupApi implements ManagerSecurityGroupApi  {
 
 	@Override
 	public String createSecurityGroup(String name, String iscId,SecurityGroupMemberListElement memberList) throws Exception {
-		String status = this.showOperations.AddDAGTag(name);
-		if (status.equals("success")){
-			return name;
-		} else {
-			return null;
-
+		/*
+		 * Check if tag exists - if not create
+		 */
+		boolean tagExists;
+		String status;
+		String IPAddress = null;
+		
+		tagExists = this.showOperations.TagExists(name);
+		if (!tagExists){
+			status = this.showOperations.AddDAGTag(name);
+			if (!status.equals("success")){
+				return null;
+			}
 		}
+		/*
+		 * Add TAG and IP address
+		 */
+		/*
+		 * * How to get IP address from SecurityGroupMemberList???????
+		 */
+		status = this.showOperations.AddDAG(name, IPAddress);
+		if (!status.equals("success")){
+			return null;
+		}
+		return name;
+		
 	}
 
 	@Override

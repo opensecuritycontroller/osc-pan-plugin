@@ -32,11 +32,13 @@ import javax.net.ssl.X509TrustManager;
 
 import org.apache.log4j.Logger;
 
+import com.paloaltonetworks.panorama.api.mapping.*;
 import com.paloaltonetworks.panorama.api.mapping.CommitResponse;
 import com.paloaltonetworks.panorama.api.mapping.DeviceEntry;
 import com.paloaltonetworks.panorama.api.mapping.DeviceGroupResponse;
 import com.paloaltonetworks.panorama.api.mapping.DeviceGroups;
 import com.paloaltonetworks.panorama.api.mapping.DeviceGroupsEntry;
+import com.paloaltonetworks.panorama.api.mapping.GetTagResponse;
 import com.paloaltonetworks.panorama.api.mapping.SetConfigResponse;
 import com.paloaltonetworks.panorama.api.mapping.ShowDeviceResponse;
 import com.paloaltonetworks.panorama.api.mapping.ShowResponse;
@@ -318,6 +320,95 @@ public class ShowOperations {
         return status;
     }
 
+    public String AddDAG(String name, String IPAddress) {
+
+        String status = "failure";
+        Map<String, String> queryStrings = new HashMap<String, String>();
+        boolean sslCertDisabled = true;
+
+        try {
+
+            ClientConfig config = new DefaultClientConfig();
+            sslConfiguration(sslCertDisabled, config);
+
+            Client client = Client.create(config);
+            WebResource webResource = client.resource(this.baseUri);
+
+            String apiKey = getApiKey();
+            queryStrings.put("action", "set");
+            queryStrings.put("type", "user-id");
+            queryStrings.put("key", apiKey);
+            queryStrings.put("cmd",
+            		"<uid-message><version>1.0</version><type>update</type><payload><register><entry ip=\"" + IPAddress + "\"><tag><member>"+name+"</member></tag></entry></register></payload></uid-message>");
+            for (String key : queryStrings.keySet()) {
+                String value = queryStrings.get(key);
+                webResource = webResource.queryParam(key, value);
+            }
+            ClientResponse response = webResource.accept("application/xml").get(ClientResponse.class);
+
+            System.out.println(response.getStatus());
+            DAGResponse dagResponse = response.getEntity(DAGResponse.class);
+
+            status = dagResponse.getStatus();
+            System.out.println("AddDAG Status: " + status);
+            if (status.equals("success")) {
+              
+            } else {
+                System.out.println("AddDAG Failed with status: " + status);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return status;
+    }
+    
+    public String DeleteDAG(String name, String IPAddress) {
+
+        String status = "failure";
+        String configStatus = "failure";
+        Map<String, String> queryStrings = new HashMap<String, String>();
+        boolean sslCertDisabled = true;
+
+        try {
+
+            ClientConfig config = new DefaultClientConfig();
+            sslConfiguration(sslCertDisabled, config);
+
+            Client client = Client.create(config);
+            WebResource webResource = client.resource(this.baseUri);
+
+            String apiKey = getApiKey();
+            queryStrings.put("action", "set");
+            queryStrings.put("type", "user-id");
+            queryStrings.put("key", apiKey);
+            queryStrings.put("cmd",
+            		"<uid-message><version>1.0</version><type>update</type><payload><unregister>"+
+            		"<entry ip=\"" + IPAddress + "\"><tag><member>"+name+"</member></tag></entry>"+
+            		"</unregister></payload></uid-message>");
+
+            for (String key : queryStrings.keySet()) {
+                String value = queryStrings.get(key);
+                webResource = webResource.queryParam(key, value);
+            }
+            ClientResponse response = webResource.accept("application/xml").get(ClientResponse.class);
+
+            System.out.println(response.getStatus());
+            DAGResponse dagResponse = response.getEntity(DAGResponse.class);
+
+            status = dagResponse.getStatus();
+            System.out.println("DeleteDAG Status: " + status);
+            if (status.equals("success")) {
+              
+            } else {
+                System.out.println("DeleteDAG Failed with status: " + status);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return status;
+    }
     public String AddDAGTag(String name) {
 
         String status = "failure";
@@ -368,7 +459,107 @@ public class ShowOperations {
         }
         return status;
     }
+    public String ShowDAGTag(){
 
+        String status = "failure";
+        Map<String, String> queryStrings = new HashMap<String, String>();
+        boolean sslCertDisabled = true;
+
+        try {
+
+            ClientConfig config = new DefaultClientConfig();
+            sslConfiguration(sslCertDisabled, config);
+
+            Client client = Client.create(config);
+            WebResource webResource = client.resource(this.baseUri);
+
+            String apiKey = getApiKey();
+            queryStrings.put("action", "get");
+            queryStrings.put("type", "config");
+            queryStrings.put("key", apiKey);
+            queryStrings.put("xpath", "/config/shared/tag");
+
+            for (String key : queryStrings.keySet()) {
+                String value = queryStrings.get(key);
+                webResource = webResource.queryParam(key, value);
+            }
+            ClientResponse response = webResource.accept("application/xml").get(ClientResponse.class);
+
+            System.out.println(response.getStatus());
+            GetTagResponse getTagResponse = response.getEntity(GetTagResponse.class);
+            String tagName;
+            status = getTagResponse.getStatus();
+            System.out.println("AddDAGTag Status: " + status);
+            if (status.equals("success")) {
+                ArrayList<TagEntry> tagEntry = getTagResponse.getTagResult().getEntry();
+                Iterator<TagEntry> tagIterator = tagEntry.iterator();
+                while (tagIterator.hasNext()) {
+                    tagName = tagIterator.next().getName();
+                    System.out.println("Tag Name: " + tagName);
+                }
+                
+            } else {
+                System.out.println("AddDAGTag Failed with status: " + status);
+                System.out.println("AddDAGTag Failed with code: " + getTagResponse.getCode());
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return status;
+    }
+
+    public boolean TagExists(String tagName){
+
+        String status = "failure";
+        Map<String, String> queryStrings = new HashMap<String, String>();
+        boolean sslCertDisabled = true;
+
+        try {
+
+            ClientConfig config = new DefaultClientConfig();
+            sslConfiguration(sslCertDisabled, config);
+
+            Client client = Client.create(config);
+            WebResource webResource = client.resource(this.baseUri);
+
+            String apiKey = getApiKey();
+            queryStrings.put("action", "get");
+            queryStrings.put("type", "config");
+            queryStrings.put("key", apiKey);
+            queryStrings.put("xpath", "/config/shared/tag");
+
+            for (String key : queryStrings.keySet()) {
+                String value = queryStrings.get(key);
+                webResource = webResource.queryParam(key, value);
+            }
+            ClientResponse response = webResource.accept("application/xml").get(ClientResponse.class);
+
+            System.out.println(response.getStatus());
+            GetTagResponse getTagResponse = response.getEntity(GetTagResponse.class);
+            status = getTagResponse.getStatus();
+            System.out.println("AddDAGTag Status: " + status);
+            if (status.equals("success")) {
+                ArrayList<TagEntry> tagEntry = getTagResponse.getTagResult().getEntry();
+                Iterator<TagEntry> tagIterator = tagEntry.iterator();
+                while (tagIterator.hasNext()) {
+                    if ((tagIterator.next().getName()).equals(tagName)){
+                    	System.out.println("Matched Tag Name: " + tagName);
+                    	return true;
+                    }
+                    
+                }
+                
+            } else {
+                System.out.println("AddDAGTag Failed with status: " + status);
+                System.out.println("AddDAGTag Failed with code: " + getTagResponse.getCode());
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
     public String DeleteDAGTag(String name) {
 
         String status = "failure";

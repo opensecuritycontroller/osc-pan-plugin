@@ -30,7 +30,7 @@ public class AppTest
 
 {
 
-    private static final String PANORAMA_IP = "10.71.85.99";
+    private static final String PANORAMA_IP = "10.4.33.201";
 
     /**
      * Rigourous Test :-)
@@ -76,12 +76,33 @@ public class AppTest
         String dgTag = "testTAG";
         status = operations.DeleteDAGTag(dgTag);
         if (status.equals("success")) {
-            System.out.println("Successfully deleted device group TAG: " + dgTag);
+            System.out.println("Successfully deleted TAG: " + dgTag);
         }
         status = operations.AddDAGTag(dgTag);
         if (status.equals("success")) {
-            System.out.println("Successfully added device group: " + dgTag);
+            System.out.println("Successfully added TAG: " + dgTag);
         }
+        status = operations.AddDAG(dgTag,"13.13.13.13");
+        if (status.equals("success")) {
+            System.out.println("Successfully added dynamic device group: " + dgTag);
+        }
+        
+        status = operations.DeleteDAG(dgTag,"13.13.13.13");
+        if (status.equals("success")) {
+            System.out.println("Successfully deleted dynamic device group: " + dgTag);
+        }
+        
+        status = operations.ShowDAGTag();
+        if (status.equals("success")) {
+            System.out.println("Successfully displayed tags group: " + dgTag);
+        }
+        
+        boolean state = operations.TagExists(dgTag);
+        if (state == true) {
+            System.out.println(" tags " + dgTag + "exists");
+        }
+        
+        
     }
 
 }
