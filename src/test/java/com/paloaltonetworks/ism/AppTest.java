@@ -17,6 +17,7 @@ package com.paloaltonetworks.ism;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 
 import org.junit.Test;
@@ -82,27 +83,27 @@ public class AppTest
         if (status.equals("success")) {
             System.out.println("Successfully added TAG: " + dgTag);
         }
-        status = operations.AddDAG(dgTag,"13.13.13.13");
+        status = operations.AddDAG(dgTag, Arrays.asList("13.13.13.13"));
         if (status.equals("success")) {
             System.out.println("Successfully added dynamic device group: " + dgTag);
         }
-        
+
         status = operations.DeleteDAG(dgTag,"13.13.13.13");
         if (status.equals("success")) {
             System.out.println("Successfully deleted dynamic device group: " + dgTag);
         }
-        
+
         status = operations.ShowDAGTag();
         if (status.equals("success")) {
             System.out.println("Successfully displayed tags group: " + dgTag);
         }
-        
+
         boolean state = operations.TagExists(dgTag);
         if (state == true) {
             System.out.println(" tags " + dgTag + "exists");
         }
-        
-        
+
+
     }
 
 }

@@ -21,6 +21,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.net.ssl.HostnameVerifier;
@@ -32,8 +33,8 @@ import javax.net.ssl.X509TrustManager;
 
 import org.apache.log4j.Logger;
 
-import com.paloaltonetworks.panorama.api.mapping.*;
 import com.paloaltonetworks.panorama.api.mapping.CommitResponse;
+import com.paloaltonetworks.panorama.api.mapping.DAGResponse;
 import com.paloaltonetworks.panorama.api.mapping.DeviceEntry;
 import com.paloaltonetworks.panorama.api.mapping.DeviceGroupResponse;
 import com.paloaltonetworks.panorama.api.mapping.DeviceGroups;
@@ -42,6 +43,7 @@ import com.paloaltonetworks.panorama.api.mapping.GetTagResponse;
 import com.paloaltonetworks.panorama.api.mapping.SetConfigResponse;
 import com.paloaltonetworks.panorama.api.mapping.ShowDeviceResponse;
 import com.paloaltonetworks.panorama.api.mapping.ShowResponse;
+import com.paloaltonetworks.panorama.api.mapping.TagEntry;
 import com.paloaltonetworks.panorama.api.mapping.VMAuthKeyResponse;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
@@ -320,11 +322,18 @@ public class ShowOperations {
         return status;
     }
 
-    public String AddDAG(String name, String IPAddress) {
+    public String AddDAG(String name, List<String> IPAddresses) {
 
         String status = "failure";
         Map<String, String> queryStrings = new HashMap<String, String>();
         boolean sslCertDisabled = true;
+
+        StringBuilder entries = new StringBuilder();
+        for(String IPAddress: IPAddresses) {
+            entries.append(
+                    String.format("<entry ip=\"%s\"><tag><member>\"%s\"</member></tag></entry>", IPAddress, name));
+        }
+
 
         try {
 
@@ -339,7 +348,7 @@ public class ShowOperations {
             queryStrings.put("type", "user-id");
             queryStrings.put("key", apiKey);
             queryStrings.put("cmd",
-            		"<uid-message><version>1.0</version><type>update</type><payload><register><entry ip=\"" + IPAddress + "\"><tag><member>"+name+"</member></tag></entry></register></payload></uid-message>");
+            		"<uid-message><version>1.0</version><type>update</type><payload><register>" + entries.toString() + "</register></payload></uid-message>");
             for (String key : queryStrings.keySet()) {
                 String value = queryStrings.get(key);
                 webResource = webResource.queryParam(key, value);
@@ -352,7 +361,7 @@ public class ShowOperations {
             status = dagResponse.getStatus();
             System.out.println("AddDAG Status: " + status);
             if (status.equals("success")) {
-              
+
             } else {
                 System.out.println("AddDAG Failed with status: " + status);
             }
@@ -362,7 +371,7 @@ public class ShowOperations {
         }
         return status;
     }
-    
+
     public String DeleteDAG(String name, String IPAddress) {
 
         String status = "failure";
@@ -399,7 +408,7 @@ public class ShowOperations {
             status = dagResponse.getStatus();
             System.out.println("DeleteDAG Status: " + status);
             if (status.equals("success")) {
-              
+
             } else {
                 System.out.println("DeleteDAG Failed with status: " + status);
             }
@@ -497,7 +506,7 @@ public class ShowOperations {
                     tagName = tagIterator.next().getName();
                     System.out.println("Tag Name: " + tagName);
                 }
-                
+
             } else {
                 System.out.println("AddDAGTag Failed with status: " + status);
                 System.out.println("AddDAGTag Failed with code: " + getTagResponse.getCode());
@@ -547,9 +556,9 @@ public class ShowOperations {
                     	System.out.println("Matched Tag Name: " + tagName);
                     	return true;
                     }
-                    
+
                 }
-                
+
             } else {
                 System.out.println("AddDAGTag Failed with status: " + status);
                 System.out.println("AddDAGTag Failed with code: " + getTagResponse.getCode());

@@ -16,12 +16,14 @@ package com.paloaltonetworks.osc.api;
 
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.osc.sdk.manager.api.ManagerSecurityGroupApi;
 import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
 import org.osc.sdk.manager.element.ManagerSecurityGroupElement;
+import org.osc.sdk.manager.element.SecurityGroupMemberElement;
 import org.osc.sdk.manager.element.SecurityGroupMemberListElement;
 import org.osc.sdk.manager.element.VirtualSystemElement;
 
@@ -59,8 +61,7 @@ public class PANManagerSecurityGroupApi implements ManagerSecurityGroupApi  {
 		 */
 		boolean tagExists;
 		String status;
-		String IPAddress = null;
-		
+
 		tagExists = this.showOperations.TagExists(name);
 		if (!tagExists){
 			status = this.showOperations.AddDAGTag(name);
@@ -68,18 +69,21 @@ public class PANManagerSecurityGroupApi implements ManagerSecurityGroupApi  {
 				return null;
 			}
 		}
+
+		List<String> ipList = new ArrayList<>();
+
+		for(SecurityGroupMemberElement member : memberList.getMembers()) {
+		    ipList.addAll(member.getIpAddresses());
+		}
 		/*
 		 * Add TAG and IP address
 		 */
-		/*
-		 * * How to get IP address from SecurityGroupMemberList???????
-		 */
-		status = this.showOperations.AddDAG(name, IPAddress);
+		status = this.showOperations.AddDAG(name, ipList);
 		if (!status.equals("success")){
 			return null;
 		}
 		return name;
-		
+
 	}
 
 	@Override
