@@ -57,6 +57,10 @@ public class AppTest
 
         }
 
+        // Check Connection
+        boolean connectionCheck;
+    	connectionCheck = operations.checkConnection();
+    	System.out.println("Connection check status: " + connectionCheck);
         ArrayList<String> deviceGroups = operations.ShowDeviceGroups();
         Iterator<String> deviceGroupsIterator = deviceGroups.iterator();
         while (deviceGroupsIterator.hasNext()) {
