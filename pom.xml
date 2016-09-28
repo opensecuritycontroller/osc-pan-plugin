@@ -72,7 +72,7 @@
 							</filters>
 							<artifactSet>
 								<excludes>
-									<exclude>com.intelsecurity.isc.plugin.manager:IscMgrPlugin</exclude>
+									<exclude>org.osc.core:IscMgrPlugin</exclude>
 									<exclude>junit:junit</exclude>
 									<exclude>com.sun.jersey:jersey-bundle</exclude>
 								</excludes>
