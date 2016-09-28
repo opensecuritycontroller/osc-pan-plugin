@@ -15,7 +15,8 @@
 package com.paloaltonetworks.panorama.api.mapping;
 
 import javax.xml.bind.annotation.XmlRootElement;
-
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 
 import javax.xml.bind.annotation.XmlElementWrapper;
@@ -23,7 +24,7 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 
 import java.util.ArrayList;
 
-
+@XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "result")
 public class DeviceGroups {
 
