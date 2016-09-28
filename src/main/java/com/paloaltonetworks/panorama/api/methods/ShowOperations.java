@@ -331,7 +331,7 @@ public class ShowOperations {
         StringBuilder entries = new StringBuilder();
         for(String IPAddress: IPAddresses) {
             entries.append(
-                    String.format("<entry ip=\"%s\"><tag><member>\"%s\"</member></tag></entry>", IPAddress, name));
+                    String.format("<entry ip=\"%s\"><tag><member>%s</member></tag></entry>", IPAddress, name));
         }
 
 
