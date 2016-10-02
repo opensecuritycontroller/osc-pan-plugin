@@ -126,7 +126,7 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 			String gateway, String prefixLength) throws Exception {
 		// TODO Auto-generated method stub
 		// OSC calls this method to create a NGFW - pass this to panorama
-		// Return panoamora device id
+		// Return panorqma device id
 		String panDeviceGroup = this.vs.getMgrId();
 
 		return null;
@@ -196,34 +196,41 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 			  byte[] encoded = Files.readAllBytes(Paths.get(path));
 			  return Base64.encode(new String(encoded, encoding));
 			}
-
+/*
+	protected byte[] getInitCfg(){
+		byte[] encoded;
+		String initCfgStr = null;
+		
+		encoded = initCfgStr.getBytes(StandardCharsets.UTF_8);
+		return Base64.encode(encoded);
+	}
+	*/
 	@Override
 	public ApplianceBootstrapInformationElement getBootstrapinfo(BootStrapInfoProviderElement bootStrapInfo) {
 
 		PANApplianceBootstrapInformationElement bootstrapElement = new PANApplianceBootstrapInformationElement();
 		byte [] nullEntry = Base64.encode("");
 		try {
-			bootstrapElement.addBootstrapFile("/config/init-cfg.txt",readFile("/home/stack/work/config/init_cfg.txt",StandardCharsets.UTF_8));
+			bootstrapElement.addBootstrapFile("/config/init-cfg.txt",getInitCfg());
 
-		bootstrapElement.addBootstrapFile("/config/bootstrap.xml",readFile("/home/stack/work/config/bootstrap.xml",StandardCharsets.UTF_8));
-		bootstrapElement.addBootstrapFile("/license/authcodes",readFile("/home/stack/work/config/authcode.txt",StandardCharsets.UTF_8));
+		bootstrapElement.addBootstrapFile("/config/bootstrap.xml",getBootstrapXML());
+		bootstrapElement.addBootstrapFile("/license/authcodes",getLicense());
 		bootstrapElement.addBootstrapFile("/content",nullEntry);
 		bootstrapElement.addBootstrapFile("/software",nullEntry);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return bootstrapElement;
 	}
 
-/*
-	@Override
-	public byte[] getBootstrapinfo(ApplianceBootStrapElement bootStrapInfo) {
+	protected byte[] getInitCfg() {
 		// TODO Auto-generated method stub
 		// Pass in bootstrap info for device
 		// Same info for all devices
 		// use vss element to determine device group
 		// give me config drive info for device group
+		byte[] encoded;
 		StringBuilder configString = new StringBuilder();
 
 		configString.append("type=dhcp-client"+System.lineSeparator());
@@ -233,7 +240,7 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 		configString.append("ipv6-address="+System.lineSeparator());
 		configString.append("ipv6-default-gateway="+System.lineSeparator());
 		configString.append("hostname="+System.lineSeparator());
-		configString.append("panorama-server=10.4.33.201"+System.lineSeparator());
+		configString.append("panorama-server=10.4.33.202"+System.lineSeparator());
 		configString.append("panorama-server-2="+System.lineSeparator());
 		configString.append("tplname="+System.lineSeparator());
 		configString.append("dgname="+System.lineSeparator());
@@ -245,10 +252,340 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 		configString.append("dhcp-accept-server-hostname=yes"+System.lineSeparator());
 		configString.append("dhcp-accept-server-domain=yes"+System.lineSeparator());
 		configString.append("vm-auth-key="+this.vmAuthKey+System.lineSeparator());
-
-		return Base64.encode(configString.toString());
+		encoded = (configString.toString()).getBytes(StandardCharsets.UTF_8);
+		return Base64.encode(encoded);
 	}
-*/
+	
+	protected byte[] getLicense(){
+		byte[] encoded;
+		String configString;
+		configString = "I4745132";
+		encoded = (configString.getBytes(StandardCharsets.UTF_8));
+		return Base64.encode(encoded);
+	}
+	
+	protected byte[] getBootstrapXML(){
+		byte[] encoded;
+		String configString;
+		configString = "<?xml version=\"1.0\"?>\n" + 
+				"<config version=\"7.1.0\" urldb=\"paloaltonetworks\">\n" + 
+				"  <mgt-config>\n" + 
+				"    <users>\n" + 
+				"      <entry name=\"admin\">\n" + 
+				"        <phash>fnRL/G5lXVMug</phash>\n" + 
+				"        <permissions>\n" + 
+				"          <role-based>\n" + 
+				"            <superuser>yes</superuser>\n" + 
+				"          </role-based>\n" + 
+				"        </permissions>\n" + 
+				"      </entry>\n" + 
+				"    </users>\n" + 
+				"  </mgt-config>\n" + 
+				"  <shared>\n" + 
+				"    <application/>\n" + 
+				"    <application-group/>\n" + 
+				"    <service/>\n" + 
+				"    <service-group/>\n" + 
+				"    <botnet>\n" + 
+				"      <configuration>\n" + 
+				"        <http>\n" + 
+				"          <dynamic-dns>\n" + 
+				"            <enabled>yes</enabled>\n" + 
+				"            <threshold>5</threshold>\n" + 
+				"          </dynamic-dns>\n" + 
+				"          <malware-sites>\n" + 
+				"            <enabled>yes</enabled>\n" + 
+				"            <threshold>5</threshold>\n" + 
+				"          </malware-sites>\n" + 
+				"          <recent-domains>\n" + 
+				"            <enabled>yes</enabled>\n" + 
+				"            <threshold>5</threshold>\n" + 
+				"          </recent-domains>\n" + 
+				"          <ip-domains>\n" + 
+				"            <enabled>yes</enabled>\n" + 
+				"            <threshold>10</threshold>\n" + 
+				"          </ip-domains>\n" + 
+				"          <executables-from-unknown-sites>\n" + 
+				"            <enabled>yes</enabled>\n" + 
+				"            <threshold>5</threshold>\n" + 
+				"          </executables-from-unknown-sites>\n" + 
+				"        </http>\n" + 
+				"        <other-applications>\n" + 
+				"          <irc>yes</irc>\n" + 
+				"        </other-applications>\n" + 
+				"        <unknown-applications>\n" + 
+				"          <unknown-tcp>\n" + 
+				"            <destinations-per-hour>10</destinations-per-hour>\n" + 
+				"            <sessions-per-hour>10</sessions-per-hour>\n" + 
+				"            <session-length>\n" + 
+				"              <maximum-bytes>100</maximum-bytes>\n" + 
+				"              <minimum-bytes>50</minimum-bytes>\n" + 
+				"            </session-length>\n" + 
+				"          </unknown-tcp>\n" + 
+				"          <unknown-udp>\n" + 
+				"            <destinations-per-hour>10</destinations-per-hour>\n" + 
+				"            <sessions-per-hour>10</sessions-per-hour>\n" + 
+				"            <session-length>\n" + 
+				"              <maximum-bytes>100</maximum-bytes>\n" + 
+				"              <minimum-bytes>50</minimum-bytes>\n" + 
+				"            </session-length>\n" + 
+				"          </unknown-udp>\n" + 
+				"        </unknown-applications>\n" + 
+				"      </configuration>\n" + 
+				"      <report>\n" + 
+				"        <topn>100</topn>\n" + 
+				"        <scheduled>yes</scheduled>\n" + 
+				"      </report>\n" + 
+				"    </botnet>\n" + 
+				"  </shared>\n" + 
+				"  <devices>\n" + 
+				"    <entry name=\"localhost.localdomain\">\n" + 
+				"      <network>\n" + 
+				"        <interface>\n" + 
+				"          <ethernet/>\n" + 
+				"        </interface>\n" + 
+				"        <profiles>\n" + 
+				"          <monitor-profile>\n" + 
+				"            <entry name=\"default\">\n" + 
+				"              <interval>3</interval>\n" + 
+				"              <threshold>5</threshold>\n" + 
+				"              <action>wait-recover</action>\n" + 
+				"            </entry>\n" + 
+				"          </monitor-profile>\n" + 
+				"        </profiles>\n" + 
+				"        <ike>\n" + 
+				"          <crypto-profiles>\n" + 
+				"            <ike-crypto-profiles>\n" + 
+				"              <entry name=\"default\">\n" + 
+				"                <encryption>\n" + 
+				"                  <member>aes-128-cbc</member>\n" + 
+				"                  <member>3des</member>\n" + 
+				"                </encryption>\n" + 
+				"                <hash>\n" + 
+				"                  <member>sha1</member>\n" + 
+				"                </hash>\n" + 
+				"                <dh-group>\n" + 
+				"                  <member>group2</member>\n" + 
+				"                </dh-group>\n" + 
+				"                <lifetime>\n" + 
+				"                  <hours>8</hours>\n" + 
+				"                </lifetime>\n" + 
+				"              </entry>\n" + 
+				"              <entry name=\"Suite-B-GCM-128\">\n" + 
+				"                <encryption>\n" + 
+				"                  <member>aes-128-cbc</member>\n" + 
+				"                </encryption>\n" + 
+				"                <hash>\n" + 
+				"                  <member>sha256</member>\n" + 
+				"                </hash>\n" + 
+				"                <dh-group>\n" + 
+				"                  <member>group19</member>\n" + 
+				"                </dh-group>\n" + 
+				"                <lifetime>\n" + 
+				"                  <hours>8</hours>\n" + 
+				"                </lifetime>\n" + 
+				"              </entry>\n" + 
+				"              <entry name=\"Suite-B-GCM-256\">\n" + 
+				"                <encryption>\n" + 
+				"                  <member>aes-256-cbc</member>\n" + 
+				"                </encryption>\n" + 
+				"                <hash>\n" + 
+				"                  <member>sha384</member>\n" + 
+				"                </hash>\n" + 
+				"                <dh-group>\n" + 
+				"                  <member>group20</member>\n" + 
+				"                </dh-group>\n" + 
+				"                <lifetime>\n" + 
+				"                  <hours>8</hours>\n" + 
+				"                </lifetime>\n" + 
+				"              </entry>\n" + 
+				"            </ike-crypto-profiles>\n" + 
+				"            <ipsec-crypto-profiles>\n" + 
+				"              <entry name=\"default\">\n" + 
+				"                <esp>\n" + 
+				"                  <encryption>\n" + 
+				"                    <member>aes-128-cbc</member>\n" + 
+				"                    <member>3des</member>\n" + 
+				"                  </encryption>\n" + 
+				"                  <authentication>\n" + 
+				"                    <member>sha1</member>\n" + 
+				"                  </authentication>\n" + 
+				"                </esp>\n" + 
+				"                <dh-group>group2</dh-group>\n" + 
+				"                <lifetime>\n" + 
+				"                  <hours>1</hours>\n" + 
+				"                </lifetime>\n" + 
+				"              </entry>\n" + 
+				"              <entry name=\"Suite-B-GCM-128\">\n" + 
+				"                <esp>\n" + 
+				"                  <encryption>\n" + 
+				"                    <member>aes-128-gcm</member>\n" + 
+				"                  </encryption>\n" + 
+				"                  <authentication>\n" + 
+				"                    <member>none</member>\n" + 
+				"                  </authentication>\n" + 
+				"                </esp>\n" + 
+				"                <dh-group>group19</dh-group>\n" + 
+				"                <lifetime>\n" + 
+				"                  <hours>1</hours>\n" + 
+				"                </lifetime>\n" + 
+				"              </entry>\n" + 
+				"              <entry name=\"Suite-B-GCM-256\">\n" + 
+				"                <esp>\n" + 
+				"                  <encryption>\n" + 
+				"                    <member>aes-256-gcm</member>\n" + 
+				"                  </encryption>\n" + 
+				"                  <authentication>\n" + 
+				"                    <member>none</member>\n" + 
+				"                  </authentication>\n" + 
+				"                </esp>\n" + 
+				"                <dh-group>group20</dh-group>\n" + 
+				"                <lifetime>\n" + 
+				"                  <hours>1</hours>\n" + 
+				"                </lifetime>\n" + 
+				"              </entry>\n" + 
+				"            </ipsec-crypto-profiles>\n" + 
+				"            <global-protect-app-crypto-profiles>\n" + 
+				"              <entry name=\"default\">\n" + 
+				"                <encryption>\n" + 
+				"                  <member>aes-128-cbc</member>\n" + 
+				"                </encryption>\n" + 
+				"                <authentication>\n" + 
+				"                  <member>sha1</member>\n" + 
+				"                </authentication>\n" + 
+				"              </entry>\n" + 
+				"            </global-protect-app-crypto-profiles>\n" + 
+				"          </crypto-profiles>\n" + 
+				"        </ike>\n" + 
+				"        <qos>\n" + 
+				"          <profile>\n" + 
+				"            <entry name=\"default\">\n" + 
+				"              <class>\n" + 
+				"                <entry name=\"class1\">\n" + 
+				"                  <priority>real-time</priority>\n" + 
+				"                </entry>\n" + 
+				"                <entry name=\"class2\">\n" + 
+				"                  <priority>high</priority>\n" + 
+				"                </entry>\n" + 
+				"                <entry name=\"class3\">\n" + 
+				"                  <priority>high</priority>\n" + 
+				"                </entry>\n" + 
+				"                <entry name=\"class4\">\n" + 
+				"                  <priority>medium</priority>\n" + 
+				"                </entry>\n" + 
+				"                <entry name=\"class5\">\n" + 
+				"                  <priority>medium</priority>\n" + 
+				"                </entry>\n" + 
+				"                <entry name=\"class6\">\n" + 
+				"                  <priority>low</priority>\n" + 
+				"                </entry>\n" + 
+				"                <entry name=\"class7\">\n" + 
+				"                  <priority>low</priority>\n" + 
+				"                </entry>\n" + 
+				"                <entry name=\"class8\">\n" + 
+				"                  <priority>low</priority>\n" + 
+				"                </entry>\n" + 
+				"              </class>\n" + 
+				"            </entry>\n" + 
+				"          </profile>\n" + 
+				"        </qos>\n" + 
+				"        <virtual-router>\n" + 
+				"          <entry name=\"default\">\n" + 
+				"            <protocol>\n" + 
+				"              <bgp>\n" + 
+				"                <enable>no</enable>\n" + 
+				"                <dampening-profile>\n" + 
+				"                  <entry name=\"default\">\n" + 
+				"                    <cutoff>1.25</cutoff>\n" + 
+				"                    <reuse>0.5</reuse>\n" + 
+				"                    <max-hold-time>900</max-hold-time>\n" + 
+				"                    <decay-half-life-reachable>300</decay-half-life-reachable>\n" + 
+				"                    <decay-half-life-unreachable>900</decay-half-life-unreachable>\n" + 
+				"                    <enable>yes</enable>\n" + 
+				"                  </entry>\n" + 
+				"                </dampening-profile>\n" + 
+				"              </bgp>\n" + 
+				"            </protocol>\n" + 
+				"          </entry>\n" + 
+				"        </virtual-router>\n" + 
+				"      </network>\n" + 
+				"      <deviceconfig>\n" + 
+				"        <system>\n" + 
+				"          <type>\n" + 
+				"            <dhcp-client>\n" + 
+				"              <send-hostname>yes</send-hostname>\n" + 
+				"              <send-client-id>yes</send-client-id>\n" + 
+				"              <accept-dhcp-hostname>yes</accept-dhcp-hostname>\n" + 
+				"              <accept-dhcp-domain>yes</accept-dhcp-domain>\n" + 
+				"            </dhcp-client>\n" + 
+				"          </type>\n" + 
+				"          <update-server>10.44.2.19</update-server>\n" + 
+				"          <update-schedule>\n" + 
+				"            <threats>\n" + 
+				"              <recurring>\n" + 
+				"                <weekly>\n" + 
+				"                  <day-of-week>wednesday</day-of-week>\n" + 
+				"                  <at>01:02</at>\n" + 
+				"                  <action>download-only</action>\n" + 
+				"                </weekly>\n" + 
+				"              </recurring>\n" + 
+				"            </threats>\n" + 
+				"          </update-schedule>\n" + 
+				"          <timezone>US/Pacific</timezone>\n" + 
+				"          <service>\n" + 
+				"            <disable-telnet>yes</disable-telnet>\n" + 
+				"            <disable-http>yes</disable-http>\n" + 
+				"          </service>\n" + 
+				"          <panorama-server>10.4.33.202</panorama-server>\n" + 
+				"          <dns-setting>\n" + 
+				"            <servers>\n" + 
+				"              <primary>10.44.2.10</primary>\n" + 
+				"            </servers>\n" + 
+				"          </dns-setting>\n" + 
+				"          <hostname>PA-VM</hostname>\n" + 
+				"        </system>\n" + 
+				"        <setting>\n" + 
+				"          <config>\n" + 
+				"            <rematch>yes</rematch>\n" + 
+				"          </config>\n" + 
+				"          <management>\n" + 
+				"            <hostname-type-in-syslog>FQDN</hostname-type-in-syslog>\n" + 
+				"            <initcfg>\n" + 
+				"              <type>\n" + 
+				"                <dhcp-client>\n" + 
+				"                  <send-hostname>yes</send-hostname>\n" + 
+				"                  <send-client-id>yes</send-client-id>\n" + 
+				"                  <accept-dhcp-hostname>yes</accept-dhcp-hostname>\n" + 
+				"                  <accept-dhcp-domain>yes</accept-dhcp-domain>\n" + 
+				"                </dhcp-client>\n" + 
+				"              </type>\n" + 
+				"              <panorama-server>10.4.33.201</panorama-server>\n" + 
+				"              <dgname>OSC</dgname>\n" + 
+				"              <dns-primary>10.44.2.10</dns-primary>\n" + 
+				"              <vm-auth-key>155147886537822</vm-auth-key>\n" + 
+				"            </initcfg>\n" + 
+				"          </management>\n" + 
+				"          <auto-mac-detect>yes</auto-mac-detect>\n" + 
+				"        </setting>\n" + 
+				"      </deviceconfig>\n" + 
+				"      <vsys>\n" + 
+				"        <entry name=\"vsys1\">\n" + 
+				"          <application/>\n" + 
+				"          <application-group/>\n" + 
+				"          <zone/>\n" + 
+				"          <service/>\n" + 
+				"          <service-group/>\n" + 
+				"          <schedule/>\n" + 
+				"          <rulebase/>\n" + 
+				"        </entry>\n" + 
+				"      </vsys>\n" + 
+				"    </entry>\n" + 
+				"  </devices>\n" + 
+				"</config>\n";
+		
+		encoded = (configString.getBytes(StandardCharsets.UTF_8));
+		return Base64.encode(encoded);
+	}
 	@Override
 	public void close() {
 		// TODO Auto-generated method stub

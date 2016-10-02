@@ -241,6 +241,7 @@ public class ShowOperations {
             System.out.println("Show Device Groups status : " + response.getStatus());
             //String strResponse = response.getEntity(String.class);
             //System.out.println("Response string: "+ strResponse);
+            //System.out.println(response.getEntity(String.class));
             DeviceGroupResponse deviceGroupResponse = response.getEntity(DeviceGroupResponse.class);
 
             String status = deviceGroupResponse.getStatus();
@@ -322,7 +323,7 @@ public class ShowOperations {
         return status;
     }
 
-    public String AddDAG(String name, List<String> IPAddresses) {
+    public String AddDAG(String name, String panos_id, List<String> IPAddresses) {
 
         String status = "failure";
         Map<String, String> queryStrings = new HashMap<String, String>();
@@ -347,6 +348,7 @@ public class ShowOperations {
             queryStrings.put("action", "set");
             queryStrings.put("type", "user-id");
             queryStrings.put("key", apiKey);
+            queryStrings.put("target", panos_id);
             queryStrings.put("cmd",
             		"<uid-message><version>1.0</version><type>update</type><payload><register>" + entries.toString() + "</register></payload></uid-message>");
             for (String key : queryStrings.keySet()) {
@@ -372,7 +374,7 @@ public class ShowOperations {
         return status;
     }
 
-    public String DeleteDAG(String name, String IPAddress) {
+    public String DeleteDAG(String name, String panos_id, String IPAddress) {
 
         String status = "failure";
         String configStatus = "failure";
@@ -390,6 +392,7 @@ public class ShowOperations {
             String apiKey = getApiKey();
             queryStrings.put("action", "set");
             queryStrings.put("type", "user-id");
+            queryStrings.put("target", panos_id);
             queryStrings.put("key", apiKey);
             queryStrings.put("cmd",
             		"<uid-message><version>1.0</version><type>update</type><payload><unregister>"+
