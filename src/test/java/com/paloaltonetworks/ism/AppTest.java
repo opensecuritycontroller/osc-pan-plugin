@@ -31,7 +31,8 @@ public class AppTest
 
 {
 
-    private static final String PANORAMA_IP = "10.4.33.201";
+    private static final String PANORAMA_IP = "10.4.33.202";
+    private static final String PANOS_SERIAL = "007299000003740";
 
     /**
      * Rigourous Test :-)
@@ -78,24 +79,24 @@ public class AppTest
             System.out.println("Successfully added device group: " + dg);
         }
 
-        String dgTag = "testTAG";
-        status = operations.DeleteDAGTag(dgTag);
-        if (status.equals("success")) {
-            System.out.println("Successfully deleted TAG: " + dgTag);
-        }
+        String dgTag = "testTag";
+        //status = operations.DeleteDAGTag(dgTag);
+        //if (status.equals("success")) {
+        //    System.out.println("Successfully deleted TAG: " + dgTag);
+        //}
         status = operations.AddDAGTag(dgTag);
         if (status.equals("success")) {
             System.out.println("Successfully added TAG: " + dgTag);
         }
-        status = operations.AddDAG(dgTag, Arrays.asList("13.13.13.13"));
+        status = operations.AddDAG(dgTag, PANOS_SERIAL, Arrays.asList("13.13.13.13"));
         if (status.equals("success")) {
             System.out.println("Successfully added dynamic device group: " + dgTag);
         }
 
-        status = operations.DeleteDAG(dgTag,"13.13.13.13");
-        if (status.equals("success")) {
-            System.out.println("Successfully deleted dynamic device group: " + dgTag);
-        }
+        //status = operations.DeleteDAG(dgTag, PANOS_SERIAL, "13.13.13.13");
+        //if (status.equals("success")) {
+         //   System.out.println("Successfully deleted dynamic device group: " + dgTag);
+       // }
 
         status = operations.ShowDAGTag();
         if (status.equals("success")) {
