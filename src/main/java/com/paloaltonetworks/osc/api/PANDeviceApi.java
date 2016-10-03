@@ -53,6 +53,7 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 	public static ManagerDeviceApi create(ApplianceManagerConnectorElement mc,VirtualSystemElement vs) throws Exception {
 
 		return new PANDeviceApi(mc, vs);
+
 	}
 
 	private PANDeviceApi(ApplianceManagerConnectorElement mc,VirtualSystemElement vs) {
@@ -207,11 +208,11 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 	*/
 	@Override
 	public ApplianceBootstrapInformationElement getBootstrapinfo(BootStrapInfoProviderElement bootStrapInfo) {
-
+		// String vmKey = "596857543256712";
 		PANApplianceBootstrapInformationElement bootstrapElement = new PANApplianceBootstrapInformationElement();
 		byte [] nullEntry = Base64.encode("");
 		try {
-			bootstrapElement.addBootstrapFile("/config/init-cfg.txt",getInitCfg());
+			bootstrapElement.addBootstrapFile("/config/init-cfg.txt",getInitCfg(PANDeviceApi.vmAuthKey));
 
 		bootstrapElement.addBootstrapFile("/config/bootstrap.xml",getBootstrapXML());
 		bootstrapElement.addBootstrapFile("/license/authcodes",getLicense());
@@ -224,7 +225,7 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 		return bootstrapElement;
 	}
 
-	protected byte[] getInitCfg() {
+	protected byte[] getInitCfg(String vmKey) {
 		// TODO Auto-generated method stub
 		// Pass in bootstrap info for device
 		// Same info for all devices
@@ -239,21 +240,22 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 		configString.append("netmask="+System.lineSeparator());
 		configString.append("ipv6-address="+System.lineSeparator());
 		configString.append("ipv6-default-gateway="+System.lineSeparator());
-		configString.append("hostname="+System.lineSeparator());
-		configString.append("panorama-server=10.4.33.202"+System.lineSeparator());
+		configString.append("hostname=PA-OSC"+System.lineSeparator());
+		configString.append("panorama-server="+mc.getIpAddress()+System.lineSeparator());
 		configString.append("panorama-server-2="+System.lineSeparator());
 		configString.append("tplname="+System.lineSeparator());
 		configString.append("dgname="+System.lineSeparator());
-		configString.append("dns-primary=10.44.2.10"+System.lineSeparator());
-		configString.append("dns-secondary=10.43.2.10"+System.lineSeparator());
+		configString.append("dns-primary="+System.lineSeparator());
+		configString.append("dns-secondary="+System.lineSeparator());
 		configString.append("op-command-modes="+System.lineSeparator());
 		configString.append("dhcp-send-hostname=yes"+System.lineSeparator());
 		configString.append("dhcp-send-client-id=yes"+System.lineSeparator());
 		configString.append("dhcp-accept-server-hostname=yes"+System.lineSeparator());
 		configString.append("dhcp-accept-server-domain=yes"+System.lineSeparator());
-		configString.append("vm-auth-key="+this.vmAuthKey+System.lineSeparator());
+		configString.append("vm-auth-key="+vmKey);
 		encoded = (configString.toString()).getBytes(StandardCharsets.UTF_8);
-		return Base64.encode(encoded);
+		//return Base64.encode(encoded);
+		return encoded;
 	}
 	
 	protected byte[] getLicense(){
@@ -261,7 +263,8 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 		String configString;
 		configString = "I4745132";
 		encoded = (configString.getBytes(StandardCharsets.UTF_8));
-		return Base64.encode(encoded);
+		//return Base64.encode(encoded);
+		return encoded;
 	}
 	
 	protected byte[] getBootstrapXML(){
@@ -511,14 +514,8 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 				"      </network>\n" + 
 				"      <deviceconfig>\n" + 
 				"        <system>\n" + 
-				"          <type>\n" + 
-				"            <dhcp-client>\n" + 
-				"              <send-hostname>yes</send-hostname>\n" + 
-				"              <send-client-id>yes</send-client-id>\n" + 
-				"              <accept-dhcp-hostname>yes</accept-dhcp-hostname>\n" + 
-				"              <accept-dhcp-domain>yes</accept-dhcp-domain>\n" + 
-				"            </dhcp-client>\n" + 
-				"          </type>\n" + 
+				"          <ip-address>192.168.1.1</ip-address>\n" + 
+				"          <netmask>255.255.255.0</netmask>\n" + 
 				"          <update-server>10.44.2.19</update-server>\n" + 
 				"          <update-schedule>\n" + 
 				"            <threats>\n" + 
@@ -536,13 +533,15 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 				"            <disable-telnet>yes</disable-telnet>\n" + 
 				"            <disable-http>yes</disable-http>\n" + 
 				"          </service>\n" + 
-				"          <panorama-server>10.4.33.202</panorama-server>\n" + 
-				"          <dns-setting>\n" + 
-				"            <servers>\n" + 
-				"              <primary>10.44.2.10</primary>\n" + 
-				"            </servers>\n" + 
-				"          </dns-setting>\n" + 
 				"          <hostname>PA-VM</hostname>\n" + 
+				"          <type>\n" + 
+				"            <dhcp-client>\n" + 
+				"              <send-hostname>yes</send-hostname>\n" + 
+				"              <accept-dhcp-domain>yes</accept-dhcp-domain>\n" + 
+				"              <accept-dhcp-hostname>yes</accept-dhcp-hostname>\n" + 
+				"              <send-client-id>yes</send-client-id>\n" + 
+				"            </dhcp-client>\n" + 
+				"          </type>\n" + 
 				"        </system>\n" + 
 				"        <setting>\n" + 
 				"          <config>\n" + 
@@ -550,22 +549,7 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 				"          </config>\n" + 
 				"          <management>\n" + 
 				"            <hostname-type-in-syslog>FQDN</hostname-type-in-syslog>\n" + 
-				"            <initcfg>\n" + 
-				"              <type>\n" + 
-				"                <dhcp-client>\n" + 
-				"                  <send-hostname>yes</send-hostname>\n" + 
-				"                  <send-client-id>yes</send-client-id>\n" + 
-				"                  <accept-dhcp-hostname>yes</accept-dhcp-hostname>\n" + 
-				"                  <accept-dhcp-domain>yes</accept-dhcp-domain>\n" + 
-				"                </dhcp-client>\n" + 
-				"              </type>\n" + 
-				"              <panorama-server>10.4.33.201</panorama-server>\n" + 
-				"              <dgname>OSC</dgname>\n" + 
-				"              <dns-primary>10.44.2.10</dns-primary>\n" + 
-				"              <vm-auth-key>155147886537822</vm-auth-key>\n" + 
-				"            </initcfg>\n" + 
 				"          </management>\n" + 
-				"          <auto-mac-detect>yes</auto-mac-detect>\n" + 
 				"        </setting>\n" + 
 				"      </deviceconfig>\n" + 
 				"      <vsys>\n" + 
@@ -581,10 +565,12 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 				"      </vsys>\n" + 
 				"    </entry>\n" + 
 				"  </devices>\n" + 
-				"</config>\n";
+				"</config>\n" + 
+				"";
 		
 		encoded = (configString.getBytes(StandardCharsets.UTF_8));
-		return Base64.encode(encoded);
+		//return Base64.encode(encoded);
+		return encoded;
 	}
 	@Override
 	public void close() {
