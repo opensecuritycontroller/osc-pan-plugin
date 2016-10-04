@@ -65,8 +65,7 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
 	public ManagerSecurityGroupApi createManagerSecurityGroupApi(ApplianceManagerConnectorElement mc,
 			VirtualSystemElement vs) throws Exception {
 		// TODO Auto-generated method stub
-		//return PANManagerSecurityGroupApi.create(mc,vs);
-		return null;
+		return PANManagerSecurityGroupApi.create(mc,vs);
 	}
 
 	@Override
