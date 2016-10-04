@@ -79,7 +79,8 @@ public class PANManagerSecurityGroupApi implements ManagerSecurityGroupApi  {
 		/*
 		 * Add TAG and IP address
 		 */
-		status = this.showOperations.AddDAG(name, pan_serial, ipList);
+		ArrayList<String> pan_serialList = this.showOperations.ShowDevices();
+		status = this.showOperations.AddDAG(name, pan_serialList.get(0), ipList);
 		if (!status.equals("success")){
 			return null;
 		}

@@ -208,16 +208,15 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 	*/
 	@Override
 	public ApplianceBootstrapInformationElement getBootstrapinfo(BootStrapInfoProviderElement bootStrapInfo) {
-		// String vmKey = "596857543256712";
+		
 		PANApplianceBootstrapInformationElement bootstrapElement = new PANApplianceBootstrapInformationElement();
 		byte [] nullEntry = Base64.encode("");
 		try {
 			bootstrapElement.addBootstrapFile("/config/init-cfg.txt",getInitCfg(PANDeviceApi.vmAuthKey));
-
-		bootstrapElement.addBootstrapFile("/config/bootstrap.xml",getBootstrapXML());
-		bootstrapElement.addBootstrapFile("/license/authcodes",getLicense());
-		bootstrapElement.addBootstrapFile("/content",nullEntry);
-		bootstrapElement.addBootstrapFile("/software",nullEntry);
+			//bootstrapElement.addBootstrapFile("/config/bootstrap.xml",getBootstrapXML());
+			bootstrapElement.addBootstrapFile("/license/authcodes",getLicense());
+			bootstrapElement.addBootstrapFile("/content",nullEntry);
+			bootstrapElement.addBootstrapFile("/software",nullEntry);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -245,7 +244,7 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 		configString.append("panorama-server-2="+System.lineSeparator());
 		configString.append("tplname="+System.lineSeparator());
 		configString.append("dgname="+System.lineSeparator());
-		configString.append("dns-primary="+System.lineSeparator());
+		configString.append("dns-primary=8.8.8.8"+System.lineSeparator());
 		configString.append("dns-secondary="+System.lineSeparator());
 		configString.append("op-command-modes="+System.lineSeparator());
 		configString.append("dhcp-send-hostname=yes"+System.lineSeparator());
@@ -261,7 +260,8 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 	protected byte[] getLicense(){
 		byte[] encoded;
 		String configString;
-		configString = "I4745132";
+		//configString = "I4745132";
+		configString = "I2306077";
 		encoded = (configString.getBytes(StandardCharsets.UTF_8));
 		//return Base64.encode(encoded);
 		return encoded;
