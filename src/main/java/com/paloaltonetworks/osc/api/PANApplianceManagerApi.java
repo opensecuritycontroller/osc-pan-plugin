@@ -15,7 +15,6 @@
 package com.paloaltonetworks.osc.api;
 
 import org.apache.log4j.Logger;
-
 import org.osc.sdk.manager.ManagerAuthenticationType;
 import org.osc.sdk.manager.ManagerNotificationSubscriptionType;
 import org.osc.sdk.manager.api.ApplianceManagerApi;
@@ -48,7 +47,7 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
 	public ManagerDeviceApi createManagerDeviceApi(ApplianceManagerConnectorElement mc, VirtualSystemElement vs)
 			throws Exception {
 		// TODO Auto-generated method stub
-		log.info("Username: " + mc.getUsername());
+		this.log.info("Username: " + mc.getUsername());
 		System.out.println("Username: " + mc.getUsername());
 		// add mc to create
 		return PANDeviceApi.create(mc, vs);
@@ -57,7 +56,7 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
 	@Override
 	public ManagerSecurityGroupInterfaceApi createManagerSecurityGroupInterfaceApi(ApplianceManagerConnectorElement mc,
 			VirtualSystemElement vs) throws Exception {
-		
+
 		//return PANManagerSecurityGroupInterfaceApi.create(mc,vs);
 		return null;
 	}
@@ -73,7 +72,7 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
 	@Override
 	public ManagerPolicyApi createManagerPolicyApi(ApplianceManagerConnectorElement mc) throws Exception {
 		// TODO Auto-generated method stub
-		log.info("Creating Policy API");
+		this.log.info("Creating Policy API");
 		return PANManagerPolicyApi.create(mc);
 		//return null;
 	}
@@ -129,8 +128,7 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
 
 	@Override
 	public boolean isSecurityGroupSyncSupport() {
-		// TODO Change this
-		return false;
+		return true;
 	}
 
 	@Override
@@ -150,7 +148,7 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
 	public boolean isAgentManaged() {
 		return false;
 	}
-	
+
 	@Override
     public boolean isPolicyMappingSupported() {
     	return false;
@@ -180,5 +178,5 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
 		 return ManagerNotificationSubscriptionType.NONE;
 	}
 
-	
+
 }
