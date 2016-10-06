@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -128,8 +129,6 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 		// TODO Auto-generated method stub
 		// OSC calls this method to create a NGFW - pass this to panorama
 		// Return panorqma device id
-		String panDeviceGroup = this.vs.getMgrId();
-
 		return null;
 	}
 
@@ -163,7 +162,7 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 	@Override
 	public List<? extends ManagerDeviceMemberElement> listDeviceMembers() throws Exception {
 		// TODO Auto-generated method stub
-		return null;
+		return Collections.emptyList();
 	}
 
 	@Override
@@ -201,14 +200,14 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 	protected byte[] getInitCfg(){
 		byte[] encoded;
 		String initCfgStr = null;
-		
+
 		encoded = initCfgStr.getBytes(StandardCharsets.UTF_8);
 		return Base64.encode(encoded);
 	}
 	*/
 	@Override
 	public ApplianceBootstrapInformationElement getBootstrapinfo(BootStrapInfoProviderElement bootStrapInfo) {
-		
+
 		PANApplianceBootstrapInformationElement bootstrapElement = new PANApplianceBootstrapInformationElement();
 		byte [] nullEntry = Base64.encode("");
 		try {
@@ -240,7 +239,7 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 		configString.append("ipv6-address="+System.lineSeparator());
 		configString.append("ipv6-default-gateway="+System.lineSeparator());
 		configString.append("hostname=PA-OSC"+System.lineSeparator());
-		configString.append("panorama-server="+mc.getIpAddress()+System.lineSeparator());
+		configString.append("panorama-server="+this.mc.getIpAddress()+System.lineSeparator());
 		configString.append("panorama-server-2="+System.lineSeparator());
 		configString.append("tplname="+System.lineSeparator());
 		configString.append("dgname="+System.lineSeparator());
@@ -256,7 +255,7 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 		//return Base64.encode(encoded);
 		return encoded;
 	}
-	
+
 	protected byte[] getLicense(){
 		byte[] encoded;
 		String configString;
@@ -266,7 +265,7 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 		//return Base64.encode(encoded);
 		return encoded;
 	}
-	
+
 	protected byte[] getBootstrapXML(){
 		byte[] encoded;
 		String configString;
@@ -667,7 +666,7 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 				"  </devices>\n" + 
 				"</config>\n" + 
 				"";
-		
+
 		encoded = (configString.getBytes(StandardCharsets.UTF_8));
 		//return Base64.encode(encoded);
 		return encoded;

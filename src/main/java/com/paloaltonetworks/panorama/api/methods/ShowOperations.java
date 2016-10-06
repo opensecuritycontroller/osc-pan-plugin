@@ -350,7 +350,7 @@ public class ShowOperations {
             queryStrings.put("key", apiKey);
             queryStrings.put("target", panos_id);
             queryStrings.put("cmd",
-            		"<uid-message><version>1.0</version><type>update</type><payload><register>" + entries.toString() + "</register></payload></uid-message>");
+            		"<uid-message><version>1.0</version><type>update</type><payload><register>"+entries.toString() + "</register></payload></uid-message>");
             for (String key : queryStrings.keySet()) {
                 String value = queryStrings.get(key);
                 webResource = webResource.queryParam(key, value);
