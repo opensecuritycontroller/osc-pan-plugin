@@ -213,7 +213,7 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 		byte [] nullEntry = Base64.encode("");
 		try {
 			bootstrapElement.addBootstrapFile("/config/init-cfg.txt",getInitCfg(PANDeviceApi.vmAuthKey));
-			//bootstrapElement.addBootstrapFile("/config/bootstrap.xml",getBootstrapXML());
+			bootstrapElement.addBootstrapFile("/config/bootstrap.xml",getBootstrapXML());
 			bootstrapElement.addBootstrapFile("/license/authcodes",getLicense());
 			bootstrapElement.addBootstrapFile("/content",nullEntry);
 			bootstrapElement.addBootstrapFile("/software",nullEntry);
@@ -345,7 +345,22 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 				"    <entry name=\"localhost.localdomain\">\n" + 
 				"      <network>\n" + 
 				"        <interface>\n" + 
-				"          <ethernet/>\n" + 
+				"          <ethernet>\n" + 
+				"            <entry name=\"ethernet1/1\">\n" + 
+				"              <virtual-wire>\n" + 
+				"                <lldp>\n" + 
+				"                  <enable>no</enable>\n" + 
+				"                </lldp>\n" + 
+				"              </virtual-wire>\n" + 
+				"            </entry>\n" + 
+				"            <entry name=\"ethernet1/2\">\n" + 
+				"              <virtual-wire>\n" + 
+				"                <lldp>\n" + 
+				"                  <enable>no</enable>\n" + 
+				"                </lldp>\n" + 
+				"              </virtual-wire>\n" + 
+				"            </entry>\n" + 
+				"          </ethernet>\n" + 
 				"        </interface>\n" + 
 				"        <profiles>\n" + 
 				"          <monitor-profile>\n" + 
@@ -511,12 +526,16 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 				"            </protocol>\n" + 
 				"          </entry>\n" + 
 				"        </virtual-router>\n" + 
+				"        <virtual-wire>\n" + 
+				"          <entry name=\"OSC\">\n" + 
+				"            <interface1>ethernet1/1</interface1>\n" + 
+				"            <interface2>ethernet1/2</interface2>\n" + 
+				"          </entry>\n" + 
+				"        </virtual-wire>\n" + 
 				"      </network>\n" + 
 				"      <deviceconfig>\n" + 
 				"        <system>\n" + 
-				"          <ip-address>192.168.1.1</ip-address>\n" + 
-				"          <netmask>255.255.255.0</netmask>\n" + 
-				"          <update-server>10.44.2.19</update-server>\n" + 
+				"          <update-server>updates.paloaltonetworks.com</update-server>\n" + 
 				"          <update-schedule>\n" + 
 				"            <threats>\n" + 
 				"              <recurring>\n" + 
@@ -533,15 +552,21 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 				"            <disable-telnet>yes</disable-telnet>\n" + 
 				"            <disable-http>yes</disable-http>\n" + 
 				"          </service>\n" + 
-				"          <hostname>PA-VM</hostname>\n" + 
 				"          <type>\n" + 
 				"            <dhcp-client>\n" + 
 				"              <send-hostname>yes</send-hostname>\n" + 
-				"              <accept-dhcp-domain>yes</accept-dhcp-domain>\n" + 
-				"              <accept-dhcp-hostname>yes</accept-dhcp-hostname>\n" + 
 				"              <send-client-id>yes</send-client-id>\n" + 
+				"              <accept-dhcp-hostname>yes</accept-dhcp-hostname>\n" + 
+				"              <accept-dhcp-domain>yes</accept-dhcp-domain>\n" + 
 				"            </dhcp-client>\n" + 
 				"          </type>\n" + 
+				"          <hostname>PA-OSC</hostname>\n" + 
+				"          <panorama-server>10.71.85.99</panorama-server>\n" + 
+				"          <dns-setting>\n" + 
+				"            <servers>\n" + 
+				"              <primary>8.8.8.8</primary>\n" + 
+				"            </servers>\n" + 
+				"          </dns-setting>\n" + 
 				"        </system>\n" + 
 				"        <setting>\n" + 
 				"          <config>\n" + 
@@ -549,6 +574,20 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 				"          </config>\n" + 
 				"          <management>\n" + 
 				"            <hostname-type-in-syslog>FQDN</hostname-type-in-syslog>\n" + 
+				"            <initcfg>\n" + 
+				"              <type>\n" + 
+				"                <dhcp-client>\n" + 
+				"                  <send-hostname>yes</send-hostname>\n" + 
+				"                  <send-client-id>yes</send-client-id>\n" + 
+				"                  <accept-dhcp-hostname>yes</accept-dhcp-hostname>\n" + 
+				"                  <accept-dhcp-domain>yes</accept-dhcp-domain>\n" + 
+				"                </dhcp-client>\n" + 
+				"              </type>\n" + 
+				"              <hostname>PA-OSC</hostname>\n" + 
+				"              <panorama-server>10.71.85.99</panorama-server>\n" + 
+				"              <dns-primary>8.8.8.8</dns-primary>\n" + 
+				"              <vm-auth-key>384897810647463</vm-auth-key>\n" + 
+				"            </initcfg>\n" + 
 				"          </management>\n" + 
 				"        </setting>\n" + 
 				"      </deviceconfig>\n" + 
@@ -556,11 +595,72 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 				"        <entry name=\"vsys1\">\n" + 
 				"          <application/>\n" + 
 				"          <application-group/>\n" + 
-				"          <zone/>\n" + 
+				"          <zone>\n" + 
+				"            <entry name=\"OSC\">\n" + 
+				"              <network>\n" + 
+				"                <virtual-wire>\n" + 
+				"                  <member>ethernet1/1</member>\n" + 
+				"                  <member>ethernet1/2</member>\n" + 
+				"                </virtual-wire>\n" + 
+				"              </network>\n" + 
+				"            </entry>\n" + 
+				"          </zone>\n" + 
 				"          <service/>\n" + 
 				"          <service-group/>\n" + 
 				"          <schedule/>\n" + 
-				"          <rulebase/>\n" + 
+				"          <rulebase>\n" + 
+				"            <security>\n" + 
+				"              <rules>\n" + 
+				"                <entry name=\"allow-allow\">\n" + 
+				"                  <to>\n" + 
+				"                    <member>any</member>\n" + 
+				"                  </to>\n" + 
+				"                  <from>\n" + 
+				"                    <member>any</member>\n" + 
+				"                  </from>\n" + 
+				"                  <source>\n" + 
+				"                    <member>any</member>\n" + 
+				"                  </source>\n" + 
+				"                  <destination>\n" + 
+				"                    <member>any</member>\n" + 
+				"                  </destination>\n" + 
+				"                  <source-user>\n" + 
+				"                    <member>any</member>\n" + 
+				"                  </source-user>\n" + 
+				"                  <category>\n" + 
+				"                    <member>any</member>\n" + 
+				"                  </category>\n" + 
+				"                  <application>\n" + 
+				"                    <member>any</member>\n" + 
+				"                  </application>\n" + 
+				"                  <service>\n" + 
+				"                    <member>application-default</member>\n" + 
+				"                  </service>\n" + 
+				"                  <hip-profiles>\n" + 
+				"                    <member>any</member>\n" + 
+				"                  </hip-profiles>\n" + 
+				"                  <action>allow</action>\n" + 
+				"                </entry>\n" + 
+				"              </rules>\n" + 
+				"            </security>\n" + 
+				"            <default-security-rules>\n" + 
+				"              <rules>\n" + 
+				"                <entry name=\"interzone-default\">\n" + 
+				"                  <action>allow</action>\n" + 
+				"                  <log-start>no</log-start>\n" + 
+				"                  <log-end>no</log-end>\n" + 
+				"                </entry>\n" + 
+				"              </rules>\n" + 
+				"            </default-security-rules>\n" + 
+				"          </rulebase>\n" + 
+				"          <import>\n" + 
+				"            <network>\n" + 
+				"              <interface>\n" + 
+				"                <member>ethernet1/1</member>\n" + 
+				"                <member>ethernet1/2</member>\n" + 
+				"              </interface>\n" + 
+				"            </network>\n" + 
+				"          </import>\n" + 
 				"        </entry>\n" + 
 				"      </vsys>\n" + 
 				"    </entry>\n" + 
