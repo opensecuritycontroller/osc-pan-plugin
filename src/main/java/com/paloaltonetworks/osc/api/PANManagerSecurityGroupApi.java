@@ -62,7 +62,7 @@ public class PANManagerSecurityGroupApi implements ManagerSecurityGroupApi  {
 		boolean tagExists;
 		String status;
 		String pan_serial = null;
-
+		
 		tagExists = this.showOperations.TagExists(name);
 		if (!tagExists){
 			status = this.showOperations.AddDAGTag(name);
@@ -70,7 +70,7 @@ public class PANManagerSecurityGroupApi implements ManagerSecurityGroupApi  {
 				return null;
 			}
 		}
-
+		 
 		List<String> ipList = new ArrayList<>();
 
 		for(SecurityGroupMemberElement member : memberList.getMembers()) {

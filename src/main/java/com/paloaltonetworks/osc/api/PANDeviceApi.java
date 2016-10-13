@@ -129,7 +129,7 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 		// TODO Auto-generated method stub
 		// OSC calls this method to create a NGFW - pass this to panorama
 		// Return panorqma device id
-		return null;
+		return name;
 	}
 
 	@Override
@@ -242,7 +242,7 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 		configString.append("panorama-server="+this.mc.getIpAddress()+System.lineSeparator());
 		configString.append("panorama-server-2="+System.lineSeparator());
 		configString.append("tplname="+System.lineSeparator());
-		configString.append("dgname="+System.lineSeparator());
+		configString.append("dgname="+vs.getName()+System.lineSeparator());
 		configString.append("dns-primary=8.8.8.8"+System.lineSeparator());
 		configString.append("dns-secondary="+System.lineSeparator());
 		configString.append("op-command-modes="+System.lineSeparator());
