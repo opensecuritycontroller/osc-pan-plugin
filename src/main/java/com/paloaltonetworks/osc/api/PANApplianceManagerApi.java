@@ -21,6 +21,7 @@ import org.osc.sdk.manager.api.ApplianceManagerApi;
 import org.osc.sdk.manager.api.IscJobNotificationApi;
 import org.osc.sdk.manager.api.ManagerCallbackNotificationApi;
 import org.osc.sdk.manager.api.ManagerDeviceApi;
+import org.osc.sdk.manager.api.ManagerDeviceMemberApi;
 import org.osc.sdk.manager.api.ManagerDomainApi;
 import org.osc.sdk.manager.api.ManagerPolicyApi;
 import org.osc.sdk.manager.api.ManagerSecurityGroupApi;
@@ -81,6 +82,12 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
 		 return PANManagerDomainApi.create(mc);
 		 //return null;
 	}
+
+    @Override
+    public ManagerDeviceMemberApi createManagerDeviceMemberApi(ApplianceManagerConnectorElement mc,
+            VirtualSystemElement vs) throws Exception {
+        return PANManagerDeviceMemberApi.create(mc, vs);
+    }
 
 	@Override
 	public byte[] getPublicKey(ApplianceManagerConnectorElement mc) throws Exception {
@@ -176,6 +183,5 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
 	public ManagerNotificationSubscriptionType getNotificationType() {
 		 return ManagerNotificationSubscriptionType.NONE;
 	}
-
 
 }
