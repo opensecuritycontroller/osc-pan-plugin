@@ -34,7 +34,7 @@ import org.osgi.service.component.annotations.Component;
 import com.paloaltonetworks.panorama.api.methods.ShowOperations;
 
 
-@Component(configurationPid="com.mcafee.nsm.ApplianceManager",
+@Component(configurationPid="com.paloaltonetworks.panorama.ApplianceManager",
 property="osc.plugin.name=PANMgrPlugin")
 public class PANApplianceManagerApi implements ApplianceManagerApi {
 
