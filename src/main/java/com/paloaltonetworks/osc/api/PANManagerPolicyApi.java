@@ -39,23 +39,23 @@ public class PANManagerPolicyApi implements ManagerPolicyApi  {
 	 ApplianceManagerConnectorElement mc;
 	 ShowOperations showOperations = null;
 
-	    private static ArrayList<PolicyListElement> policyList = new ArrayList<PolicyListElement>();
+	    private static ArrayList<PolicyListElement> policyList = new ArrayList<>();
 	    static {
 	        policyList.add(new PolicyListElement("Platinum", "Platinum"));
 	        policyList.add(new PolicyListElement("Gold", "Gold"));
 	        policyList.add(new PolicyListElement("Silver", "Silver"));
 	        policyList.add(new PolicyListElement("Bronze", "Bronze"));
 	    }
-    private PANManagerPolicyApi(ApplianceManagerConnectorElement mc) {
+    private PANManagerPolicyApi(ApplianceManagerConnectorElement mc, ShowOperations showOperations) {
 
 		this.mc = mc;
 		log.info("new show operaitons in Policy");
-		this.showOperations = new ShowOperations(mc.getIpAddress(), mc.getUsername(), mc.getPassword());
+		this.showOperations = showOperations;
 
 	}
-	public static PANManagerPolicyApi create(ApplianceManagerConnectorElement mc) throws Exception {
+	public static PANManagerPolicyApi create(ApplianceManagerConnectorElement mc, ShowOperations showOperations) throws Exception {
 		log.info("Creating new PANManagerPolicy api");
-        return new PANManagerPolicyApi(mc);
+        return new PANManagerPolicyApi(mc, showOperations);
     }
 
 	@Override

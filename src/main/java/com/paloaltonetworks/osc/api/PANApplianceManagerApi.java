@@ -14,6 +14,16 @@
  */
 package com.paloaltonetworks.osc.api;
 
+import java.security.SecureRandom;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+
 import org.apache.log4j.Logger;
 import org.osc.sdk.manager.ManagerAuthenticationType;
 import org.osc.sdk.manager.ManagerNotificationSubscriptionType;
@@ -29,8 +39,13 @@ import org.osc.sdk.manager.api.ManagerSecurityGroupInterfaceApi;
 import org.osc.sdk.manager.api.ManagerWebSocketNotificationApi;
 import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
 import org.osc.sdk.manager.element.VirtualSystemElement;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
+import com.paloaltonetworks.panorama.api.methods.JAXBProvider;
 import com.paloaltonetworks.panorama.api.methods.ShowOperations;
 
 
@@ -38,24 +53,98 @@ import com.paloaltonetworks.panorama.api.methods.ShowOperations;
 property="osc.plugin.name=PANMgrPlugin")
 public class PANApplianceManagerApi implements ApplianceManagerApi {
 
-	Logger log = Logger.getLogger(PANApplianceManagerApi.class);
+    private static final Logger LOG = Logger.getLogger(PANApplianceManagerApi.class);
+    private Client client;
+    private Config config;
 
-	public PANApplianceManagerApi() {
+    @ObjectClassDefinition
+    @interface Config {
+        @AttributeDefinition(required = false)
+        boolean use_https() default true;
 
-	}
+        @AttributeDefinition(min = "0", max = "65535", required = false, description = "The port to use when connecting to PAN instances. The value '0' indicates that a default port of '443' (or '80' if HTTPS is not enabled) should be used.")
+        int port() default 0;
 
-	public static PANApplianceManagerApi create() {
-		return new PANApplianceManagerApi();
-	}
+        @AttributeDefinition(min = "0", required = false)
+        int max_threads() default 0;
+
+        @AttributeDefinition(required = false, description = "The property name to use when setting the maximum thread count")
+        String max_threads_property_name() default "com.sun.jersey.client.property.threadpoolSize";
+    }
+
+    @Activate
+    void start(Config config) {
+        this.config = config;
+
+        this.client = ClientBuilder.
+                newBuilder().
+                property(config.max_threads_property_name(), config.max_threads()).
+                register(new JAXBProvider()).
+                sslContext(getSSLContext()).
+                hostnameVerifier(new HostnameVerifier() {
+                    @Override
+                    public boolean verify(String hostname, SSLSession session) {
+                        return true;
+                    }
+                }).build();
+    }
+
+
+    public static SSLContext getSSLContext() {
+        // TODO: Future. We trust all managers right now. Later we need to import certificates and verify every connection with
+        // given Trust store
+        TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+
+            @Override
+            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                return null;
+            }
+
+            @Override
+            public void checkServerTrusted(java.security.cert.X509Certificate[] arg0, String arg1)
+                    throws java.security.cert.CertificateException {
+
+            }
+
+            @Override
+            public void checkClientTrusted(java.security.cert.X509Certificate[] arg0, String arg1)
+                    throws java.security.cert.CertificateException {
+
+            }
+        } };
+        SSLContext ctx = null;
+        try {
+            ctx = SSLContext.getInstance("TLS");
+            ctx.init(null, trustAllCerts, new SecureRandom());
+
+        } catch (java.security.GeneralSecurityException ex) {
+
+            LOG.error("Encountering security exception", ex);
+        }
+
+        return ctx;
+    }
+
+    @Deactivate
+    void stop() {
+        this.client.close();
+    }
+
+    private ShowOperations getShowOperations(ApplianceManagerConnectorElement mc){
+
+        return new ShowOperations(mc.getIpAddress(), this.config.port(), this.config.use_https(), mc.getUsername(), mc.getPassword(), this.client);
+    }
 
 	@Override
 	public ManagerDeviceApi createManagerDeviceApi(ApplianceManagerConnectorElement mc, VirtualSystemElement vs)
 			throws Exception {
-		// TODO Auto-generated method stub
-		this.log.info("Username: " + mc.getUsername());
+
+	    ShowOperations showOperations = getShowOperations(mc);
+
+	    LOG.info("Username: " + mc.getUsername());
 		System.out.println("Username: " + mc.getUsername());
 		// add mc to create
-		return PANDeviceApi.create(mc, vs);
+		return PANDeviceApi.create(mc, vs, showOperations);
 	}
 
 	@Override
@@ -69,15 +158,17 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
 	@Override
 	public ManagerSecurityGroupApi createManagerSecurityGroupApi(ApplianceManagerConnectorElement mc,
 			VirtualSystemElement vs) throws Exception {
-		// TODO Auto-generated method stub
-		return PANManagerSecurityGroupApi.create(mc,vs);
+
+	    ShowOperations showOperations = getShowOperations(mc);
+		return PANManagerSecurityGroupApi.create(mc,vs, showOperations);
 	}
 
 	@Override
 	public ManagerPolicyApi createManagerPolicyApi(ApplianceManagerConnectorElement mc) throws Exception {
-		// TODO Auto-generated method stub
-		this.log.info("Creating Policy API");
-		return PANManagerPolicyApi.create(mc);
+
+		LOG.info("Creating Policy API");
+		ShowOperations showOperations = getShowOperations(mc);
+		return PANManagerPolicyApi.create(mc, showOperations);
 		//return null;
 	}
 
@@ -95,19 +186,19 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
 
 	@Override
 	public byte[] getPublicKey(ApplianceManagerConnectorElement mc) throws Exception {
-		// TODO Auto-generated method stub
+
 		return null;
 	}
 
 	@Override
 	public String getName() {
-		// TODO Auto-generated method stub
+
 		return "PANMgrPlugin";
 	}
 
 	@Override
 	public String getVendorName() {
-		// TODO Auto-generated method stub
+
 		return "Palo Alto Networks";
 	}
 
@@ -143,11 +234,11 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
 
 	@Override
 	public void checkConnection(ApplianceManagerConnectorElement mc) throws Exception {
-		// TODO Auto-generated method stub
+
 		// TODO ADD
 		boolean connectionCheck = false;
 
-		ShowOperations showOperations = new ShowOperations(mc.getIpAddress(), mc.getUsername(), mc.getPassword());
+        ShowOperations showOperations = getShowOperations(mc);
 		connectionCheck = showOperations.checkConnection();
 		if (connectionCheck == false) {
 			throw new Exception("Connection Check failed ");
@@ -179,7 +270,7 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
 	@Override
 	public IscJobNotificationApi createIscJobNotificationApi(ApplianceManagerConnectorElement mc,
 			VirtualSystemElement vs) throws Exception {
-		// TODO Auto-generated method stub
+
 		return null;
 	}
 

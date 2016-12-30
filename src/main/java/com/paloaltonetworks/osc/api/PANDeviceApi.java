@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 import org.osc.sdk.manager.api.ManagerDeviceApi;
 import org.osc.sdk.manager.element.ApplianceBootstrapInformationElement;
@@ -37,30 +38,29 @@ import org.osc.sdk.manager.element.VirtualSystemElement;
 
 import com.paloaltonetworks.osc.model.Device;
 import com.paloaltonetworks.panorama.api.methods.ShowOperations;
-import com.sun.jersey.core.util.Base64;
 
 /**
  * This documents "Device Management Apis"
  */
 public class PANDeviceApi implements ManagerDeviceApi  {
 
-	static Logger log = Logger.getLogger(PANDeviceApi.class);
+	private static final Logger LOG = Logger.getLogger(PANDeviceApi.class);
 	static String apiKey = null;
 	static String vmAuthKey = null;
-	VirtualSystemElement vs;
-	ApplianceManagerConnectorElement mc;
-	public ShowOperations showOperations = null;
+	private VirtualSystemElement vs;
+	private ApplianceManagerConnectorElement mc;
+	private ShowOperations showOperations = null;
 
-	public static ManagerDeviceApi create(ApplianceManagerConnectorElement mc,VirtualSystemElement vs) throws Exception {
+	public static ManagerDeviceApi create(ApplianceManagerConnectorElement mc,VirtualSystemElement vs, ShowOperations showOperations) throws Exception {
 
-		return new PANDeviceApi(mc, vs);
+		return new PANDeviceApi(mc, vs, showOperations);
 
 	}
 
-	private PANDeviceApi(ApplianceManagerConnectorElement mc,VirtualSystemElement vs) {
+	private PANDeviceApi(ApplianceManagerConnectorElement mc,VirtualSystemElement vs,  ShowOperations showOperations) {
 		this.vs = vs;
 		this.mc = mc;
-		this.showOperations = new ShowOperations(mc.getIpAddress(), mc.getUsername(), mc.getPassword());
+		this.showOperations = showOperations;
 		vmAuthKey = this.showOperations.getVMAuthKey("8760");
 	}
 
@@ -92,7 +92,7 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 	@Override
 	public List<? extends ManagerDeviceElement> listDevices() throws Exception {
 		// TODO Auto-generated method stub
-		List<Device> deviceGroups = new ArrayList<Device>();
+		List<Device> deviceGroups = new ArrayList<>();
 		ArrayList<String> panDeviceGroups = this.showOperations.ShowDeviceGroups();
 		for(String deviceGroupName: panDeviceGroups){
 			System.out.println("Device Group Name: "+deviceGroupName);
@@ -194,7 +194,7 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 			  throws IOException
 			{
 			  byte[] encoded = Files.readAllBytes(Paths.get(path));
-			  return Base64.encode(new String(encoded, encoding));
+			  return Base64.encodeBase64(new String(encoded, encoding).getBytes());
 			}
 /*
 	protected byte[] getInitCfg(){
@@ -209,7 +209,7 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 	public ApplianceBootstrapInformationElement getBootstrapinfo(BootStrapInfoProviderElement bootStrapInfo) {
 
 		PANApplianceBootstrapInformationElement bootstrapElement = new PANApplianceBootstrapInformationElement();
-		byte [] nullEntry = Base64.encode("");
+		byte [] nullEntry = Base64.encodeBase64(("").getBytes());
 		try {
 			bootstrapElement.addBootstrapFile("/config/init-cfg.txt",getInitCfg(bootStrapInfo));
 			bootstrapElement.addBootstrapFile("/config/bootstrap.xml",getBootstrapXML(bootStrapInfo));
@@ -242,7 +242,7 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 		configString.append("panorama-server="+ this.mc.getIpAddress() + System.lineSeparator());
 		configString.append("panorama-server-2="+System.lineSeparator());
 		configString.append("tplname="+System.lineSeparator());
-		configString.append("dgname="+vs.getName()+System.lineSeparator());
+		configString.append("dgname="+this.vs.getName()+System.lineSeparator());
 		configString.append("dns-primary=8.8.8.8"+System.lineSeparator());
 		configString.append("dns-secondary="+System.lineSeparator());
 		configString.append("op-command-modes="+System.lineSeparator());

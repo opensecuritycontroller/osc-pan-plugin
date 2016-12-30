@@ -20,9 +20,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLSession;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+
 import org.junit.Test;
 
 import com.paloaltonetworks.panorama.api.methods.ShowOperations;
+import com.paloaltonetworks.panorama.test.DeviceTest;
 
 /**
  * Unit test for simple App.
@@ -31,7 +37,7 @@ public class AppTest
 
 {
 
-    private static final String PANORAMA_IP = "10.4.33.202";
+    private static final String PANORAMA_IP = "10.71.85.99";
     private static final String PANOS_SERIAL = "007299000003740";
 
     /**
@@ -45,7 +51,16 @@ public class AppTest
 
         // TODO Auto-generated method stub
         String status = "failure";
-        ShowOperations operations = new ShowOperations(PANORAMA_IP, "admin", "admin");
+
+        Client client = ClientBuilder.newBuilder().sslContext(DeviceTest.getSSLContext()).hostnameVerifier(new HostnameVerifier() {
+            @Override
+            public boolean verify(String hostname, SSLSession session) {
+                return true;
+            }
+        }).build();
+
+        boolean isHttps = true;
+        ShowOperations operations = new ShowOperations(PANORAMA_IP, 443, isHttps, "admin", "admin", client);
 
         // Get auth key
         String vmAuthKey = operations.getVMAuthKey("8760");

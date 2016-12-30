@@ -12,18 +12,36 @@
  *    License for the specific language governing permissions and limitations
  *    under the License.
  */
-package com.paloaltonetworks.panorama.api.methods;
+package com.paloaltonetworks.ism;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLSession;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+
+import com.paloaltonetworks.panorama.api.methods.ShowOperations;
+import com.paloaltonetworks.panorama.test.DeviceTest;
 
 
 public class TestApp {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		String status = "failure";
-		ShowOperations operations = new ShowOperations("10.4.33.201", "admin", "admin");
+        String status = "failure";
+
+        Client client = ClientBuilder.newBuilder().sslContext(DeviceTest.getSSLContext())
+                .hostnameVerifier(new HostnameVerifier() {
+                    @Override
+                    public boolean verify(String hostname, SSLSession session) {
+                        return true;
+                    }
+                }).build();
+
+        boolean isHttps = true;
+        ShowOperations operations = new ShowOperations("10.4.33.201", 443, isHttps, "admin", "admin", client);
 
 	    ArrayList<String> devices = operations.ShowDevices();
 	    Iterator<String> deviceIterator = devices.iterator();

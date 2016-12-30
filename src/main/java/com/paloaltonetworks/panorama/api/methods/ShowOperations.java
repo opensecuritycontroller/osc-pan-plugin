@@ -14,22 +14,20 @@
  */
 package com.paloaltonetworks.panorama.api.methods;
 
-import java.net.URI;
-import java.security.SecureRandom;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.Invocation.Builder;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriBuilder;
 
 import org.apache.log4j.Logger;
 
@@ -45,59 +43,91 @@ import com.paloaltonetworks.panorama.api.mapping.ShowDeviceResponse;
 import com.paloaltonetworks.panorama.api.mapping.ShowResponse;
 import com.paloaltonetworks.panorama.api.mapping.TagEntry;
 import com.paloaltonetworks.panorama.api.mapping.VMAuthKeyResponse;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.api.client.config.ClientConfig;
-import com.sun.jersey.api.client.config.DefaultClientConfig;
-import com.sun.jersey.client.urlconnection.HTTPSProperties;
+
+// TODO : Exception Handling
+// TODO : Logging Activity
+// TODO : Code clean up
 
 public class ShowOperations {
-    static Logger log = Logger.getLogger(ShowOperations.class);
-    private URI baseUri;
+    private static final Logger LOG = Logger.getLogger(ShowOperations.class);
+    private static final String PAN_REST_URL_BASE = "/api/";
+
+    private static final String HTTP = "http";
+    private static final String HTTPS = "https";
+    private static final int HTTP_DEFAULT_PORT = 80;
+    private static final int HTTPS_DEFAULT_PORT = 443;
+
+    private final String host;
+    private final int port;
+    private final Client client;
+    private final String scheme;
+
     private String apiKey;
 
-    public ShowOperations(String ipAddress, String username, String password) {
+    public ShowOperations(String panServer, int port, boolean isHttps, String loginName, String password, Client client) {
 
-        this.baseUri = URI.create(String.format("https://%s/api", ipAddress));
-        boolean sslCertDisabled = true;
-        Client client = null;
+        this.host = panServer;
+        this.port = port <= 0 ? isHttps ? HTTPS_DEFAULT_PORT : HTTP_DEFAULT_PORT : port;
+        this.scheme = isHttps ? HTTPS : HTTP;
+
+        this.client = client;
 
         try {
-            ClientConfig config = new DefaultClientConfig();
-            sslConfiguration(sslCertDisabled, config);
-
-            client = Client.create(config);
-            WebResource webResource = client.resource(this.baseUri);
-
-            Map<String, String> queryStrings = new HashMap<>();
-            queryStrings.put("user", username);
-            queryStrings.put("password", password);
-            queryStrings.put("type", "keygen");
-
-            for (String key : queryStrings.keySet()) {
-                String value = queryStrings.get(key);
-                webResource = webResource.queryParam(key, value);
-            }
-            ClientResponse response = webResource.accept("application/xml").get(ClientResponse.class);
-
-            //System.out.println(response.getStatus());
-            ShowResponse showResponse = response.getEntity(ShowResponse.class);
-
-            String status = showResponse.getStatus();
-            String key = showResponse.getShowResult().getKey();
-            System.out.println(status);
-            System.out.println(key);
-            this.apiKey = key;
-            log.info("API Key is: "+ this.apiKey);
-
+            this.apiKey = login(loginName, password);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        if (client != null) {
-            client.destroy();
-        }
+
     }
+
+    private UriBuilder getURIBuilder() {
+
+        return UriBuilder.fromPath(PAN_REST_URL_BASE).scheme(this.scheme).host(this.host).port(this.port);
+    }
+
+    private Builder request(Map<String, String> inputParameters) {
+        UriBuilder builder = getURIBuilder();
+
+        for (String key : inputParameters.keySet()) {
+            builder.queryParam(key, inputParameters.get(key));
+        }
+
+        return this.client.target(builder).request().accept(MediaType.APPLICATION_XML_TYPE);
+    }
+
+    private <T> T getRequest(Map<String, String> inputParameters, Class<T> responseType)
+            throws InterruptedException, ExecutionException, TimeoutException {
+
+        return request(inputParameters).buildGet().submit(responseType).get(60, SECONDS);
+
+    }
+
+    private String login(String loginName, String password) throws Exception {
+
+        //        UriBuilder uriBuilder = getURIBuilder();
+        Map<String, String> queryStrings = new HashMap<>();
+        queryStrings.put("user", loginName);
+        queryStrings.put("password", password);
+        queryStrings.put("type", "keygen");
+
+        //        for (String key : queryStrings.keySet()) {
+        //            String value = queryStrings.get(key);
+        //            uriBuilder.queryParam(key, value);
+        //        }
+
+        ShowResponse showResponse = this.getRequest(queryStrings, ShowResponse.class);
+        //        ShowResponse showResponse = this.client.target(uriBuilder).request().accept(MediaType.APPLICATION_XML)
+        //                .buildGet().submit(ShowResponse.class).get(60, TimeUnit.SECONDS);
+
+        String status = showResponse.getStatus();
+
+        System.out.println("Status:" + status + " & Key = " + showResponse.getShowResult().getKey());
+        LOG.info("API Key is: " + this.apiKey);
+        return showResponse.getShowResult().getKey();
+
+    }
+
+
 
     private String getApiKey() {
         return this.apiKey;
@@ -116,260 +146,201 @@ public class ShowOperations {
 
         String vmAuthKey = null;
         Map<String, String> queryStrings = new HashMap<>();
-        boolean sslCertDisabled = true;
-        Client client = null;
-        String status = null;
+        queryStrings.put("type", "op");
+        queryStrings.put("key", this.apiKey);
+        queryStrings.put("cmd", "<request><bootstrap><vm-auth-key><generate><lifetime>" + days
+                + "</lifetime></generate></vm-auth-key></bootstrap></request>");
+
+        VMAuthKeyResponse vmAuthKeyResponse = null;
         try {
-            ClientConfig config = new DefaultClientConfig();
-            sslConfiguration(sslCertDisabled, config);
 
-            client = Client.create(config);
-            WebResource webResource = client.resource(this.baseUri);
+            vmAuthKeyResponse = this.getRequest(queryStrings, VMAuthKeyResponse.class);
+        } catch (InterruptedException e) {
 
-            String apiKey = getApiKey();
-            queryStrings.put("type", "op");
-            queryStrings.put("key", apiKey);
-            queryStrings.put("cmd", "<request><bootstrap><vm-auth-key><generate><lifetime>" + days
-                    + "</lifetime></generate></vm-auth-key></bootstrap></request>");
+            e.printStackTrace();
+        } catch (ExecutionException e) {
 
-            for (String key : queryStrings.keySet()) {
-                String value = queryStrings.get(key);
-                webResource = webResource.queryParam(key, value);
-            }
-            ClientResponse response = webResource.accept("application/xml").get(ClientResponse.class);
+            e.printStackTrace();
+        } catch (TimeoutException e) {
 
-            //System.out.println(response.getStatus());
-            VMAuthKeyResponse vmAuthKeyResponse = response.getEntity(VMAuthKeyResponse.class);
-
-            status = vmAuthKeyResponse.getStatus();
-            System.out.println(status);
-            if (status.equals("success")) {
-                String vmAuthKeyString = vmAuthKeyResponse.getShowResult();
-                /*
-                 * Parse out auth key
-                 */
-                String[] temp;
-                temp = vmAuthKeyString.split(" ");
-                vmAuthKey = temp[3];
-            } else {
-                System.out.println("Error generation vm auth key");
-            }
-
-        } catch (Exception e) {
             e.printStackTrace();
         }
-        if (client != null) {
-            client.destroy();
+
+        String status = vmAuthKeyResponse.getStatus();
+        System.out.println(status);
+        if (status.equals("success")) {
+            String vmAuthKeyString = vmAuthKeyResponse.getShowResult();
+            /*
+             * Parse out auth key
+             */
+            String[] temp;
+            temp = vmAuthKeyString.split(" ");
+            vmAuthKey = temp[3];
+        } else {
+            System.out.println("Error generation vm auth key");
         }
+
         return vmAuthKey;
     }
 
     public ArrayList<String> ShowDevices() {
 
-        ArrayList<String> panDevices = new ArrayList<>();
         Map<String, String> queryStrings = new HashMap<>();
-        boolean sslCertDisabled = true;
-        Client client = null;
+        queryStrings.put("type", "op");
+        queryStrings.put("key", this.apiKey);
+        queryStrings.put("cmd", "<show><devices><all></all></devices></show>");
 
+        ShowDeviceResponse showDeviceResponse = null;
         try {
-            ClientConfig config = new DefaultClientConfig();
-            sslConfiguration(sslCertDisabled, config);
+            showDeviceResponse = this.getRequest(queryStrings, ShowDeviceResponse.class);
+        } catch (InterruptedException e) {
 
-            client = Client.create(config);
-            WebResource webResource = client.resource(this.baseUri);
+            e.printStackTrace();
+        } catch (ExecutionException e) {
 
-            String apiKey = getApiKey();
-            queryStrings.put("type", "op");
-            queryStrings.put("key", apiKey);
-            queryStrings.put("cmd", "<show><devices><all></all></devices></show>");
+            e.printStackTrace();
+        } catch (TimeoutException e) {
 
-            for (String key : queryStrings.keySet()) {
-                String value = queryStrings.get(key);
-                webResource = webResource.queryParam(key, value);
-            }
-            ClientResponse response = webResource.accept("application/xml").get(ClientResponse.class);
-
-            //System.out.println(response.getStatus());
-            ShowDeviceResponse showDeviceResponse = response.getEntity(ShowDeviceResponse.class);
-
-            //String status = showDeviceResponse.getStatus();
-            //System.out.println(status);
-
-            ArrayList<DeviceEntry> deviceEntry = showDeviceResponse.getShowDeviceResult().getShowDeviceEntry();
-            System.out.println(deviceEntry.toString());
-            String deviceSerial;
-            Iterator<DeviceEntry> deviceIterator = deviceEntry.iterator();
-            while (deviceIterator.hasNext()) {
-                deviceSerial = deviceIterator.next().getName();
-                panDevices.add(deviceSerial);
-            }
-
-        } catch (Exception e) {
             e.printStackTrace();
         }
-        if (client != null) {
-            client.destroy();
+
+        ArrayList<String> panDevices = new ArrayList<>();
+        ArrayList<DeviceEntry> deviceEntry = showDeviceResponse.getShowDeviceResult().getShowDeviceEntry();
+        System.out.println(deviceEntry.toString());
+        String deviceSerial;
+        Iterator<DeviceEntry> deviceIterator = deviceEntry.iterator();
+        while (deviceIterator.hasNext()) {
+            deviceSerial = deviceIterator.next().getName();
+            panDevices.add(deviceSerial);
         }
+
         return panDevices;
     }
 
     public ArrayList<String> ShowDeviceGroups() {
 
-        ArrayList<String> panDevices = new ArrayList<>();
         Map<String, String> queryStrings = new HashMap<>();
-        boolean sslCertDisabled = true;
-        Client client = null;
+        queryStrings.put("type", "op");
+        queryStrings.put("key", this.apiKey);
+        queryStrings.put("cmd", "<show><devicegroups></devicegroups></show>");
 
+        DeviceGroupResponse deviceGroupResponse = null;
         try {
-            ClientConfig config = new DefaultClientConfig();
-            sslConfiguration(sslCertDisabled, config);
+            deviceGroupResponse = this.getRequest(queryStrings, DeviceGroupResponse.class);
+            //            deviceGroupResponse = this.client.target(uriBuilder).request().accept(MediaType.APPLICATION_XML)
+            //                    .buildGet().submit(DeviceGroupResponse.class).get(60, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
 
-            client = Client.create(config);
-            WebResource webResource = client.resource(this.baseUri);
+            e.printStackTrace();
+        } catch (ExecutionException e) {
 
-            String apiKey = getApiKey();
-            queryStrings.put("type", "op");
-            queryStrings.put("key", apiKey);
-            queryStrings.put("cmd", "<show><devicegroups></devicegroups></show>");
+            e.printStackTrace();
+        } catch (TimeoutException e) {
 
-            for (String key : queryStrings.keySet()) {
-                String value = queryStrings.get(key);
-                webResource = webResource.queryParam(key, value);
-            }
-            ClientResponse response = webResource.accept("application/xml").get(ClientResponse.class);
-
-            System.out.println("Show Device Groups status : " + response.getStatus());
-            //String strResponse = response.getEntity(String.class);
-            //System.out.println("Response string: "+ strResponse);
-            //System.out.println(response.getEntity(String.class));
-            DeviceGroupResponse deviceGroupResponse = response.getEntity(DeviceGroupResponse.class);
-
-            String status = deviceGroupResponse.getStatus();
-            System.out.println("ShowDeviceGroups: " + status);
-
-            DeviceGroups deviceGroup = deviceGroupResponse.getDeviceGroups();
-            //System.out.println("Device Group: "+deviceGroup.toString());
-            //System.out.println(deviceGroup.getEntry().
-            //String deviceSerial;
-            String deviceGroupName;
-            //deviceGroupResponse.getDeviceGroups().
-
-            ArrayList<DeviceGroupsEntry> deviceEntry = deviceGroup.getEntry();
-            Iterator<DeviceGroupsEntry> deviceIterator = deviceEntry.iterator();
-            while (deviceIterator.hasNext()) {
-                deviceGroupName = deviceIterator.next().getName();
-                System.out.println("Device Group Name: " + deviceGroupName);
-                panDevices.add(deviceGroupName);
-            }
-
-        } catch (Exception e) {
             e.printStackTrace();
         }
-        if (client != null) {
-            client.destroy();
+
+        String status = deviceGroupResponse.getStatus();
+        System.out.println("ShowDeviceGroups: " + status);
+
+        DeviceGroups deviceGroup = deviceGroupResponse.getDeviceGroups();
+        //System.out.println("Device Group: "+deviceGroup.toString());
+        //System.out.println(deviceGroup.getEntry().
+        //String deviceSerial;
+        String deviceGroupName;
+        //deviceGroupResponse.getDeviceGroups().
+
+        ArrayList<String> panDevices = new ArrayList<>();
+        ArrayList<DeviceGroupsEntry> deviceEntry = deviceGroup.getEntry();
+        Iterator<DeviceGroupsEntry> deviceIterator = deviceEntry.iterator();
+        while (deviceIterator.hasNext()) {
+            deviceGroupName = deviceIterator.next().getName();
+            System.out.println("Device Group Name: " + deviceGroupName);
+            panDevices.add(deviceGroupName);
         }
         return panDevices;
     }
 
     public String AddDeviceGroup(String name, String description) {
 
-        String status = "failure";
-        String configStatus = "failure";
         Map<String, String> queryStrings = new HashMap<>();
-        boolean sslCertDisabled = true;
+        queryStrings.put("action", "set");
+        queryStrings.put("type", "config");
+        queryStrings.put("key", this.apiKey);
+        queryStrings.put("xpath", "/config/devices/entry[@name='localhost.localdomain']/device-group");
+        queryStrings.put("element",
+                "<entry name=\'" + name + "\'><description>" + description + "</description><devices/></entry>");
 
+        SetConfigResponse setConfigResponse = null;
         try {
+            setConfigResponse = this.getRequest(queryStrings, SetConfigResponse.class);
+        } catch (InterruptedException e) {
 
-            ClientConfig config = new DefaultClientConfig();
-            sslConfiguration(sslCertDisabled, config);
+            e.printStackTrace();
+        } catch (ExecutionException e) {
 
-            Client client = Client.create(config);
-            WebResource webResource = client.resource(this.baseUri);
+            e.printStackTrace();
+        } catch (TimeoutException e) {
 
-            String apiKey = getApiKey();
-            queryStrings.put("action", "set");
-            queryStrings.put("type", "config");
-            queryStrings.put("key", apiKey);
-            queryStrings.put("xpath", "/config/devices/entry[@name='localhost.localdomain']/device-group");
-            queryStrings.put("element",
-                    "<entry name=\'" + name + "\'><description>" + description + "</description><devices/></entry>");
-
-            for (String key : queryStrings.keySet()) {
-                String value = queryStrings.get(key);
-                webResource = webResource.queryParam(key, value);
-            }
-            ClientResponse response = webResource.accept("application/xml").get(ClientResponse.class);
-
-            System.out.println(response.getStatus());
-            SetConfigResponse setConfigResponse = response.getEntity(SetConfigResponse.class);
-
-            status = setConfigResponse.getStatus();
-            System.out.println("AddDeviceGroup Status: " + status);
-            if (status.equals("success")) {
-                configStatus = ConfigCommit();
-                if (configStatus.equals("error")) {
-                    System.out.println("Commit failed");
-                }
-            } else {
-                System.out.println("AddDeviceGroup Failed with status: " + status);
-                System.out.println("AddDeviceGroup Failed with code: " + setConfigResponse.getCode());
-                System.out.println(
-                        "AddDeviceGroup Failed with message: " + setConfigResponse.getConfigMessage().getMsg());
-            }
-
-        } catch (Exception e) {
             e.printStackTrace();
         }
+
+        String status = "failure";
+        String configStatus = "failure";
+
+        status = setConfigResponse.getStatus();
+        System.out.println("AddDeviceGroup Status: " + status);
+        if (status.equals("success")) {
+            configStatus = ConfigCommit();
+            if (configStatus.equals("error")) {
+                System.out.println("Commit failed");
+            }
+        } else {
+            System.out.println("AddDeviceGroup Failed with status: " + status);
+            System.out.println("AddDeviceGroup Failed with code: " + setConfigResponse.getCode());
+            System.out.println("AddDeviceGroup Failed with message: " + setConfigResponse.getConfigMessage().getMsg());
+        }
+
         return status;
     }
 
     public String AddDAG(String name, String panos_id, List<String> IPAddresses) {
 
         String status = "failure";
-        Map<String, String> queryStrings = new HashMap<>();
-        boolean sslCertDisabled = true;
 
         StringBuilder entries = new StringBuilder();
-        for(String IPAddress: IPAddresses) {
-            entries.append(
-                    String.format("<entry ip=\"%s\"><tag><member>%s</member></tag></entry>", IPAddress, name));
+        for (String IPAddress : IPAddresses) {
+            entries.append(String.format("<entry ip=\"%s\"><tag><member>%s</member></tag></entry>", IPAddress, name));
         }
 
+        Map<String, String> queryStrings = new HashMap<>();
+        queryStrings.put("action", "set");
+        queryStrings.put("type", "user-id");
+        queryStrings.put("key", this.apiKey);
+        queryStrings.put("target", panos_id);
+        queryStrings.put("cmd", "<uid-message><version>1.0</version><type>update</type><payload><register>"
+                + entries.toString() + "</register></payload></uid-message>");
 
+        DAGResponse dagResponse = null;
         try {
+            dagResponse = this.getRequest(queryStrings, DAGResponse.class);
+        } catch (InterruptedException e) {
 
-            ClientConfig config = new DefaultClientConfig();
-            sslConfiguration(sslCertDisabled, config);
-
-            Client client = Client.create(config);
-            WebResource webResource = client.resource(this.baseUri);
-
-            String apiKey = getApiKey();
-            queryStrings.put("action", "set");
-            queryStrings.put("type", "user-id");
-            queryStrings.put("key", apiKey);
-            queryStrings.put("target", panos_id);
-            queryStrings.put("cmd",
-            		"<uid-message><version>1.0</version><type>update</type><payload><register>"+entries.toString() + "</register></payload></uid-message>");
-            for (String key : queryStrings.keySet()) {
-                String value = queryStrings.get(key);
-                webResource = webResource.queryParam(key, value);
-            }
-            ClientResponse response = webResource.accept("application/xml").get(ClientResponse.class);
-
-            System.out.println(response.getStatus());
-            DAGResponse dagResponse = response.getEntity(DAGResponse.class);
-
-            status = dagResponse.getStatus();
-            System.out.println("AddDAG Status: " + status);
-            if (status.equals("success")) {
-
-            } else {
-                System.out.println("AddDAG Failed with status: " + status);
-            }
-
-        } catch (Exception e) {
             e.printStackTrace();
+        } catch (ExecutionException e) {
+
+            e.printStackTrace();
+        } catch (TimeoutException e) {
+
+            e.printStackTrace();
+        }
+
+        status = dagResponse.getStatus();
+        System.out.println("AddDAG Status: " + status);
+        if (status.equals("success")) {
+
+        } else {
+            System.out.println("AddDAG Failed with status: " + status);
         }
         return status;
     }
@@ -377,249 +348,208 @@ public class ShowOperations {
     public String DeleteDAG(String name, String panos_id, String IPAddress) {
 
         String status = "failure";
-        String configStatus = "failure";
+
         Map<String, String> queryStrings = new HashMap<>();
-        boolean sslCertDisabled = true;
+        queryStrings.put("action", "set");
+        queryStrings.put("type", "user-id");
+        queryStrings.put("target", panos_id);
+        queryStrings.put("key", this.apiKey);
+        queryStrings.put("cmd",
+                "<uid-message><version>1.0</version><type>update</type><payload><unregister>" + "<entry ip=\""
+                        + IPAddress + "\"><tag><member>" + name + "</member></tag></entry>"
+                        + "</unregister></payload></uid-message>");
 
+        DAGResponse dagResponse = null;
         try {
+            dagResponse = this.getRequest(queryStrings, DAGResponse.class);
+        } catch (InterruptedException e) {
 
-            ClientConfig config = new DefaultClientConfig();
-            sslConfiguration(sslCertDisabled, config);
-
-            Client client = Client.create(config);
-            WebResource webResource = client.resource(this.baseUri);
-
-            String apiKey = getApiKey();
-            queryStrings.put("action", "set");
-            queryStrings.put("type", "user-id");
-            queryStrings.put("target", panos_id);
-            queryStrings.put("key", apiKey);
-            queryStrings.put("cmd",
-            		"<uid-message><version>1.0</version><type>update</type><payload><unregister>"+
-            		"<entry ip=\"" + IPAddress + "\"><tag><member>"+name+"</member></tag></entry>"+
-            		"</unregister></payload></uid-message>");
-
-            for (String key : queryStrings.keySet()) {
-                String value = queryStrings.get(key);
-                webResource = webResource.queryParam(key, value);
-            }
-            ClientResponse response = webResource.accept("application/xml").get(ClientResponse.class);
-
-            System.out.println(response.getStatus());
-            DAGResponse dagResponse = response.getEntity(DAGResponse.class);
-
-            status = dagResponse.getStatus();
-            System.out.println("DeleteDAG Status: " + status);
-            if (status.equals("success")) {
-
-            } else {
-                System.out.println("DeleteDAG Failed with status: " + status);
-            }
-
-        } catch (Exception e) {
             e.printStackTrace();
+        } catch (ExecutionException e) {
+
+            e.printStackTrace();
+        } catch (TimeoutException e) {
+
+            e.printStackTrace();
+        }
+
+        status = dagResponse.getStatus();
+        System.out.println("DeleteDAG Status: " + status);
+        if (status.equals("success")) {
+
+        } else {
+            System.out.println("DeleteDAG Failed with status: " + status);
         }
         return status;
     }
+
     public String AddDAGTag(String name) {
 
         String status = "failure";
         String configStatus = "failure";
+
         Map<String, String> queryStrings = new HashMap<>();
-        boolean sslCertDisabled = true;
+        queryStrings.put("action", "set");
+        queryStrings.put("type", "config");
+        queryStrings.put("key", this.apiKey);
+        queryStrings.put("xpath", "/config/shared/tag");
+        queryStrings.put("element",
+                "<entry name=\'" + name + "\'><color>color3</color><comments>OSC Tag</comments></entry>");
 
+        SetConfigResponse setConfigResponse = null;
         try {
+            setConfigResponse = this.getRequest(queryStrings, SetConfigResponse.class);
+        } catch (InterruptedException e) {
 
-            ClientConfig config = new DefaultClientConfig();
-            sslConfiguration(sslCertDisabled, config);
+            e.printStackTrace();
+        } catch (ExecutionException e) {
 
-            Client client = Client.create(config);
-            WebResource webResource = client.resource(this.baseUri);
+            e.printStackTrace();
+        } catch (TimeoutException e) {
 
-            String apiKey = getApiKey();
-            queryStrings.put("action", "set");
-            queryStrings.put("type", "config");
-            queryStrings.put("key", apiKey);
-            queryStrings.put("xpath", "/config/shared/tag");
-            queryStrings.put("element",
-                    "<entry name=\'" + name + "\'><color>color3</color><comments>OSC Tag</comments></entry>");
-
-            for (String key : queryStrings.keySet()) {
-                String value = queryStrings.get(key);
-                webResource = webResource.queryParam(key, value);
-            }
-            ClientResponse response = webResource.accept("application/xml").get(ClientResponse.class);
-
-            System.out.println(response.getStatus());
-            SetConfigResponse setConfigResponse = response.getEntity(SetConfigResponse.class);
-
-            status = setConfigResponse.getStatus();
-            System.out.println("AddDAGTag Status: " + status);
-            if (status.equals("success")) {
-                configStatus = ConfigCommit();
-                if (configStatus.equals("error")) {
-                    System.out.println("Commit failed");
-                }
-            } else {
-                System.out.println("AddDAGTag Failed with status: " + status);
-                System.out.println("AddDAGTag Failed with code: " + setConfigResponse.getCode());
-                System.out.println("AddDAGTag Failed with message: " + setConfigResponse.getConfigMessage().getMsg());
-            }
-
-        } catch (Exception e) {
             e.printStackTrace();
         }
-        return status;
-    }
-    public String ShowDAGTag(){
 
-        String status = "failure";
-        Map<String, String> queryStrings = new HashMap<>();
-        boolean sslCertDisabled = true;
-
-        try {
-
-            ClientConfig config = new DefaultClientConfig();
-            sslConfiguration(sslCertDisabled, config);
-
-            Client client = Client.create(config);
-            WebResource webResource = client.resource(this.baseUri);
-
-            String apiKey = getApiKey();
-            queryStrings.put("action", "get");
-            queryStrings.put("type", "config");
-            queryStrings.put("key", apiKey);
-            queryStrings.put("xpath", "/config/shared/tag");
-
-            for (String key : queryStrings.keySet()) {
-                String value = queryStrings.get(key);
-                webResource = webResource.queryParam(key, value);
+        status = setConfigResponse.getStatus();
+        System.out.println("AddDAGTag Status: " + status);
+        if (status.equals("success")) {
+            configStatus = ConfigCommit();
+            if (configStatus.equals("error")) {
+                System.out.println("Commit failed");
             }
-            ClientResponse response = webResource.accept("application/xml").get(ClientResponse.class);
-
-            System.out.println(response.getStatus());
-            GetTagResponse getTagResponse = response.getEntity(GetTagResponse.class);
-            String tagName;
-            status = getTagResponse.getStatus();
-            System.out.println("AddDAGTag Status: " + status);
-            if (status.equals("success")) {
-                ArrayList<TagEntry> tagEntry = getTagResponse.getTagResult().getEntry();
-                Iterator<TagEntry> tagIterator = tagEntry.iterator();
-                while (tagIterator.hasNext()) {
-                    tagName = tagIterator.next().getName();
-                    System.out.println("Tag Name: " + tagName);
-                }
-
-            } else {
-                System.out.println("AddDAGTag Failed with status: " + status);
-                System.out.println("AddDAGTag Failed with code: " + getTagResponse.getCode());
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
+        } else {
+            System.out.println("AddDAGTag Failed with status: " + status);
+            System.out.println("AddDAGTag Failed with code: " + setConfigResponse.getCode());
+            System.out.println("AddDAGTag Failed with message: " + setConfigResponse.getConfigMessage().getMsg());
         }
+
         return status;
     }
 
-    public boolean TagExists(String tagName){
+    public String ShowDAGTag() {
 
         String status = "failure";
+
         Map<String, String> queryStrings = new HashMap<>();
-        boolean sslCertDisabled = true;
+        queryStrings.put("action", "get");
+        queryStrings.put("type", "config");
+        queryStrings.put("key", this.apiKey);
+        queryStrings.put("xpath", "/config/shared/tag");
 
+        GetTagResponse getTagResponse = null;
         try {
+            getTagResponse = this.getRequest(queryStrings, GetTagResponse.class);
+        } catch (InterruptedException e) {
 
-            ClientConfig config = new DefaultClientConfig();
-            sslConfiguration(sslCertDisabled, config);
+            e.printStackTrace();
+        } catch (ExecutionException e) {
 
-            Client client = Client.create(config);
-            WebResource webResource = client.resource(this.baseUri);
+            e.printStackTrace();
+        } catch (TimeoutException e) {
 
-            String apiKey = getApiKey();
-            queryStrings.put("action", "get");
-            queryStrings.put("type", "config");
-            queryStrings.put("key", apiKey);
-            queryStrings.put("xpath", "/config/shared/tag");
+            e.printStackTrace();
+        }
 
-            for (String key : queryStrings.keySet()) {
-                String value = queryStrings.get(key);
-                webResource = webResource.queryParam(key, value);
+        String tagName;
+        status = getTagResponse.getStatus();
+        System.out.println("AddDAGTag Status: " + status);
+        if (status.equals("success")) {
+            ArrayList<TagEntry> tagEntry = getTagResponse.getTagResult().getEntry();
+            Iterator<TagEntry> tagIterator = tagEntry.iterator();
+            while (tagIterator.hasNext()) {
+                tagName = tagIterator.next().getName();
+                System.out.println("Tag Name: " + tagName);
             }
-            ClientResponse response = webResource.accept("application/xml").get(ClientResponse.class);
 
-            System.out.println(response.getStatus());
-            GetTagResponse getTagResponse = response.getEntity(GetTagResponse.class);
-            status = getTagResponse.getStatus();
-            System.out.println("AddDAGTag Status: " + status);
-            if (status.equals("success")) {
-                ArrayList<TagEntry> tagEntry = getTagResponse.getTagResult().getEntry();
-                Iterator<TagEntry> tagIterator = tagEntry.iterator();
-                while (tagIterator.hasNext()) {
-                    if ((tagIterator.next().getName()).equals(tagName)){
-                    	System.out.println("Matched Tag Name: " + tagName);
-                    	return true;
-                    }
+        } else {
+            System.out.println("AddDAGTag Failed with status: " + status);
+            System.out.println("AddDAGTag Failed with code: " + getTagResponse.getCode());
+        }
 
+        return status;
+    }
+
+    public boolean TagExists(String tagName) {
+
+        String status = "failure";
+
+        Map<String, String> queryStrings = new HashMap<>();
+        queryStrings.put("action", "get");
+        queryStrings.put("type", "config");
+        queryStrings.put("key", this.apiKey);
+        queryStrings.put("xpath", "/config/shared/tag");
+
+        GetTagResponse getTagResponse = null;
+        try {
+            getTagResponse = this.getRequest(queryStrings, GetTagResponse.class);
+        } catch (InterruptedException e) {
+
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+
+            e.printStackTrace();
+        } catch (TimeoutException e) {
+
+            e.printStackTrace();
+        }
+
+        status = getTagResponse.getStatus();
+        System.out.println("AddDAGTag Status: " + status);
+        if (status.equals("success")) {
+            ArrayList<TagEntry> tagEntry = getTagResponse.getTagResult().getEntry();
+            Iterator<TagEntry> tagIterator = tagEntry.iterator();
+            while (tagIterator.hasNext()) {
+                if ((tagIterator.next().getName()).equals(tagName)) {
+                    System.out.println("Matched Tag Name: " + tagName);
+                    return true;
                 }
 
-            } else {
-                System.out.println("AddDAGTag Failed with status: " + status);
-                System.out.println("AddDAGTag Failed with code: " + getTagResponse.getCode());
             }
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        } else {
+            System.out.println("AddDAGTag Failed with status: " + status);
+            System.out.println("AddDAGTag Failed with code: " + getTagResponse.getCode());
         }
         return false;
     }
+
     public String DeleteDAGTag(String name) {
 
         String status = "failure";
         String configStatus = "failure";
+
         Map<String, String> queryStrings = new HashMap<>();
-        boolean sslCertDisabled = true;
+        queryStrings.put("action", "delete");
+        queryStrings.put("type", "config");
+        queryStrings.put("key", this.apiKey);
+        queryStrings.put("xpath", "/config/shared/tag");
+        queryStrings.put("element", "<entry name=\'" + name + "\'></entry>");
 
+        SetConfigResponse setConfigResponse = null;
         try {
+            setConfigResponse = this.getRequest(queryStrings, SetConfigResponse.class);
+        } catch (InterruptedException e) {
 
-            ClientConfig config = new DefaultClientConfig();
-            sslConfiguration(sslCertDisabled, config);
+            e.printStackTrace();
+        } catch (ExecutionException e) {
 
-            Client client = Client.create(config);
-            WebResource webResource = client.resource(this.baseUri);
+            e.printStackTrace();
+        } catch (TimeoutException e) {
 
-            String apiKey = getApiKey();
-            queryStrings.put("action", "delete");
-            queryStrings.put("type", "config");
-            queryStrings.put("key", apiKey);
-            queryStrings.put("xpath", "/config/shared/tag");
-            queryStrings.put("element", "<entry name=\'" + name + "\'></entry>");
-
-            for (String key : queryStrings.keySet()) {
-                String value = queryStrings.get(key);
-                webResource = webResource.queryParam(key, value);
-            }
-            ClientResponse response = webResource.accept("application/xml").get(ClientResponse.class);
-
-            System.out.println(response.getStatus());
-            SetConfigResponse setConfigResponse = response.getEntity(SetConfigResponse.class);
-
-            status = setConfigResponse.getStatus();
-            System.out.println("DeleteDAGTag Status: " + status);
-            if (status.equals("success")) {
-                configStatus = ConfigCommit();
-                if (configStatus.equals("error")) {
-                    System.out.println("Commit failed");
-                }
-            } else {
-                System.out.println("DeleteDAGTag Failed with status: " + status);
-                System.out.println("DeleteDAGTag Failed with code: " + setConfigResponse.getCode());
-                System.out
-                        .println("DeleteDAGTag Failed with message: " + setConfigResponse.getConfigMessage().getMsg());
-            }
-
-        } catch (Exception e) {
             e.printStackTrace();
         }
+
+        if (status.equals("success")) {
+            configStatus = ConfigCommit();
+            if (configStatus.equals("error")) {
+                System.out.println("Commit failed");
+            }
+        } else {
+            System.out.println("DeleteDAGTag Failed with status: " + status);
+            System.out.println("DeleteDAGTag Failed with code: " + setConfigResponse.getCode());
+            System.out.println("DeleteDAGTag Failed with message: " + setConfigResponse.getConfigMessage().getMsg());
+        }
+
         return status;
     }
 
@@ -627,130 +557,72 @@ public class ShowOperations {
 
         String status = "failure";
         String configStatus = "failure";
+
         Map<String, String> queryStrings = new HashMap<>();
-        boolean sslCertDisabled = true;
+        queryStrings.put("action", "delete");
+        queryStrings.put("type", "config");
+        queryStrings.put("key", this.apiKey);
+        queryStrings.put("xpath", "/config/devices/entry[@name='localhost.localdomain']/device-group");
+        queryStrings.put("element", "<entry name=\'" + name + "\'></entry>");
 
+        SetConfigResponse setConfigResponse = null;
         try {
+            setConfigResponse = this.getRequest(queryStrings, SetConfigResponse.class);
+        } catch (InterruptedException e) {
 
-            ClientConfig config = new DefaultClientConfig();
-            sslConfiguration(sslCertDisabled, config);
+            e.printStackTrace();
+        } catch (ExecutionException e) {
 
-            Client client = Client.create(config);
-            WebResource webResource = client.resource(this.baseUri);
+            e.printStackTrace();
+        } catch (TimeoutException e) {
 
-            String apiKey = getApiKey();
-            queryStrings.put("action", "delete");
-            queryStrings.put("type", "config");
-            queryStrings.put("key", apiKey);
-            queryStrings.put("xpath", "/config/devices/entry[@name='localhost.localdomain']/device-group");
-            queryStrings.put("element", "<entry name=\'" + name + "\'></entry>");
-
-            for (String key : queryStrings.keySet()) {
-                String value = queryStrings.get(key);
-                webResource = webResource.queryParam(key, value);
-            }
-            ClientResponse response = webResource.accept("application/xml").get(ClientResponse.class);
-
-            System.out.println(response.getStatus());
-            SetConfigResponse setConfigResponse = response.getEntity(SetConfigResponse.class);
-
-            status = setConfigResponse.getStatus();
-            System.out.println("DeleteDeviceGroup Status: " + status);
-            if (status.equals("success")) {
-                configStatus = ConfigCommit();
-                if (configStatus.equals("error")) {
-                    System.out.println("Commit failed");
-                }
-            } else {
-                System.out.println("DeleteDeviceGroup Failed with status: " + status);
-                System.out.println("DeleteDeviceGroup Failed with code: " + setConfigResponse.getCode());
-                System.out.println(
-                        "DeleteDeviceGroup Failed with message: " + setConfigResponse.getConfigMessage().getMsg());
-            }
-
-        } catch (Exception e) {
             e.printStackTrace();
         }
+
+        status = setConfigResponse.getStatus();
+        if (status.equals("success")) {
+            configStatus = ConfigCommit();
+            if (configStatus.equals("error")) {
+                System.out.println("Commit failed");
+            }
+        } else {
+            System.out.println("DeleteDeviceGroup Failed with status: " + status);
+            System.out.println("DeleteDeviceGroup Failed with code: " + setConfigResponse.getCode());
+            System.out
+                    .println("DeleteDeviceGroup Failed with message: " + setConfigResponse.getConfigMessage().getMsg());
+        }
+
         return status;
     }
 
     protected String ConfigCommit() {
 
         String status = "failure";
+
         Map<String, String> queryStrings = new HashMap<>();
-        boolean sslCertDisabled = true;
+        queryStrings.put("type", "commit");
+        queryStrings.put("key", this.apiKey);
+        queryStrings.put("cmd", "<commit></commit>");
 
+        CommitResponse commitResponse = null;
         try {
+            commitResponse = this.getRequest(queryStrings, CommitResponse.class);
+        } catch (InterruptedException e) {
 
-            ClientConfig config = new DefaultClientConfig();
-            sslConfiguration(sslCertDisabled, config);
+            e.printStackTrace();
+        } catch (ExecutionException e) {
 
-            Client client = Client.create(config);
-            WebResource webResource = client.resource(this.baseUri);
+            e.printStackTrace();
+        } catch (TimeoutException e) {
 
-            String apiKey = getApiKey();
-            queryStrings.put("type", "commit");
-            queryStrings.put("key", apiKey);
-            queryStrings.put("cmd", "<commit></commit>");
-
-            for (String key : queryStrings.keySet()) {
-                String value = queryStrings.get(key);
-                webResource = webResource.queryParam(key, value);
-            }
-            ClientResponse response = webResource.accept("application/xml").get(ClientResponse.class);
-            //System.out.println("Commit response: "+response.);
-            System.out.println(response.getStatus());
-            CommitResponse commitResponse = response.getEntity(CommitResponse.class);
-
-            status = commitResponse.getStatus();
-            System.out.println("Config Commit status: " + status);
-            System.out.println("Config Commit code: " + commitResponse.getCode());
-
-        } catch (Exception e) {
             e.printStackTrace();
         }
+
+        status = commitResponse.getStatus();
+        System.out.println("Config Commit status: " + status);
+        System.out.println("Config Commit code: " + commitResponse.getCode());
+
         return status;
     }
 
-    private static void sslConfiguration(boolean sslCertDisabled, ClientConfig clientConfig) {
-        if (!sslCertDisabled) {
-            return;
-        }
-        try {
-            final SSLContext sslContext = SSLContext.getInstance("TLS");
-
-            // Create a trust manager that does not validate certificate chains
-            // against our server
-            final TrustManager[] trustAllCerts;
-            trustAllCerts = new TrustManager[] { new AcceptAllX509TrustManager() };
-            sslContext.init(null, trustAllCerts, new SecureRandom());
-            HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
-            clientConfig.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES,
-                    new HTTPSProperties(new HostnameVerifier() {
-                        @Override
-                        public boolean verify(String s, SSLSession sslSession) {
-                            // whatever your matching policy states
-                            return true;
-                        }
-                    }, sslContext));
-        } catch (Exception e) {
-            log.warn("error creating SSL client", e);
-            //Throwables.propagate(e);
-        }
-    }
-
-    private static class AcceptAllX509TrustManager implements X509TrustManager {
-        @Override
-        public X509Certificate[] getAcceptedIssuers() {
-            return null;
-        }
-
-        @Override
-        public void checkClientTrusted(X509Certificate[] certs, String authType) throws CertificateException {
-        }
-
-        @Override
-        public void checkServerTrusted(X509Certificate[] certs, String authType) throws CertificateException {
-        }
-    }
 }

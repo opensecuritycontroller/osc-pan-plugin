@@ -41,15 +41,15 @@ public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroup
 	public ShowOperations showOperations = null;
 
 
-    private PANManagerSecurityGroupInterfaceApi(ApplianceManagerConnectorElement mc,VirtualSystemElement vs) {
+    private PANManagerSecurityGroupInterfaceApi(ApplianceManagerConnectorElement mc,VirtualSystemElement vs, ShowOperations showOperations) {
     	this.vs = vs;
 		this.mc = mc;
-		this.showOperations = new ShowOperations(mc.getIpAddress(), mc.getUsername(), mc.getPassword());
+		this.showOperations = showOperations;
 
 	}
 
-	public static ManagerSecurityGroupInterfaceApi create(ApplianceManagerConnectorElement mc,VirtualSystemElement vs) throws Exception {
-        return new PANManagerSecurityGroupInterfaceApi(mc,vs);
+	public static ManagerSecurityGroupInterfaceApi create(ApplianceManagerConnectorElement mc,VirtualSystemElement vs, ShowOperations showOperations) throws Exception {
+        return new PANManagerSecurityGroupInterfaceApi(mc,vs, showOperations);
     }
 
 

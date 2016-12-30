@@ -43,15 +43,15 @@ public class PANManagerSecurityGroupApi implements ManagerSecurityGroupApi  {
 		public ShowOperations showOperations = null;
 
 
-	    private PANManagerSecurityGroupApi(ApplianceManagerConnectorElement mc,VirtualSystemElement vs) {
+	    private PANManagerSecurityGroupApi(ApplianceManagerConnectorElement mc,VirtualSystemElement vs,  ShowOperations showOperations) {
 	    	this.vs = vs;
 			this.mc = mc;
-			this.showOperations = new ShowOperations(mc.getIpAddress(), mc.getUsername(), mc.getPassword());
+			this.showOperations = showOperations;
 
 		}
 
-		public static ManagerSecurityGroupApi create(ApplianceManagerConnectorElement mc,VirtualSystemElement vs) throws Exception {
-	        return new PANManagerSecurityGroupApi(mc,vs);
+		public static ManagerSecurityGroupApi create(ApplianceManagerConnectorElement mc,VirtualSystemElement vs,  ShowOperations showOperations) throws Exception {
+	        return new PANManagerSecurityGroupApi(mc,vs, showOperations);
 	    }
 
 	@Override
@@ -62,7 +62,7 @@ public class PANManagerSecurityGroupApi implements ManagerSecurityGroupApi  {
 		boolean tagExists;
 		String status;
 		String pan_serial = null;
-		
+
 		tagExists = this.showOperations.TagExists(name);
 		if (!tagExists){
 			status = this.showOperations.AddDAGTag(name);
@@ -70,7 +70,7 @@ public class PANManagerSecurityGroupApi implements ManagerSecurityGroupApi  {
 				return null;
 			}
 		}
-		 
+
 		List<String> ipList = new ArrayList<>();
 
 		for(SecurityGroupMemberElement member : memberList.getMembers()) {
