@@ -21,8 +21,8 @@ import org.junit.Test;
 import com.paloaltonetworks.panorama.api.methods.ShowOperations;
 /*
  * This is an environment specific Test.
- *
- *
+ * To run this test, change the IP, username & password variables pointing to the device
+ * and then uncomment the @Ignore annotation.
  */
 
 public class DeviceTest {
@@ -36,8 +36,9 @@ public class DeviceTest {
     private ShowOperations showOperations;
     private Client client;
 
+    @Ignore
     @Before
-    public void start() {
+    public void start() throws Exception {
 
         this.client = ClientBuilder.newBuilder().sslContext(getSSLContext()).hostnameVerifier(new HostnameVerifier() {
             @Override
@@ -53,8 +54,6 @@ public class DeviceTest {
 
 
     public static SSLContext getSSLContext() {
-        // TODO: Future. We trust all managers right now. Later we need to import certificates and verify every connection with
-        // given Trust store
         TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
 
             @Override
@@ -89,12 +88,12 @@ public class DeviceTest {
 
     @Ignore
     @Test
-    public void test() {
+    public void test() throws Exception{
 
         boolean expected = this.showOperations.checkConnection();
         Assert.assertTrue(expected);
 
-        ArrayList<String> devices = this.showOperations.ShowDevices();
+        ArrayList<String> devices = this.showOperations.showDevices();
         System.out.println( this.getClass().getSimpleName()+ " Devices list Size is : "+devices.size());
         for (String device : devices) {
             System.out.println( this.getClass().getSimpleName()+ " Device : "+device);
@@ -121,10 +120,10 @@ public class DeviceTest {
 
     @Ignore
     @Test
-    public void test3() {
+    public void test3() throws Exception{
 
         String dgTag = "Tag-Dec25";
-        String status = this.showOperations.AddDAGTag(dgTag);
+        String status = this.showOperations.addDAGTag(dgTag);
         if (status.equals("success")) {
             System.out.println(this.getClass().getSimpleName()+ " Successfully added TAG: " + dgTag);
         }
@@ -133,22 +132,14 @@ public class DeviceTest {
         if (state == true) {
             System.out.println(this.getClass().getSimpleName()+" TAG: " + dgTag + "exists");
         }
-
-        status = this.showOperations.ShowDAGTag();
-        if (status.equals("success")) {
-            System.out.println(this.getClass().getSimpleName()+"Successfully displayed All tags ");
-        }
-
-
-
     }
 
     @Ignore
     @Test
-    public void test4() {
+    public void test4() throws Exception{
 
         String dgTag = "Tag-Dec25";
-        String status = this.showOperations.DeleteDAGTag(dgTag);
+        String status = this.showOperations.deleteDAGTag(dgTag);
         if (status.equals("success")) {
             System.out.println(this.getClass().getSimpleName()+ " Successfully deleted TAG: " + dgTag);
         }
@@ -160,23 +151,15 @@ public class DeviceTest {
             System.out.println(this.getClass().getSimpleName()+" TAG: " + dgTag + "doesn't exists");
 
         }
-
-        status = this.showOperations.ShowDAGTag();
-        if (status.equals("success")) {
-            System.out.println(this.getClass().getSimpleName()+"Successfully displayed All tags ");
-        }
-
-
-
     }
 
     @Ignore
     @Test
-    public void test2() {
+    public void test2() throws Exception {
 
         showDeviceGroups();
 
-        String status = this.showOperations.DeleteDeviceGroup("testing");
+        String status = this.showOperations.deleteDeviceGroup("testing");
         if(status.equals("success")) {
             System.out.println( this.getClass().getSimpleName()+ " Device group : "+ "testing"+" deleted successfully");
         }
@@ -184,8 +167,8 @@ public class DeviceTest {
         showDeviceGroups();
 
     }
-    private void showDeviceGroups() {
-        ArrayList<String> dgList = this.showOperations.ShowDeviceGroups();
+    private void showDeviceGroups() throws Exception{
+        ArrayList<String> dgList = this.showOperations.showDeviceGroups();
         System.out.println( this.getClass().getSimpleName()+ " Device Groups");
         System.out.println("------------------------------------------------------ ");
         for (String dg : dgList) {
@@ -193,6 +176,7 @@ public class DeviceTest {
         }
     }
 
+    @Ignore
     @After
     public void stop(){
 

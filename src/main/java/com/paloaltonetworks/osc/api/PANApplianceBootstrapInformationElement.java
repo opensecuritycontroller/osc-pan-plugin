@@ -27,11 +27,11 @@ public class PANApplianceBootstrapInformationElement implements ApplianceBootstr
 		bootstrapInfo = new ArrayList<BootstrapFileElement>();
 	}
 	@Override
-	public List<BootstrapFileElement> getBootstrapFiles() {
-		// TODO Auto-generated method stub
+	public List<BootstrapFileElement> getBootstrapFiles() {		
 		return bootstrapInfo;
 	}
-	class PANBootstrapFileElement implements BootstrapFileElement{
+	
+	private class PANBootstrapFileElement implements BootstrapFileElement{
 		
 		String localFileName;
 		byte [] localFileData;

@@ -241,11 +241,11 @@
 								<jar destfile="${project.build.directory}/PANMgrPlugin.bar">
 									<fileset dir="${project.build.directory}/plugin"/>
 									<manifest>
-										<attribute name="Deployment-Name" value="PAN"/>
+										<attribute name="Deployment-Name" value="PANMgrPlugin"/>
 										<attribute name="Deployment-Type" value="MANAGER"/>
 										<attribute name="Deployment-SymbolicName" value="PANMgrPlugin"/>
 										<attribute name="Deployment-Version" value="1.0.0"/>
-										<attribute name="Require-Bundle" value="PANMgrPlugin"/>
+										<attribute name="Require-Bundle" value="PANMgrPlugin,org.glassfish.jersey.core.jersey-client;version=&quot;[2.23.0,3)&quot;"/>
 									</manifest>
 								</jar>
 							</tasks>

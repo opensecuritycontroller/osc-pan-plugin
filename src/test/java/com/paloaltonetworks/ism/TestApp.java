@@ -28,8 +28,8 @@ import com.paloaltonetworks.panorama.test.DeviceTest;
 
 public class TestApp {
 
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
+	public static void main(String[] args) throws Exception {
+
         String status = "failure";
 
         Client client = ClientBuilder.newBuilder().sslContext(DeviceTest.getSSLContext())
@@ -43,14 +43,14 @@ public class TestApp {
         boolean isHttps = true;
         ShowOperations operations = new ShowOperations("10.4.33.201", 443, isHttps, "admin", "admin", client);
 
-	    ArrayList<String> devices = operations.ShowDevices();
+	    ArrayList<String> devices = operations.showDevices();
 	    Iterator<String> deviceIterator = devices.iterator();
 		while (deviceIterator.hasNext()){
 			System.out.println(deviceIterator.next());
 
 		}
 
-		ArrayList<String> deviceGroups = operations.ShowDeviceGroups();
+		ArrayList<String> deviceGroups = operations.showDeviceGroups();
 	    Iterator<String> deviceGroupsIterator = deviceGroups.iterator();
 		while (deviceGroupsIterator.hasNext()){
 			System.out.println(deviceGroupsIterator.next());
@@ -58,11 +58,11 @@ public class TestApp {
 		}
 
 		String dg = "testing";
-		status = operations.DeleteDeviceGroup(dg);
+		status = operations.deleteDeviceGroup(dg);
 		if (status.equals("success")){
 			System.out.println("Successfully deleted device group: " + dg);
 		}
-		status = operations.AddDeviceGroup(dg, "testing dg");
+		status = operations.addDeviceGroup(dg, "testing dg");
 		if (status.equals("success")){
 			System.out.println("Successfully added device group: " + dg);
 		}

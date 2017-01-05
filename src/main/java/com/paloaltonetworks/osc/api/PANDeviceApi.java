@@ -14,8 +14,6 @@
  */
 package com.paloaltonetworks.osc.api;
 
-
-
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -49,33 +47,26 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 	static String vmAuthKey = null;
 	private VirtualSystemElement vs;
 	private ApplianceManagerConnectorElement mc;
-	private ShowOperations showOperations = null;
+	private ShowOperations showOperations;
+	private static final String daysforVMAuthKey = "8760";
 
-	public static ManagerDeviceApi create(ApplianceManagerConnectorElement mc,VirtualSystemElement vs, ShowOperations showOperations) throws Exception {
-
-		return new PANDeviceApi(mc, vs, showOperations);
-
-	}
-
-	private PANDeviceApi(ApplianceManagerConnectorElement mc,VirtualSystemElement vs,  ShowOperations showOperations) {
+	public PANDeviceApi(ApplianceManagerConnectorElement mc,VirtualSystemElement vs,  ShowOperations showOperations) throws Exception {
 		this.vs = vs;
 		this.mc = mc;
 		this.showOperations = showOperations;
-		vmAuthKey = this.showOperations.getVMAuthKey("8760");
+		vmAuthKey = this.showOperations.getVMAuthKey(daysforVMAuthKey);
 	}
 
 	@Override
 	public boolean isDeviceGroupSupported() {
-		// TODO Auto-generated method stub
 		return true;
 	}
 
 	@Override
 	public ManagerDeviceElement getDeviceById(String id) throws Exception {
-		ArrayList<String> deviceGroups = this.showOperations.ShowDeviceGroups();
+		ArrayList<String> deviceGroups = this.showOperations.showDeviceGroups();
 		for (String deviceGroupName : deviceGroups) {
 			if (deviceGroupName.equals(id)) {
-				System.out.println("Device Group Name: " + deviceGroupName);
 				return new Device(deviceGroupName, deviceGroupName);
 
 			}
@@ -91,11 +82,10 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 
 	@Override
 	public List<? extends ManagerDeviceElement> listDevices() throws Exception {
-		// TODO Auto-generated method stub
+
 		List<Device> deviceGroups = new ArrayList<>();
-		ArrayList<String> panDeviceGroups = this.showOperations.ShowDeviceGroups();
+		ArrayList<String> panDeviceGroups = this.showOperations.showDeviceGroups();
 		for(String deviceGroupName: panDeviceGroups){
-			System.out.println("Device Group Name: "+deviceGroupName);
 			deviceGroups.add(new Device(deviceGroupName, deviceGroupName));
 		}
 		return deviceGroups;
@@ -103,30 +93,28 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 
 	@Override
 	public String createVSSDevice() throws Exception {
-		// TODO Auto-generated method stub
 		// Create a device group in panorama
 		// Information passed in by VSS to create device group
 		// VSS is the device group
 
-		return this.showOperations.AddDeviceGroup(this.vs.getName(), this.vs.getName());
+		return this.showOperations.addDeviceGroup(this.vs.getName(), this.vs.getName());
 	}
 
 	@Override
 	public void updateVSSDevice(ManagerDeviceElement device) throws Exception {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public void deleteVSSDevice() throws Exception {
-		// TODO Auto-generated method stub
+
 
 	}
 
 	@Override
 	public String createDeviceMember(String name, String vserverIpAddress, String contactIpAddress, String ipAddress,
 			String gateway, String prefixLength) throws Exception {
-		// TODO Auto-generated method stub
+
 		// OSC calls this method to create a NGFW - pass this to panorama
 		// Return panorqma device id
 		return name;
@@ -135,57 +123,57 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 	@Override
 	public String updateDeviceMember(ManagerDeviceMemberElement deviceElement, String name, String deviceHostName,
 			String ipAddress, String mgmtIPAddress, String gateway, String prefixLength) throws Exception {
-		// TODO Auto-generated method stub
+
 		// Redeploy need to thing through
 		return null;
 	}
 
 	@Override
 	public void deleteDeviceMember(String id) throws Exception {
-		// TODO Auto-generated method stub
+
 		// Delete a firewall
 	}
 
 	@Override
 	public ManagerDeviceMemberElement getDeviceMemberById(String id) throws Exception {
-		// TODO Auto-generated method stub
+
 		// return device from panorma
 		return null;
 	}
 
 	@Override
 	public ManagerDeviceMemberElement findDeviceMemberByName(String name) throws Exception {
-		// TODO Auto-generated method stub
+
 		return null;
 	}
 
 	@Override
 	public List<? extends ManagerDeviceMemberElement> listDeviceMembers() throws Exception {
-		// TODO Auto-generated method stub
+
 		return Collections.emptyList();
 	}
 
 	@Override
 	public boolean isUpgradeSupported(String modelType, String prevSwVersion, String newSwVersion) throws Exception {
-		// TODO Auto-generated method stub
+
 		return false;
 	}
 
 	@Override
 	public byte[] getDeviceMemberConfigById(String mgrDeviceId) throws Exception {
-		// TODO Auto-generated method stub
+
 		return null;
 	}
 
 	@Override
 	public byte[] getDeviceMemberConfiguration(DistributedApplianceInstanceElement dai) {
-		// TODO Auto-generated method stub
+
 		return null;
 	}
 
 	@Override
 	public byte[] getDeviceMemberAdditionalConfiguration(DistributedApplianceInstanceElement dai) {
-		// TODO Auto-generated method stub
+
 		return null;
 	}
 
@@ -216,15 +204,14 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 			bootstrapElement.addBootstrapFile("/license/authcodes",getLicense());
 			bootstrapElement.addBootstrapFile("/content",nullEntry);
 			bootstrapElement.addBootstrapFile("/software",nullEntry);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 		return bootstrapElement;
 	}
 
 	protected byte[] getInitCfg(BootStrapInfoProviderElement bootStrapInfo) {
-		// TODO Auto-generated method stub
+
 		// Pass in bootstrap info for device
 		// Same info for all devices
 		// use vss element to determine device group
@@ -673,7 +660,7 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 	}
 	@Override
 	public void close() {
-		// TODO Auto-generated method stub
+
 
 	}
 

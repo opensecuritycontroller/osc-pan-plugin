@@ -14,8 +14,6 @@
  */
 package com.paloaltonetworks.osc.api;
 
-
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,38 +25,34 @@ import org.osc.sdk.manager.element.VirtualSystemElement;
 import com.paloaltonetworks.osc.model.PolicyListElement;
 import com.paloaltonetworks.panorama.api.methods.ShowOperations;
 
-
 /**
  * This documents "Device Management Apis"
  */
-public class PANManagerPolicyApi implements ManagerPolicyApi  {
+public class PANManagerPolicyApi implements ManagerPolicyApi {
 
-	 static Logger log = Logger.getLogger(PANManagerPolicyApi.class);
-	 static String apiKey = null;
-	 VirtualSystemElement vs;
-	 ApplianceManagerConnectorElement mc;
-	 ShowOperations showOperations = null;
+    private static final Logger log = Logger.getLogger(PANManagerPolicyApi.class);
+    static String apiKey = null;
+    private VirtualSystemElement vs;
+    private ApplianceManagerConnectorElement mc;
+    private ShowOperations showOperations;
 
-	    private static ArrayList<PolicyListElement> policyList = new ArrayList<>();
-	    static {
-	        policyList.add(new PolicyListElement("Platinum", "Platinum"));
-	        policyList.add(new PolicyListElement("Gold", "Gold"));
-	        policyList.add(new PolicyListElement("Silver", "Silver"));
-	        policyList.add(new PolicyListElement("Bronze", "Bronze"));
-	    }
-    private PANManagerPolicyApi(ApplianceManagerConnectorElement mc, ShowOperations showOperations) {
-
-		this.mc = mc;
-		log.info("new show operaitons in Policy");
-		this.showOperations = showOperations;
-
-	}
-	public static PANManagerPolicyApi create(ApplianceManagerConnectorElement mc, ShowOperations showOperations) throws Exception {
-		log.info("Creating new PANManagerPolicy api");
-        return new PANManagerPolicyApi(mc, showOperations);
+    private static ArrayList<PolicyListElement> policyList = new ArrayList<>();
+    static {
+        policyList.add(new PolicyListElement("Platinum", "Platinum"));
+        policyList.add(new PolicyListElement("Gold", "Gold"));
+        policyList.add(new PolicyListElement("Silver", "Silver"));
+        policyList.add(new PolicyListElement("Bronze", "Bronze"));
     }
 
-	@Override
+    public PANManagerPolicyApi(ApplianceManagerConnectorElement mc, ShowOperations showOperations) {
+        log.info("Creating new PANManagerPolicy api");
+        this.mc = mc;
+        log.info("new show operaitons in Policy");
+        this.showOperations = showOperations;
+
+    }
+
+    @Override
     public PolicyListElement getPolicy(String policyId, String domainId) throws Exception {
         return policyList.get(Integer.valueOf(policyId));
     }
