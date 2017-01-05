@@ -14,8 +14,6 @@
  */
 package com.paloaltonetworks.osc.api;
 
-
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,91 +27,86 @@ import org.osc.sdk.manager.element.VirtualSystemElement;
 
 import com.paloaltonetworks.panorama.api.methods.ShowOperations;
 
-
 /**
  * This documents "Device Management Apis"
  */
-public class PANManagerSecurityGroupApi implements ManagerSecurityGroupApi  {
+public class PANManagerSecurityGroupApi implements ManagerSecurityGroupApi {
 
+    private static final Logger log = Logger.getLogger(PANManagerSecurityGroupApi.class);
+    static String apiKey = null;
+    private VirtualSystemElement vs;
+    private ApplianceManagerConnectorElement mc;
+    private ShowOperations showOperations;
 
-	 Logger log = Logger.getLogger(PANManagerSecurityGroupApi.class);
-	    static String apiKey = null;
-		VirtualSystemElement vs;
-		ApplianceManagerConnectorElement mc;
-		public ShowOperations showOperations = null;
+    public PANManagerSecurityGroupApi(ApplianceManagerConnectorElement mc, VirtualSystemElement vs,
+            ShowOperations showOperations) {
+        this.vs = vs;
+        this.mc = mc;
+        this.showOperations = showOperations;
 
+    }
 
-	    private PANManagerSecurityGroupApi(ApplianceManagerConnectorElement mc,VirtualSystemElement vs) {
-	    	this.vs = vs;
-			this.mc = mc;
-			this.showOperations = new ShowOperations(mc.getIpAddress(), mc.getUsername(), mc.getPassword());
+    @Override
+    public String createSecurityGroup(String name, String iscId, SecurityGroupMemberListElement memberList)
+            throws Exception {
+        /*
+         * Check if tag exists - if not create
+         */
+        boolean tagExists;
+        String status;
+        String pan_serial = null;
 
-		}
+        tagExists = this.showOperations.TagExists(name);
+        if (!tagExists) {
+            status = this.showOperations.addDAGTag(name);
+            if (!status.equals("success")) {
+                return null;
+            }
+        }
 
-		public static ManagerSecurityGroupApi create(ApplianceManagerConnectorElement mc,VirtualSystemElement vs) throws Exception {
-	        return new PANManagerSecurityGroupApi(mc,vs);
-	    }
+        List<String> ipList = new ArrayList<>();
 
-	@Override
-	public String createSecurityGroup(String name, String iscId,SecurityGroupMemberListElement memberList) throws Exception {
-		/*
-		 * Check if tag exists - if not create
-		 */
-		boolean tagExists;
-		String status;
-		String pan_serial = null;
-		
-		tagExists = this.showOperations.TagExists(name);
-		if (!tagExists){
-			status = this.showOperations.AddDAGTag(name);
-			if (!status.equals("success")){
-				return null;
-			}
-		}
-		 
-		List<String> ipList = new ArrayList<>();
+        for (SecurityGroupMemberElement member : memberList.getMembers()) {
+            ipList.addAll(member.getIpAddresses());
+        }
+        /*
+         * Add TAG and IP address
+         */
+        ArrayList<String> pan_serialList = this.showOperations.showDevices();
+        status = this.showOperations.addDAG(name, pan_serialList.get(0), ipList);
+        if (!status.equals("success")) {
+            return null;
+        }
+        return name;
 
-		for(SecurityGroupMemberElement member : memberList.getMembers()) {
-		    ipList.addAll(member.getIpAddresses());
-		}
-		/*
-		 * Add TAG and IP address
-		 */
-		ArrayList<String> pan_serialList = this.showOperations.ShowDevices();
-		status = this.showOperations.AddDAG(name, pan_serialList.get(0), ipList);
-		if (!status.equals("success")){
-			return null;
-		}
-		return name;
+    }
 
-	}
+    @Override
+    public void updateSecurityGroup(String sgId, String name, SecurityGroupMemberListElement memberList)
+            throws Exception {
 
-	@Override
-	public void updateSecurityGroup(String sgId, String name,SecurityGroupMemberListElement memberList) throws Exception {
-		// TODO Auto-generated method stub
+    }
 
-	}
+    @Override
+    public void deleteSecurityGroup(String sgId) throws Exception {
+        this.showOperations.deleteDAGTag(sgId);
 
-	@Override
-	public void deleteSecurityGroup(String sgId) throws Exception {
-		this.showOperations.DeleteDAGTag(sgId);
+    }
 
-	}
+    @Override
+    public List<? extends ManagerSecurityGroupElement> getSecurityGroupList() throws Exception {
 
-	@Override
-	public List<? extends ManagerSecurityGroupElement> getSecurityGroupList() throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
+        return null;
+    }
 
-	@Override
-	public ManagerSecurityGroupElement getSecurityGroupById(String sgId) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public ManagerSecurityGroupElement getSecurityGroupById(String sgId) throws Exception {
 
-	@Override
-	public void close() {
-		// TODO Auto-generated method stub
+        return null;
+    }
 
-	}}
+    @Override
+    public void close() {
+
+    }
+}

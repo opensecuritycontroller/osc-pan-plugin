@@ -14,6 +14,16 @@
  */
 package com.paloaltonetworks.osc.api;
 
+import java.security.SecureRandom;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+
 import org.apache.log4j.Logger;
 import org.osc.sdk.manager.ManagerAuthenticationType;
 import org.osc.sdk.manager.ManagerNotificationSubscriptionType;
@@ -29,159 +39,328 @@ import org.osc.sdk.manager.api.ManagerSecurityGroupInterfaceApi;
 import org.osc.sdk.manager.api.ManagerWebSocketNotificationApi;
 import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
 import org.osc.sdk.manager.element.VirtualSystemElement;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
+import com.paloaltonetworks.panorama.api.methods.JAXBProvider;
 import com.paloaltonetworks.panorama.api.methods.ShowOperations;
 
+@Component(configurationPid = "com.paloaltonetworks.panorama.ApplianceManager", property = "osc.plugin.name=PANMgrPlugin")
 public class PANApplianceManagerApi implements ApplianceManagerApi {
 
-	Logger log = Logger.getLogger(PANApplianceManagerApi.class);
+    private static final Logger LOG = Logger.getLogger(PANApplianceManagerApi.class);
+    private Client client;
+    private Config config;
 
-	public PANApplianceManagerApi() {
+    @ObjectClassDefinition
+    @interface Config {
+        @AttributeDefinition(required = false)
+        boolean use_https() default true;
 
-	}
+        @AttributeDefinition(min = "0", max = "65535", required = false, description = "The port to use when connecting to PAN instances. The value '0' indicates that a default port of '443' (or '80' if HTTPS is not enabled) should be used.")
+        int port() default 0;
 
-	public static PANApplianceManagerApi create() {
-		return new PANApplianceManagerApi();
-	}
+        @AttributeDefinition(min = "0", required = false)
+        int max_threads() default 0;
 
-	@Override
-	public ManagerDeviceApi createManagerDeviceApi(ApplianceManagerConnectorElement mc, VirtualSystemElement vs)
-			throws Exception {
-		// TODO Auto-generated method stub
-		this.log.info("Username: " + mc.getUsername());
-		System.out.println("Username: " + mc.getUsername());
-		// add mc to create
-		return PANDeviceApi.create(mc, vs);
-	}
+        @AttributeDefinition(required = false, description = "The property name to use when setting the maximum thread count")
+        String max_threads_property_name() default "com.sun.jersey.client.property.threadpoolSize";
+    }
 
-	@Override
-	public ManagerSecurityGroupInterfaceApi createManagerSecurityGroupInterfaceApi(ApplianceManagerConnectorElement mc,
-			VirtualSystemElement vs) throws Exception {
+    @Activate
+    void start(Config config) {
+        this.config = config;
 
-		//return PANManagerSecurityGroupInterfaceApi.create(mc,vs);
-		return null;
-	}
+        this.client = ClientBuilder.newBuilder().property(config.max_threads_property_name(), config.max_threads())
+                .register(new JAXBProvider()).sslContext(getSSLContext()).hostnameVerifier(new HostnameVerifier() {
+                    @Override
+                    public boolean verify(String hostname, SSLSession session) {
+                        return true;
+                    }
+                }).build();
+    }
 
-	@Override
-	public ManagerSecurityGroupApi createManagerSecurityGroupApi(ApplianceManagerConnectorElement mc,
-			VirtualSystemElement vs) throws Exception {
-		// TODO Auto-generated method stub
-		return PANManagerSecurityGroupApi.create(mc,vs);
-	}
+    public static SSLContext getSSLContext() {
+        // TODO: Future. We trust all managers right now. Later we need to import certificates and verify every connection with
+        // given Trust store
+        TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
 
-	@Override
-	public ManagerPolicyApi createManagerPolicyApi(ApplianceManagerConnectorElement mc) throws Exception {
-		// TODO Auto-generated method stub
-		this.log.info("Creating Policy API");
-		return PANManagerPolicyApi.create(mc);
-		//return null;
-	}
+            @Override
+            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                return null;
+            }
 
-	@Override
-	public ManagerDomainApi createManagerDomainApi(ApplianceManagerConnectorElement mc) throws Exception {
-		 return PANManagerDomainApi.create(mc);
-		 //return null;
-	}
+            @Override
+            public void checkServerTrusted(java.security.cert.X509Certificate[] arg0, String arg1)
+                    throws java.security.cert.CertificateException {
 
+            }
+
+            @Override
+            public void checkClientTrusted(java.security.cert.X509Certificate[] arg0, String arg1)
+                    throws java.security.cert.CertificateException {
+
+            }
+        } };
+        SSLContext ctx = null;
+        try {
+            ctx = SSLContext.getInstance("TLS");
+            ctx.init(null, trustAllCerts, new SecureRandom());
+
+        } catch (java.security.GeneralSecurityException ex) {
+
+            LOG.error("Encountering security exception", ex);
+        }
+
+        return ctx;
+    }
+
+    @Deactivate
+    void stop() {
+        this.client.close();
+    }
+
+    private ShowOperations getShowOperations(ApplianceManagerConnectorElement mc) throws Exception {
+
+        return new ShowOperations(mc.getIpAddress(), this.config.port(), this.config.use_https(), mc.getUsername(),
+                mc.getPassword(), this.client);
+    }
+
+    /*
+     * @see org.osc.sdk.manager.api.ApplianceManagerApi#createManagerDeviceApi(org.osc.sdk.manager.element.
+     * ApplianceManagerConnectorElement, org.osc.sdk.manager.element.VirtualSystemElement)
+     */
+    @Override
+    public ManagerDeviceApi createManagerDeviceApi(ApplianceManagerConnectorElement mc, VirtualSystemElement vs)
+            throws Exception {
+
+        LOG.info(String.format("Creating Device Api for Panorama Manager : %s with ip : %s", mc.getName(),
+                mc.getIpAddress()));
+        ShowOperations showOperations = getShowOperations(mc);
+
+        return new PANDeviceApi(mc, vs, showOperations);
+    }
+
+    /*
+     * @see
+     * org.osc.sdk.manager.api.ApplianceManagerApi#createManagerSecurityGroupInterfaceApi(org.osc.sdk.manager.element.
+     * ApplianceManagerConnectorElement, org.osc.sdk.manager.element.VirtualSystemElement)
+     */
+    @Override
+    public ManagerSecurityGroupInterfaceApi createManagerSecurityGroupInterfaceApi(ApplianceManagerConnectorElement mc,
+            VirtualSystemElement vs) throws Exception {
+
+        LOG.info(String.format("Creating Security Group interface API for Panorama Manager : %s with ip : %s",
+                mc.getName(), mc.getIpAddress()));
+        //return PANManagerSecurityGroupInterfaceApi.create(mc,vs);
+        return null;
+    }
+
+    /*
+     * @see org.osc.sdk.manager.api.ApplianceManagerApi#createManagerSecurityGroupApi(org.osc.sdk.manager.element.
+     * ApplianceManagerConnectorElement, org.osc.sdk.manager.element.VirtualSystemElement)
+     */
+    @Override
+    public ManagerSecurityGroupApi createManagerSecurityGroupApi(ApplianceManagerConnectorElement mc,
+            VirtualSystemElement vs) throws Exception {
+        LOG.info(String.format("Creating Security Group API for Panorama Manager : %s with ip : %s", mc.getName(),
+                mc.getIpAddress()));
+        ShowOperations showOperations = getShowOperations(mc);
+        return new PANManagerSecurityGroupApi(mc, vs, showOperations);
+    }
+
+    /*
+     *
+     * @see org.osc.sdk.manager.api.ApplianceManagerApi#createManagerPolicyApi(org.osc.sdk.manager.element.
+     * ApplianceManagerConnectorElement)
+     */
+    @Override
+    public ManagerPolicyApi createManagerPolicyApi(ApplianceManagerConnectorElement mc) throws Exception {
+
+        LOG.info(String.format("Creating Policy API for Panorama Manager : %s with ip : %s", mc.getName(),
+                mc.getIpAddress()));
+        ShowOperations showOperations = getShowOperations(mc);
+        return new PANManagerPolicyApi(mc, showOperations);
+    }
+
+    /*
+     *
+     * @see org.osc.sdk.manager.api.ApplianceManagerApi#createManagerDomainApi(org.osc.sdk.manager.element.
+     * ApplianceManagerConnectorElement)
+     */
+    @Override
+    public ManagerDomainApi createManagerDomainApi(ApplianceManagerConnectorElement mc) throws Exception {
+        LOG.info(String.format("Creating Domain API for Panorama Manager : %s with ip : %s", mc.getName(),
+                mc.getIpAddress()));
+        return new PANManagerDomainApi(mc);
+    }
+
+    /*
+     * @see org.osc.sdk.manager.api.ApplianceManagerApi#createManagerDeviceMemberApi(org.osc.sdk.manager.element.
+     * ApplianceManagerConnectorElement, org.osc.sdk.manager.element.VirtualSystemElement)
+     */
     @Override
     public ManagerDeviceMemberApi createManagerDeviceMemberApi(ApplianceManagerConnectorElement mc,
             VirtualSystemElement vs) throws Exception {
-        return PANManagerDeviceMemberApi.create(mc, vs);
+
+        LOG.info(String.format("Creating Device Member API for Panorama Manager : %s with ip : %s", mc.getName(),
+                mc.getIpAddress()));
+        return new PANManagerDeviceMemberApi(mc, vs);
     }
 
-	@Override
-	public byte[] getPublicKey(ApplianceManagerConnectorElement mc) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    /*
+     * @see org.osc.sdk.manager.api.ApplianceManagerApi#getPublicKey(org.osc.sdk.manager.element.
+     * ApplianceManagerConnectorElement)
+     */
+    @Override
+    public byte[] getPublicKey(ApplianceManagerConnectorElement mc) throws Exception {
 
-	@Override
-	public String getName() {
-		// TODO Auto-generated method stub
-		return "PANMgrPlugin";
-	}
+        return null;
+    }
 
-	@Override
-	public String getVendorName() {
-		// TODO Auto-generated method stub
-		return "Palo Alto Networks";
-	}
+    /*
+     * @see org.osc.sdk.manager.api.ApplianceManagerApi#getName()
+     */
+    @Override
+    public String getName() {
 
-	@Override
-	public String getVersion() {
-		return "1.0";
-	}
+        return "PANMgrPlugin";
+    }
 
-	@Override
-	public String getServiceName() {
-		return "PANMgrPlugin";
-	}
+    /*
+     * @see org.osc.sdk.manager.api.ApplianceManagerApi#getVendorName()
+     */
+    @Override
+    public String getVendorName() {
 
-	@Override
-	public String getNsxServiceName() {
-		return "Pan-nsx";
-	}
+        return "Palo Alto Networks";
+    }
 
-	@Override
-	public String getManagerUrl(String ipAddress) {
-		return "https://" + ipAddress;
-	}
+    /*
+     * @see org.osc.sdk.manager.api.ApplianceManagerApi#getVersion()
+     */
+    @Override
+    public String getVersion() {
+        return "1.0";
+    }
 
-	@Override
-	public ManagerAuthenticationType getAuthenticationType() {
-		return ManagerAuthenticationType.BASIC_AUTH;
-	}
+    /*
+     * @see org.osc.sdk.manager.api.ApplianceManagerApi#getServiceName()
+     */
+    @Override
+    public String getServiceName() {
+        return "PANMgrPlugin";
+    }
 
-	@Override
-	public boolean isSecurityGroupSyncSupport() {
-		return true;
-	}
+    /*
+     * @see org.osc.sdk.manager.api.ApplianceManagerApi#getNsxServiceName()
+     */
+    @Override
+    public String getNsxServiceName() {
+        return "Pan-nsx";
+    }
 
-	@Override
-	public void checkConnection(ApplianceManagerConnectorElement mc) throws Exception {
-		// TODO Auto-generated method stub
-		// TODO ADD
-		boolean connectionCheck = false;
+    /*
+     * @see org.osc.sdk.manager.api.ApplianceManagerApi#getManagerUrl(java.lang.String)
+     */
+    @Override
+    public String getManagerUrl(String ipAddress) {
+        return "https://" + ipAddress;
+    }
 
-		ShowOperations showOperations = new ShowOperations(mc.getIpAddress(), mc.getUsername(), mc.getPassword());
-		connectionCheck = showOperations.checkConnection();
-		if (connectionCheck == false) {
-			throw new Exception("Connection Check failed ");
-		}
-	}
+    /*
+     * @see org.osc.sdk.manager.api.ApplianceManagerApi#getAuthenticationType()
+     */
+    @Override
+    public ManagerAuthenticationType getAuthenticationType() {
+        return ManagerAuthenticationType.BASIC_AUTH;
+    }
 
-	@Override
-	public boolean isAgentManaged() {
-		return false;
-	}
+    /*
+     * @see org.osc.sdk.manager.api.ApplianceManagerApi#isSecurityGroupSyncSupport()
+     */
+    @Override
+    public boolean isSecurityGroupSyncSupport() {
+        return true;
+    }
 
-	@Override
+    /*
+     * @see org.osc.sdk.manager.api.ApplianceManagerApi#checkConnection(org.osc.sdk.manager.element.
+     * ApplianceManagerConnectorElement)
+     */
+    @Override
+    public void checkConnection(ApplianceManagerConnectorElement mc) throws Exception {
+
+        boolean connectionCheck = false;
+
+        ShowOperations showOperations = getShowOperations(mc);
+        connectionCheck = showOperations.checkConnection();
+        if (connectionCheck == false) {
+            String errorMessage = String.format("Failed to connect to Panorama Manager @ IP address : %s",
+                    mc.getIpAddress());
+            LOG.error(errorMessage);
+            throw new Exception(errorMessage);
+        }
+    }
+
+    /*
+     * @see org.osc.sdk.manager.api.ApplianceManagerApi#isAgentManaged()
+     */
+    @Override
+    public boolean isAgentManaged() {
+        return false;
+    }
+
+    /*
+     * @see org.osc.sdk.manager.api.ApplianceManagerApi#isPolicyMappingSupported()
+     */
+    @Override
     public boolean isPolicyMappingSupported() {
-    	return false;
+        return false;
     }
 
-	@Override
-	public ManagerWebSocketNotificationApi createManagerWebSocketNotificationApi(ApplianceManagerConnectorElement mc)
-			throws Exception {
-		throw new UnsupportedOperationException("WebSocket Notification not implemented");
-	}
+    /*
+     * @see
+     * org.osc.sdk.manager.api.ApplianceManagerApi#createManagerWebSocketNotificationApi(org.osc.sdk.manager.element.
+     * ApplianceManagerConnectorElement)
+     */
+    @Override
+    public ManagerWebSocketNotificationApi createManagerWebSocketNotificationApi(ApplianceManagerConnectorElement mc)
+            throws Exception {
+        throw new UnsupportedOperationException("WebSocket Notification not implemented");
+    }
 
-	@Override
-	public ManagerCallbackNotificationApi createManagerCallbackNotificationApi(ApplianceManagerConnectorElement mc)
-			throws Exception {
-		 throw new UnsupportedOperationException("Manager does not support notification");
-	}
+    /*
+     * @see
+     * org.osc.sdk.manager.api.ApplianceManagerApi#createManagerCallbackNotificationApi(org.osc.sdk.manager.element.
+     * ApplianceManagerConnectorElement)
+     */
+    @Override
+    public ManagerCallbackNotificationApi createManagerCallbackNotificationApi(ApplianceManagerConnectorElement mc)
+            throws Exception {
+        throw new UnsupportedOperationException("Manager does not support notification");
+    }
 
-	@Override
-	public IscJobNotificationApi createIscJobNotificationApi(ApplianceManagerConnectorElement mc,
-			VirtualSystemElement vs) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    /*
+     * @see org.osc.sdk.manager.api.ApplianceManagerApi#createIscJobNotificationApi(org.osc.sdk.manager.element.
+     * ApplianceManagerConnectorElement, org.osc.sdk.manager.element.VirtualSystemElement)
+     */
+    @Override
+    public IscJobNotificationApi createIscJobNotificationApi(ApplianceManagerConnectorElement mc,
+            VirtualSystemElement vs) throws Exception {
 
-	@Override
-	public ManagerNotificationSubscriptionType getNotificationType() {
-		 return ManagerNotificationSubscriptionType.NONE;
-	}
+        return null;
+    }
+
+    /*
+     * @see org.osc.sdk.manager.api.ApplianceManagerApi#getNotificationType()
+     */
+    @Override
+    public ManagerNotificationSubscriptionType getNotificationType() {
+        return ManagerNotificationSubscriptionType.NONE;
+    }
 
 }

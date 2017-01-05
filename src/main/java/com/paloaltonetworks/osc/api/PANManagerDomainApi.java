@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.osc.sdk.manager.api.ManagerDomainApi;
 import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
+
 import com.paloaltonetworks.osc.model.Domain;
 import com.paloaltonetworks.osc.model.DomainListElement;
 
@@ -30,14 +31,11 @@ import com.paloaltonetworks.osc.model.DomainListElement;
  */
 public class PANManagerDomainApi implements ManagerDomainApi  {
 
-	
-    public PANManagerDomainApi(ApplianceManagerConnectorElement mc) throws Exception {
+
+    public PANManagerDomainApi(ApplianceManagerConnectorElement mc){
 
     }
 
-    public static PANManagerDomainApi create(ApplianceManagerConnectorElement mc) throws Exception {
-        return new PANManagerDomainApi(mc);
-    }
     @Override
     public Domain getDomain(String domainId) throws Exception {
         return new Domain("Roo-Domain", "Root-Domain");
@@ -45,10 +43,10 @@ public class PANManagerDomainApi implements ManagerDomainApi  {
 
     @Override
     public List<DomainListElement> listDomains() throws Exception {
-        List<DomainListElement> domainList = new ArrayList<DomainListElement>();
+        List<DomainListElement> domainList = new ArrayList<>();
         domainList.add(new DomainListElement("Root-Domain", "Root-Domain"));
         return domainList;
     }
-	
+
 
 }

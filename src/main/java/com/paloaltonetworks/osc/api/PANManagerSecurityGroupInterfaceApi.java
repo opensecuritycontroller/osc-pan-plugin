@@ -14,9 +14,6 @@
  */
 package com.paloaltonetworks.osc.api;
 
-
-
-
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -33,71 +30,58 @@ import com.paloaltonetworks.panorama.api.methods.ShowOperations;
  */
 public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfaceApi  {
 
-
-    Logger log = Logger.getLogger(PANManagerSecurityGroupInterfaceApi.class);
+    private static final Logger log = Logger.getLogger(PANManagerSecurityGroupInterfaceApi.class);
     static String apiKey = null;
-	VirtualSystemElement vs;
-	ApplianceManagerConnectorElement mc;
-	public ShowOperations showOperations = null;
+    private VirtualSystemElement vs;
+	private ApplianceManagerConnectorElement mc;
+	private ShowOperations showOperations;
 
-
-    private PANManagerSecurityGroupInterfaceApi(ApplianceManagerConnectorElement mc,VirtualSystemElement vs) {
+	public PANManagerSecurityGroupInterfaceApi(ApplianceManagerConnectorElement mc,VirtualSystemElement vs, ShowOperations showOperations) {
     	this.vs = vs;
 		this.mc = mc;
-		this.showOperations = new ShowOperations(mc.getIpAddress(), mc.getUsername(), mc.getPassword());
-
+		this.showOperations = showOperations;
 	}
-
-	public static ManagerSecurityGroupInterfaceApi create(ApplianceManagerConnectorElement mc,VirtualSystemElement vs) throws Exception {
-        return new PANManagerSecurityGroupInterfaceApi(mc,vs);
-    }
-
-
 
 	@Override
 	public String createSecurityGroupInterface(String name, String policyId, String tag) throws Exception {
-		String status = this.showOperations.AddDAGTag(tag);
+		String status = this.showOperations.addDAGTag(tag);
 		if (status.equals("success")){
 			return name;
 		} else {
 			return null;
-
 		}
 	}
 
 	@Override
 	public void updateSecurityGroupInterface(String id, String name, String policyId, String tag) throws Exception {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public void deleteSecurityGroupInterface(String id) throws Exception {
-		this.showOperations.DeleteDAGTag(id);
-
+		this.showOperations.deleteDAGTag(id);
 	}
 
 	@Override
 	public ManagerSecurityGroupInterfaceElement getSecurityGroupInterfaceById(String id) throws Exception {
-		// TODO Auto-generated method stub
+
 		return null;
 	}
 
 	@Override
 	public String findSecurityGroupInterfaceByName(String name) throws Exception {
-		// TODO Auto-generated method stub
+
 		return null;
 	}
 
 	@Override
 	public List<? extends ManagerSecurityGroupInterfaceElement> listSecurityGroupInterfaces() throws Exception {
-		// TODO Auto-generated method stub
+
 		return null;
 	}
 
 	@Override
 	public void close() {
-		// TODO Auto-generated method stub
 
 	}
 }

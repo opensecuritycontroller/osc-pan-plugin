@@ -20,38 +20,53 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLSession;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.paloaltonetworks.panorama.api.methods.ShowOperations;
+import com.paloaltonetworks.panorama.test.DeviceTest;
 
 /**
  * Unit test for simple App.
  */
-public class AppTest
-
-{
-
-    private static final String PANORAMA_IP = "10.4.33.202";
+public class AppTest{
+    private static final String PANORAMA_IP = "10.71.85.99";
     private static final String PANOS_SERIAL = "007299000003740";
 
     /**
      * Rigourous Test :-)
+     *
+     * @throws Exception
      */
     // Ignoring test since its environment specific, comment ignore to run the test
-//    @Ignore
+    @Ignore
     @Test
-    public void testApp() {
+    public void testApp() throws Exception {
         assertTrue(true);
 
-        // TODO Auto-generated method stub
         String status = "failure";
-        ShowOperations operations = new ShowOperations(PANORAMA_IP, "admin", "admin");
+
+        Client client = ClientBuilder.newBuilder().sslContext(DeviceTest.getSSLContext())
+                .hostnameVerifier(new HostnameVerifier() {
+                    @Override
+                    public boolean verify(String hostname, SSLSession session) {
+                        return true;
+                    }
+                }).build();
+
+        boolean isHttps = true;
+        ShowOperations operations = new ShowOperations(PANORAMA_IP, 443, isHttps, "admin", "admin", client);
 
         // Get auth key
         String vmAuthKey = operations.getVMAuthKey("8760");
         System.out.println("VM Auth Key: " + vmAuthKey);
 
-        ArrayList<String> devices = operations.ShowDevices();
+        ArrayList<String> devices = operations.showDevices();
         Iterator<String> deviceIterator = devices.iterator();
         while (deviceIterator.hasNext()) {
             System.out.println(deviceIterator.next());
@@ -60,9 +75,9 @@ public class AppTest
 
         // Check Connection
         boolean connectionCheck;
-    	connectionCheck = operations.checkConnection();
-    	System.out.println("Connection check status: " + connectionCheck);
-        ArrayList<String> deviceGroups = operations.ShowDeviceGroups();
+        connectionCheck = operations.checkConnection();
+        System.out.println("Connection check status: " + connectionCheck);
+        ArrayList<String> deviceGroups = operations.showDeviceGroups();
         Iterator<String> deviceGroupsIterator = deviceGroups.iterator();
         while (deviceGroupsIterator.hasNext()) {
             System.out.println(deviceGroupsIterator.next());
@@ -70,11 +85,11 @@ public class AppTest
         }
 
         String dg = "testing";
-        status = operations.DeleteDeviceGroup(dg);
+        status = operations.deleteDeviceGroup(dg);
         if (status.equals("success")) {
             System.out.println("Successfully deleted device group: " + dg);
         }
-        status = operations.AddDeviceGroup(dg, "testing dg");
+        status = operations.addDeviceGroup(dg, "testing dg");
         if (status.equals("success")) {
             System.out.println("Successfully added device group: " + dg);
         }
@@ -84,30 +99,24 @@ public class AppTest
         //if (status.equals("success")) {
         //    System.out.println("Successfully deleted TAG: " + dgTag);
         //}
-        status = operations.AddDAGTag(dgTag);
+        status = operations.addDAGTag(dgTag);
         if (status.equals("success")) {
             System.out.println("Successfully added TAG: " + dgTag);
         }
-        status = operations.AddDAG(dgTag, PANOS_SERIAL, Arrays.asList("13.13.13.13"));
+        status = operations.addDAG(dgTag, PANOS_SERIAL, Arrays.asList("13.13.13.13"));
         if (status.equals("success")) {
             System.out.println("Successfully added dynamic device group: " + dgTag);
         }
 
         //status = operations.DeleteDAG(dgTag, PANOS_SERIAL, "13.13.13.13");
         //if (status.equals("success")) {
-         //   System.out.println("Successfully deleted dynamic device group: " + dgTag);
-       // }
-
-        status = operations.ShowDAGTag();
-        if (status.equals("success")) {
-            System.out.println("Successfully displayed tags group: " + dgTag);
-        }
+        //   System.out.println("Successfully deleted dynamic device group: " + dgTag);
+        // }
 
         boolean state = operations.TagExists(dgTag);
         if (state == true) {
             System.out.println(" tags " + dgTag + "exists");
         }
-
 
     }
 

@@ -11,14 +11,10 @@ import org.osc.sdk.manager.element.VirtualSystemElement;
 
 public class PANManagerDeviceMemberApi implements ManagerDeviceMemberApi {
 
-    VirtualSystemElement vs;
-    ApplianceManagerConnectorElement mc;
+    private VirtualSystemElement vs;
+    private ApplianceManagerConnectorElement mc;
 
-    public static ManagerDeviceMemberApi create(ApplianceManagerConnectorElement mc, VirtualSystemElement vs) throws Exception {
-        return new PANManagerDeviceMemberApi(mc, vs);
-    }
-
-    private PANManagerDeviceMemberApi(ApplianceManagerConnectorElement mc, VirtualSystemElement vs) {
+    public PANManagerDeviceMemberApi(ApplianceManagerConnectorElement mc, VirtualSystemElement vs) {
         this.vs = vs;
         this.mc = mc;
     }

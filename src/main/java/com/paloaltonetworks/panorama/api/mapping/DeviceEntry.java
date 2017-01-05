@@ -15,40 +15,46 @@
 package com.paloaltonetworks.panorama.api.mapping;
 
 
-import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "entry")
 public class DeviceEntry {
-	
+
 	private String serial;
 	@XmlAttribute
 	private String name;
 	private String family;
-	
+
 	public String getName(){
 		return this.name;
 	}
-	
+
 	public void setName(String value){
 		this.name = value;
 	}
-	
+
 	public String getSerial(){
-		return serial;
+		return this.serial;
 	}
 	public void setSerial(String value){
 		this.serial = value;
 	}
-	
+
 	public String getFamily(){
-		return family;
+		return this.family;
 	}
-	
+
 	public void setFamily(String value){
 		this.family = value;
+	}
+
+	@Override
+	public String toString(){
+
+	    return String.format("Device Name: %s, serial: %s, family: %s", this.name, this.serial, this.family);
 	}
 }
