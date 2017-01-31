@@ -2,6 +2,8 @@ package com.paloaltonetworks.panorama.test;
 
 import java.net.URI;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -251,6 +253,16 @@ public class AbstractPanTest {
 
             @Override
             public String getApiKey() {
+                return null;
+            }
+
+            @Override
+            public SSLContext getSslContext() {
+                return null;
+            }
+
+            @Override
+            public TrustManager[] getTruststoreManager() throws Exception {
                 return null;
             }
         };

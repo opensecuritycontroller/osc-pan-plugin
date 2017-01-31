@@ -64,7 +64,7 @@ public class OSGiIntegrationTest extends AbstractPanTest {
 
                 mavenBundle("org.apache.felix", "org.apache.felix.scr").versionAsInProject(),
 
-                mavenBundle("org.osc.core", "IscMgrPlugin").versionAsInProject(),
+                mavenBundle("org.osc.api", "security-mgr-api").versionAsInProject(),
                 mavenBundle("javax.websocket", "javax.websocket-api").versionAsInProject(),
                 mavenBundle("log4j", "log4j").versionAsInProject(),
                 mavenBundle("commons-codec", "commons-codec").versionAsInProject(),
