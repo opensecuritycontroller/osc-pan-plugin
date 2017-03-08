@@ -352,11 +352,13 @@ public class ShowOperations {
 
         if (status.equals(SUCCESS)) {
             ArrayList<TagEntry> tagEntry = getTagResponse.getTagResult().getEntry();
-            Iterator<TagEntry> tagIterator = tagEntry.iterator();
-            while (tagIterator.hasNext()) {
-                if ((tagIterator.next().getName()).equals(tagName)) {
-                    LOG.info(String.format("Tag Name: %s found", tagName));
-                    return true;
+            if (tagEntry != null) {
+                Iterator<TagEntry> tagIterator = tagEntry.iterator();
+                while (tagIterator.hasNext()) {
+                    if ((tagIterator.next().getName()).equals(tagName)) {
+                        LOG.info(String.format("Tag Name: %s found", tagName));
+                        return true;
+                    }
                 }
             }
 

@@ -42,7 +42,9 @@ import com.paloaltonetworks.panorama.api.methods.ShowOperations;
  */
 public class PANDeviceApi implements ManagerDeviceApi  {
 
-	private static final Logger LOG = Logger.getLogger(PANDeviceApi.class);
+    // "I4745132";"I2306077";
+	private static final String LICENSE_AUTH_CODE = "I7517916";
+    private static final Logger LOG = Logger.getLogger(PANDeviceApi.class);
 	static String apiKey = null;
 	static String vmAuthKey = null;
 	private VirtualSystemElement vs;
@@ -245,11 +247,7 @@ public class PANDeviceApi implements ManagerDeviceApi  {
 
 	protected byte[] getLicense(){
 		byte[] encoded;
-		String configString;
-		//configString = "I4745132";
-		configString = "I2306077";
-		encoded = (configString.getBytes(StandardCharsets.UTF_8));
-		//return Base64.encode(encoded);
+		encoded = (LICENSE_AUTH_CODE.getBytes(StandardCharsets.UTF_8));
 		return encoded;
 	}
 
