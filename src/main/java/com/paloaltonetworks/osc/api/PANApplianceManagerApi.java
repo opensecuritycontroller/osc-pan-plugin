@@ -14,6 +14,16 @@
  */
 package com.paloaltonetworks.osc.api;
 
+import static org.osc.sdk.manager.Constants.AUTHENTICATION_TYPE;
+import static org.osc.sdk.manager.Constants.EXTERNAL_SERVICE_NAME;
+import static org.osc.sdk.manager.Constants.NOTIFICATION_TYPE;
+import static org.osc.sdk.manager.Constants.PLUGIN_NAME;
+import static org.osc.sdk.manager.Constants.PROVIDE_DEVICE_STATUS;
+import static org.osc.sdk.manager.Constants.SERVICE_NAME;
+import static org.osc.sdk.manager.Constants.SYNC_POLICY_MAPPING;
+import static org.osc.sdk.manager.Constants.SYNC_SECURITY_GROUP;
+import static org.osc.sdk.manager.Constants.VENDOR_NAME;
+
 import java.security.SecureRandom;
 
 import javax.net.ssl.HostnameVerifier;
@@ -25,8 +35,6 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 
 import org.apache.log4j.Logger;
-import org.osc.sdk.manager.ManagerAuthenticationType;
-import org.osc.sdk.manager.ManagerNotificationSubscriptionType;
 import org.osc.sdk.manager.api.ApplianceManagerApi;
 import org.osc.sdk.manager.api.IscJobNotificationApi;
 import org.osc.sdk.manager.api.ManagerCallbackNotificationApi;
@@ -48,7 +56,17 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import com.paloaltonetworks.panorama.api.methods.JAXBProvider;
 import com.paloaltonetworks.panorama.api.methods.ShowOperations;
 
-@Component(configurationPid = "com.paloaltonetworks.panorama.ApplianceManager", property = "osc.plugin.name=PANMgrPlugin")
+@Component(configurationPid = "com.paloaltonetworks.panorama.ApplianceManager", 
+property={
+        PLUGIN_NAME + "=PANMgrPlugin",
+        VENDOR_NAME + "=Palo Alto Networks",
+        SERVICE_NAME + "=PANMgrPlugin",
+        EXTERNAL_SERVICE_NAME + "=Pan-nsx",
+        AUTHENTICATION_TYPE + "=BASIC_AUTH",
+        NOTIFICATION_TYPE + "=NONE",
+        SYNC_SECURITY_GROUP + ":Boolean=true",
+        PROVIDE_DEVICE_STATUS + ":Boolean=false",
+        SYNC_POLICY_MAPPING + ":Boolean=false"})
 public class PANApplianceManagerApi implements ApplianceManagerApi {
 
     private static final Logger LOG = Logger.getLogger(PANApplianceManagerApi.class);
@@ -221,48 +239,7 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
         return null;
     }
 
-    /*
-     * @see org.osc.sdk.manager.api.ApplianceManagerApi#getName()
-     */
-    @Override
-    public String getName() {
-
-        return "PANMgrPlugin";
-    }
-
-    /*
-     * @see org.osc.sdk.manager.api.ApplianceManagerApi#getVendorName()
-     */
-    @Override
-    public String getVendorName() {
-
-        return "Palo Alto Networks";
-    }
-
-    /*
-     * @see org.osc.sdk.manager.api.ApplianceManagerApi#getVersion()
-     */
-    @Override
-    public String getVersion() {
-        return "1.0";
-    }
-
-    /*
-     * @see org.osc.sdk.manager.api.ApplianceManagerApi#getServiceName()
-     */
-    @Override
-    public String getServiceName() {
-        return "PANMgrPlugin";
-    }
-
-    /*
-     * @see org.osc.sdk.manager.api.ApplianceManagerApi#getNsxServiceName()
-     */
-    @Override
-    public String getNsxServiceName() {
-        return "Pan-nsx";
-    }
-
+ 
     /*
      * @see org.osc.sdk.manager.api.ApplianceManagerApi#getManagerUrl(java.lang.String)
      */
@@ -271,22 +248,7 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
         return "https://" + ipAddress;
     }
 
-    /*
-     * @see org.osc.sdk.manager.api.ApplianceManagerApi#getAuthenticationType()
-     */
-    @Override
-    public ManagerAuthenticationType getAuthenticationType() {
-        return ManagerAuthenticationType.BASIC_AUTH;
-    }
-
-    /*
-     * @see org.osc.sdk.manager.api.ApplianceManagerApi#isSecurityGroupSyncSupport()
-     */
-    @Override
-    public boolean isSecurityGroupSyncSupport() {
-        return true;
-    }
-
+ 
     /*
      * @see org.osc.sdk.manager.api.ApplianceManagerApi#checkConnection(org.osc.sdk.manager.element.
      * ApplianceManagerConnectorElement)
@@ -306,22 +268,7 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
         }
     }
 
-    /*
-     * @see org.osc.sdk.manager.api.ApplianceManagerApi#isAgentManaged()
-     */
-    @Override
-    public boolean isAgentManaged() {
-        return false;
-    }
-
-    /*
-     * @see org.osc.sdk.manager.api.ApplianceManagerApi#isPolicyMappingSupported()
-     */
-    @Override
-    public boolean isPolicyMappingSupported() {
-        return false;
-    }
-
+ 
     /*
      * @see
      * org.osc.sdk.manager.api.ApplianceManagerApi#createManagerWebSocketNotificationApi(org.osc.sdk.manager.element.
@@ -355,12 +302,5 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
         return null;
     }
 
-    /*
-     * @see org.osc.sdk.manager.api.ApplianceManagerApi#getNotificationType()
-     */
-    @Override
-    public ManagerNotificationSubscriptionType getNotificationType() {
-        return ManagerNotificationSubscriptionType.NONE;
-    }
-
+ 
 }
