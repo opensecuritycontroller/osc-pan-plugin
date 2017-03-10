@@ -12,6 +12,18 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
+	
+	<repositories>
+    	<repository>
+			<id>osc-nexus</id>
+			<name>OSC Nexus</name>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<url>http://10.3.240.132:8082/nexus/content/repositories/releases/</url>
+		</repository>
+	</repositories>
+	
 	<dependencies>
 		<dependency>
 			<groupId>org.osc.api</groupId>
