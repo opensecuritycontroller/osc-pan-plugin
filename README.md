@@ -1,5 +1,4 @@
 # osc-pan-plugin
 Open Security Controller Panoroma integration plugin
 
-For the maven IscMgrPlugin dependency follow the below link to install the file into local maven repository
-https://www.mkyong.com/maven/how-to-include-library-manully-into-maven-local-repository/
+[![Build Status](https://travis-ci.com/arvindn05/osc-pan-plugin.svg?token=FzxT1Qx9H6sqEHPcKhqW&branch=master)](https://travis-ci.com/arvindn05/osc-pan-plugin)
