@@ -14,32 +14,44 @@
  */
 package com.paloaltonetworks.osc.model;
 
+import java.util.Set;
+
 import org.osc.sdk.manager.element.ManagerSecurityGroupInterfaceElement;
 
 public class SecurityGroupInterfaceListElement extends BaseIdNameObject implements ManagerSecurityGroupInterfaceElement {
 
-    public SecurityGroupInterfaceListElement(String id, String name, String policyId, String tag) {
+    public SecurityGroupInterfaceListElement(String id, String name, Set<String> policyIds, String tag, String managerSecurityGroupId) {
         super(id, name);
-        this.policyId = policyId;
+        this.policyIds = policyIds;
         this.tag = tag;
+        this.managerSecurityGroupId = managerSecurityGroupId;
     }
 
-    private String policyId;
+    private Set<String> policyIds;
     private String tag;
+    private String managerSecurityGroupId;
 
- 
-    public String getPolicyId() {
-        return this.policyId;
-    }
-
-   
-    public String getTag() {
+    @Override
+	public String getTag() {
         return this.tag;
     }
 
-  
-    public String getSecurityGroupInterfaceId() {
+
+    @Override
+	public String getSecurityGroupInterfaceId() {
         return getId();
     }
+
+
+	@Override
+	public String getManagerSecurityGroupId() {
+		return this.managerSecurityGroupId;
+	}
+
+
+	@Override
+	public Set<String> getManagerPolicyIds() {
+		return this.policyIds;
+	}
 
 }

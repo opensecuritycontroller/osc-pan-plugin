@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 import org.osc.sdk.manager.api.ManagerSecurityGroupInterfaceApi;
 import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
 import org.osc.sdk.manager.element.ManagerSecurityGroupInterfaceElement;
+import org.osc.sdk.manager.element.SecurityGroupInterfaceElement;
 import org.osc.sdk.manager.element.VirtualSystemElement;
 
 import com.paloaltonetworks.panorama.api.methods.ShowOperations;
@@ -42,18 +43,19 @@ public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroup
 		this.showOperations = showOperations;
 	}
 
+
 	@Override
-	public String createSecurityGroupInterface(String name, String policyId, String tag) throws Exception {
-		String status = this.showOperations.addDAGTag(tag);
+	public String createSecurityGroupInterface(SecurityGroupInterfaceElement sgiElement) throws Exception {
+		String status = this.showOperations.addDAGTag(sgiElement.getTag());
 		if (status.equals("success")){
-			return name;
+			return sgiElement.getName();
 		} else {
 			return null;
 		}
 	}
 
 	@Override
-	public void updateSecurityGroupInterface(String id, String name, String policyId, String tag) throws Exception {
+	public void updateSecurityGroupInterface(SecurityGroupInterfaceElement sgiElement) throws Exception {
 
 	}
 
@@ -84,4 +86,5 @@ public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroup
 	public void close() {
 
 	}
+
 }
