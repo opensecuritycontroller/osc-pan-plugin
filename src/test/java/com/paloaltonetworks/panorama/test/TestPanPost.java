@@ -6,6 +6,7 @@ import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.HostnameVerifier;
@@ -26,6 +27,7 @@ import org.junit.Test;
 import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
 import org.osc.sdk.manager.element.ManagerDeviceElement;
 import org.osc.sdk.manager.element.ManagerDeviceMemberElement;
+import org.osc.sdk.manager.element.SecurityGroupInterfaceElement;
 import org.osc.sdk.manager.element.VirtualSystemElement;
 
 import com.paloaltonetworks.osc.api.PANDeviceApi;
@@ -91,7 +93,34 @@ public class TestPanPost extends AbstractPanTest {
         ShowOperations showOperations = new ShowOperations(LOCALHOST, this.serverPort, false, USERNAME, PASSWORD,
                 this.client);
         PANManagerSecurityGroupInterfaceApi sgiApi = new PANManagerSecurityGroupInterfaceApi(amce, vse, showOperations);
-        String result = sgiApi.createSecurityGroupInterface("Tag Name", null, "Tag1");
+        SecurityGroupInterfaceElement sgiElement = new SecurityGroupInterfaceElement() {
+
+			@Override
+			public String getTag() {
+				return "Tag1";
+			}
+
+			@Override
+			public String getSecurityGroupInterfaceId() {
+				return null;
+			}
+
+			@Override
+			public String getName() {
+				return "Tag Name";
+			}
+
+			@Override
+			public String getManagerSecurityGroupId() {
+				return null;
+			}
+
+			@Override
+			public Set<String> getManagerPolicyIds() {
+				return null;
+			}
+		};
+        String result = sgiApi.createSecurityGroupInterface(sgiElement);
 
         assertEquals("Tag Name", result);
 
