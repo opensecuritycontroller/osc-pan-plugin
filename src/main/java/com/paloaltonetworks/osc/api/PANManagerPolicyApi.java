@@ -30,35 +30,36 @@ import com.paloaltonetworks.panorama.api.methods.ShowOperations;
  */
 public class PANManagerPolicyApi implements ManagerPolicyApi {
 
-    private static final Logger log = Logger.getLogger(PANManagerPolicyApi.class);
-    static String apiKey = null;
-    private VirtualSystemElement vs;
-    private ApplianceManagerConnectorElement mc;
-    private ShowOperations showOperations;
+	private static final Logger log = Logger.getLogger(PANManagerPolicyApi.class);
+	static String apiKey = null;
+	private VirtualSystemElement vs;
+	private ApplianceManagerConnectorElement mc;
+	private ShowOperations showOperations;
 
-    private static ArrayList<PolicyListElement> policyList = new ArrayList<>();
-    static {
-        policyList.add(new PolicyListElement("Platinum", "Platinum"));
-        policyList.add(new PolicyListElement("Gold", "Gold"));
-        policyList.add(new PolicyListElement("Silver", "Silver"));
-        policyList.add(new PolicyListElement("Bronze", "Bronze"));
-    }
+	private static ArrayList<PolicyListElement> policyList = new ArrayList<>();
+	static {
+		// Add domain if applicable
+		policyList.add(new PolicyListElement("Platinum", "Platinum", null));
+		policyList.add(new PolicyListElement("Gold", "Gold", null));
+		policyList.add(new PolicyListElement("Silver", "Silver", null));
+		policyList.add(new PolicyListElement("Bronze", "Bronze", null));
+	}
 
-    public PANManagerPolicyApi(ApplianceManagerConnectorElement mc, ShowOperations showOperations) {
-        log.info("Creating new PANManagerPolicy api");
-        this.mc = mc;
-        log.info("new show operaitons in Policy");
-        this.showOperations = showOperations;
+	public PANManagerPolicyApi(ApplianceManagerConnectorElement mc, ShowOperations showOperations) {
+		log.info("Creating new PANManagerPolicy api");
+		this.mc = mc;
+		log.info("new show operaitons in Policy");
+		this.showOperations = showOperations;
 
-    }
+	}
 
-    @Override
-    public PolicyListElement getPolicy(String policyId, String domainId) throws Exception {
-        return policyList.get(Integer.valueOf(policyId));
-    }
+	@Override
+	public PolicyListElement getPolicy(String policyId, String domainId) throws Exception {
+		return policyList.get(Integer.valueOf(policyId));
+	}
 
-    @Override
-    public List<PolicyListElement> getPolicyList(String domainId) throws Exception {
-        return policyList;
-    }
+	@Override
+	public List<PolicyListElement> getPolicyList(String domainId) throws Exception {
+		return policyList;
+	}
 }

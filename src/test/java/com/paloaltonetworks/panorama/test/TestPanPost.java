@@ -27,6 +27,7 @@ import org.junit.Test;
 import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
 import org.osc.sdk.manager.element.ManagerDeviceElement;
 import org.osc.sdk.manager.element.ManagerDeviceMemberElement;
+import org.osc.sdk.manager.element.ManagerPolicyElement;
 import org.osc.sdk.manager.element.SecurityGroupInterfaceElement;
 import org.osc.sdk.manager.element.VirtualSystemElement;
 
@@ -101,11 +102,6 @@ public class TestPanPost extends AbstractPanTest {
 			}
 
 			@Override
-			public String getSecurityGroupInterfaceId() {
-				return null;
-			}
-
-			@Override
 			public String getName() {
 				return "Tag Name";
 			}
@@ -116,7 +112,12 @@ public class TestPanPost extends AbstractPanTest {
 			}
 
 			@Override
-			public Set<String> getManagerPolicyIds() {
+			public String getManagerSecurityGroupInterfaceId() {
+				return null;
+			}
+
+			@Override
+			public Set<ManagerPolicyElement> getManagerPolicyElements() {
 				return null;
 			}
 		};

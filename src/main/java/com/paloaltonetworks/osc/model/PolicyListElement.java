@@ -18,8 +18,16 @@ import org.osc.sdk.manager.element.ManagerPolicyElement;
 
 public class PolicyListElement extends BaseIdNameObject implements ManagerPolicyElement {
 
-    public PolicyListElement(String id, String name) {
-        super(id, name);
-    }
+	String domainId;
+
+	public PolicyListElement(String id, String name, String domainId) {
+		super(id, name);
+		this.domainId = domainId;
+	}
+
+	@Override
+	public String getDomainId() {
+		return this.domainId;
+	}
 
 }
