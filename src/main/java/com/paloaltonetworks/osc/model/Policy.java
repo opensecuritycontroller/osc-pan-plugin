@@ -20,22 +20,27 @@ public class Policy implements ManagerPolicyElement {
 
     protected String id;
     protected String name;
-    
-    public Policy(String id, String name) {
+    protected String domainId;
+
+    public Policy(String id, String name, String domainId) {
         this.id = id;
         this.name = name;
+        this.domainId = domainId;
     }
 
 	@Override
 	public String getId() {
-		// TODO Auto-generated method stub
 		return this.id;
 	}
 
 	@Override
 	public String getName() {
-		// TODO Auto-generated method stub
 		return this.name;
+	}
+
+	@Override
+	public String getDomainId() {
+		return this.domainId;
 	}
 
 }

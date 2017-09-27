@@ -59,7 +59,7 @@ property={
         SYNC_SECURITY_GROUP + ":Boolean=true",
         PROVIDE_DEVICE_STATUS + ":Boolean=false",
         SYNC_POLICY_MAPPING + ":Boolean=false",
-        SUPPORT_MULTIPLE_POLICIES + ":Boolean=true"})
+        SUPPORT_MULTIPLE_POLICIES + ":Boolean=false"})
 public class PANApplianceManagerApi implements ApplianceManagerApi {
 
     private static final Logger LOG = Logger.getLogger(PANApplianceManagerApi.class);

@@ -14,44 +14,44 @@
  */
 package com.paloaltonetworks.osc.model;
 
+import java.util.HashSet;
 import java.util.Set;
 
+import org.osc.sdk.manager.element.ManagerPolicyElement;
 import org.osc.sdk.manager.element.ManagerSecurityGroupInterfaceElement;
 
 public class SecurityGroupInterface extends BaseIdNameObject implements ManagerSecurityGroupInterfaceElement {
 
-    private Set<String> policyIds;
-    private String tag;
-    private String managerSecurityGroupId;
+	private Set<Policy> policies;
+	private String tag;
+	private String managerSecurityGroupId;
 
-    public SecurityGroupInterface(String id, String name, Set<String> policyIds, String tag, String managerSecurityGroupId) {
-        super(id, name);
-        this.policyIds = policyIds;
-        this.tag = tag;
-        this.managerSecurityGroupId = managerSecurityGroupId;
-    }
-
-    @Override
-	public String getTag() {
-        return this.tag;
-    }
-
-
-    @Override
-	public String getSecurityGroupInterfaceId() {
-        return getId();
-    }
-
+	public SecurityGroupInterface(String id, String name, Set<Policy> policies, String tag,
+			String managerSecurityGroupId) {
+		super(id, name);
+		this.policies = policies;
+		this.tag = tag;
+		this.managerSecurityGroupId = managerSecurityGroupId;
+	}
 
 	@Override
-	public String getManagerSecurityGroupId() {
+	public String getTag() {
+		return this.tag;
+	}
+
+	@Override
+	public String getSecurityGroupInterfaceId() {
+		return getId();
+	}
+
+	@Override
+	public String getSecurityGroupId() {
 		return this.managerSecurityGroupId;
 	}
 
-
 	@Override
-	public Set<String> getManagerPolicyIds() {
-		return this.policyIds;
+	public Set<ManagerPolicyElement> getManagerPolicyElements() {
+		return new HashSet<>(this.policies);
 	}
 
 }
