@@ -52,11 +52,7 @@ public class SecurityGroupInterfaceListElement extends BaseIdNameObject
 
 	@Override
 	public Set<ManagerPolicyElement> getManagerPolicyElements() {
-		Set<ManagerPolicyElement> managerPolicyElements = new HashSet<>();
-		for (Policy policy : this.policies) {
-			managerPolicyElements.add(policy);
-		}
-		return managerPolicyElements;
+		return new HashSet<>(this.policies);
 	}
 
 }
