@@ -39,10 +39,10 @@ public class PANManagerPolicyApi implements ManagerPolicyApi {
 	private static ArrayList<PolicyListElement> policyList = new ArrayList<>();
 	static {
 		// Add domain if applicable
-		policyList.add(new PolicyListElement("Platinum", "Platinum", null));
-		policyList.add(new PolicyListElement("Gold", "Gold", null));
-		policyList.add(new PolicyListElement("Silver", "Silver", null));
-		policyList.add(new PolicyListElement("Bronze", "Bronze", null));
+		policyList.add(new PolicyListElement("Platinum", "Platinum", "Root-Domain"));
+		policyList.add(new PolicyListElement("Gold", "Gold", "Root-Domain"));
+		policyList.add(new PolicyListElement("Silver", "Silver", "Root-Domain"));
+		policyList.add(new PolicyListElement("Bronze", "Bronze", "Root-Domain"));
 	}
 
 	public PANManagerPolicyApi(ApplianceManagerConnectorElement mc, ShowOperations showOperations) {
