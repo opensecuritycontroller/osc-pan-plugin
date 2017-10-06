@@ -14,6 +14,8 @@
  */
 package com.paloaltonetworks.osc.api;
 
+import com.paloaltonetworks.utils.LogProvider;
+
 import static org.osc.sdk.manager.Constants.*;
 
 import java.security.SecureRandom;
@@ -26,7 +28,6 @@ import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 
-import org.apache.log4j.Logger;
 import org.osc.sdk.manager.api.ApplianceManagerApi;
 import org.osc.sdk.manager.api.IscJobNotificationApi;
 import org.osc.sdk.manager.api.ManagerCallbackNotificationApi;
@@ -44,25 +45,19 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
+import org.slf4j.Logger;
 
 import com.paloaltonetworks.panorama.api.methods.JAXBProvider;
 import com.paloaltonetworks.panorama.api.methods.ShowOperations;
 
 @Component(configurationPid = "com.paloaltonetworks.panorama.ApplianceManager",
-property={
-        PLUGIN_NAME + "=PANMgrPlugin",
-        VENDOR_NAME + "=Palo Alto Networks",
-        SERVICE_NAME + "=PANMgrPlugin",
-        EXTERNAL_SERVICE_NAME + "=Pan-nsx",
-        AUTHENTICATION_TYPE + "=BASIC_AUTH",
-        NOTIFICATION_TYPE + "=NONE",
-        SYNC_SECURITY_GROUP + ":Boolean=true",
-        PROVIDE_DEVICE_STATUS + ":Boolean=false",
-        SYNC_POLICY_MAPPING + ":Boolean=false",
-        SUPPORT_MULTIPLE_POLICIES + ":Boolean=false"})
+        property = { PLUGIN_NAME + "=PANMgrPlugin", VENDOR_NAME + "=Palo Alto Networks", SERVICE_NAME + "=PANMgrPlugin",
+                EXTERNAL_SERVICE_NAME + "=Pan-nsx", AUTHENTICATION_TYPE + "=BASIC_AUTH", NOTIFICATION_TYPE + "=NONE",
+                SYNC_SECURITY_GROUP + ":Boolean=true", PROVIDE_DEVICE_STATUS + ":Boolean=false",
+                SYNC_POLICY_MAPPING + ":Boolean=false", SUPPORT_MULTIPLE_POLICIES + ":Boolean=false" })
 public class PANApplianceManagerApi implements ApplianceManagerApi {
 
-    private static final Logger LOG = Logger.getLogger(PANApplianceManagerApi.class);
+    private static final Logger LOG = LogProvider.getLogger(PANApplianceManagerApi.class);
     private Client client;
     private Config config;
 
@@ -71,13 +66,17 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
         @AttributeDefinition(required = false)
         boolean use_https() default true;
 
-        @AttributeDefinition(min = "0", max = "65535", required = false, description = "The port to use when connecting to PAN instances. The value '0' indicates that a default port of '443' (or '80' if HTTPS is not enabled) should be used.")
+        @AttributeDefinition(min = "0",
+                max = "65535",
+                required = false,
+                description = "The port to use when connecting to PAN instances. The value '0' indicates that a default port of '443' (or '80' if HTTPS is not enabled) should be used.")
         int port() default 0;
 
         @AttributeDefinition(min = "0", required = false)
         int max_threads() default 0;
 
-        @AttributeDefinition(required = false, description = "The property name to use when setting the maximum thread count")
+        @AttributeDefinition(required = false,
+                description = "The property name to use when setting the maximum thread count")
         String max_threads_property_name() default "com.sun.jersey.client.property.threadpoolSize";
     }
 
@@ -232,7 +231,6 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
         return null;
     }
 
-
     /*
      * @see org.osc.sdk.manager.api.ApplianceManagerApi#getManagerUrl(java.lang.String)
      */
@@ -240,7 +238,6 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
     public String getManagerUrl(String ipAddress) {
         return "https://" + ipAddress;
     }
-
 
     /*
      * @see org.osc.sdk.manager.api.ApplianceManagerApi#checkConnection(org.osc.sdk.manager.element.
@@ -260,7 +257,6 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
             throw new Exception(errorMessage);
         }
     }
-
 
     /*
      * @see
@@ -294,6 +290,5 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
 
         return null;
     }
-
 
 }

@@ -21,39 +21,43 @@ import org.osc.sdk.manager.element.ApplianceBootstrapInformationElement;
 
 public class PANApplianceBootstrapInformationElement implements ApplianceBootstrapInformationElement {
 
-	private List<BootstrapFileElement> bootstrapInfo;
-	
-	public PANApplianceBootstrapInformationElement(){
-		bootstrapInfo = new ArrayList<BootstrapFileElement>();
-	}
-	@Override
-	public List<BootstrapFileElement> getBootstrapFiles() {		
-		return bootstrapInfo;
-	}
-	
-	private class PANBootstrapFileElement implements BootstrapFileElement{
-		
-		String localFileName;
-		byte [] localFileData;
-		
-		PANBootstrapFileElement(String fileName, byte[] fileData){
-			localFileName = fileName;
-			localFileData = fileData;
-		}
-		public String getName(){
-			
-			return localFileName;
-		}
-		
-		public byte[] getContent(){
-			return localFileData;
-		}
-	}
-	
-	public void addBootstrapFile(String filename, byte[] encodedData){
+    private List<BootstrapFileElement> bootstrapInfo;
 
-		PANBootstrapFileElement fileElement = new PANBootstrapFileElement(filename, encodedData);
-		bootstrapInfo.add(fileElement);
-	}
+    public PANApplianceBootstrapInformationElement() {
+        bootstrapInfo = new ArrayList<BootstrapFileElement>();
+    }
+
+    @Override
+    public List<BootstrapFileElement> getBootstrapFiles() {
+        return bootstrapInfo;
+    }
+
+    private class PANBootstrapFileElement implements BootstrapFileElement {
+
+        String localFileName;
+        byte[] localFileData;
+
+        PANBootstrapFileElement(String fileName, byte[] fileData) {
+            localFileName = fileName;
+            localFileData = fileData;
+        }
+
+        @Override
+        public String getName() {
+
+            return localFileName;
+        }
+
+        @Override
+        public byte[] getContent() {
+            return localFileData;
+        }
+    }
+
+    public void addBootstrapFile(String filename, byte[] encodedData) {
+
+        PANBootstrapFileElement fileElement = new PANBootstrapFileElement(filename, encodedData);
+        bootstrapInfo.add(fileElement);
+    }
 
 }

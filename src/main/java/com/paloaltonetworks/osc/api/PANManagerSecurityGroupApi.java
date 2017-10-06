@@ -17,7 +17,6 @@ package com.paloaltonetworks.osc.api;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.osc.sdk.manager.api.ManagerSecurityGroupApi;
 import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
 import org.osc.sdk.manager.element.ManagerSecurityGroupElement;
@@ -32,7 +31,6 @@ import com.paloaltonetworks.panorama.api.methods.ShowOperations;
  */
 public class PANManagerSecurityGroupApi implements ManagerSecurityGroupApi {
 
-    private static final Logger log = Logger.getLogger(PANManagerSecurityGroupApi.class);
     static String apiKey = null;
     private VirtualSystemElement vs;
     private ApplianceManagerConnectorElement mc;

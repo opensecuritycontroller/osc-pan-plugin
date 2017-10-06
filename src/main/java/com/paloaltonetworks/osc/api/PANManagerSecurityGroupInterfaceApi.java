@@ -16,7 +16,6 @@ package com.paloaltonetworks.osc.api;
 
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.osc.sdk.manager.api.ManagerSecurityGroupInterfaceApi;
 import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
 import org.osc.sdk.manager.element.ManagerSecurityGroupInterfaceElement;
@@ -25,66 +24,64 @@ import org.osc.sdk.manager.element.VirtualSystemElement;
 
 import com.paloaltonetworks.panorama.api.methods.ShowOperations;
 
-
 /**
  * This documents "Device Management Apis"
  */
-public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfaceApi  {
+public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroupInterfaceApi {
 
-    private static final Logger log = Logger.getLogger(PANManagerSecurityGroupInterfaceApi.class);
     static String apiKey = null;
     private VirtualSystemElement vs;
-	private ApplianceManagerConnectorElement mc;
-	private ShowOperations showOperations;
+    private ApplianceManagerConnectorElement mc;
+    private ShowOperations showOperations;
 
-	public PANManagerSecurityGroupInterfaceApi(ApplianceManagerConnectorElement mc,VirtualSystemElement vs, ShowOperations showOperations) {
-    	this.vs = vs;
-		this.mc = mc;
-		this.showOperations = showOperations;
-	}
+    public PANManagerSecurityGroupInterfaceApi(ApplianceManagerConnectorElement mc, VirtualSystemElement vs,
+            ShowOperations showOperations) {
+        this.vs = vs;
+        this.mc = mc;
+        this.showOperations = showOperations;
+    }
 
+    @Override
+    public String createSecurityGroupInterface(SecurityGroupInterfaceElement sgiElement) throws Exception {
+        String status = this.showOperations.addDAGTag(sgiElement.getTag());
+        if (status.equals("success")) {
+            return sgiElement.getName();
+        } else {
+            return null;
+        }
+    }
 
-	@Override
-	public String createSecurityGroupInterface(SecurityGroupInterfaceElement sgiElement) throws Exception {
-		String status = this.showOperations.addDAGTag(sgiElement.getTag());
-		if (status.equals("success")){
-			return sgiElement.getName();
-		} else {
-			return null;
-		}
-	}
+    @Override
+    public void updateSecurityGroupInterface(SecurityGroupInterfaceElement sgiElement) throws Exception {
 
-	@Override
-	public void updateSecurityGroupInterface(SecurityGroupInterfaceElement sgiElement) throws Exception {
+    }
 
-	}
+    @Override
+    public void deleteSecurityGroupInterface(String id) throws Exception {
+        this.showOperations.deleteDAGTag(id);
+    }
 
-	@Override
-	public void deleteSecurityGroupInterface(String id) throws Exception {
-		this.showOperations.deleteDAGTag(id);
-	}
+    @Override
+    public ManagerSecurityGroupInterfaceElement getSecurityGroupInterfaceById(String id) throws Exception {
 
-	@Override
-	public ManagerSecurityGroupInterfaceElement getSecurityGroupInterfaceById(String id) throws Exception {
+        return null;
+    }
 
-		return null;
-	}
+    @Override
+    public String findSecurityGroupInterfaceByName(String name) throws Exception {
 
-	@Override
-	public String findSecurityGroupInterfaceByName(String name) throws Exception {
+        return null;
+    }
 
-		return null;
-	}
+    @Override
+    public List<? extends ManagerSecurityGroupInterfaceElement> listSecurityGroupInterfaces() throws Exception {
 
-	@Override
-	public List<? extends ManagerSecurityGroupInterfaceElement> listSecurityGroupInterfaces() throws Exception {
+        return null;
+    }
 
-		return null;
-	}
+    @Override
+    public void close() {
 
-	@Override
-	public void close() {
-
-	}
+    }
 
 }

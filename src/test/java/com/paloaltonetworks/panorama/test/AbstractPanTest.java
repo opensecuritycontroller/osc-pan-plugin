@@ -14,7 +14,6 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
-import org.apache.log4j.Logger;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.glassfish.jersey.jetty.JettyHttpContainerFactory;
@@ -28,11 +27,13 @@ import org.osc.sdk.manager.element.DomainElement;
 import org.osc.sdk.manager.element.ManagerTypeElement;
 import org.osc.sdk.manager.element.VirtualSystemElement;
 import org.osc.sdk.manager.element.VirtualizationConnectorElement;
+import org.slf4j.Logger;
 
 import com.paloaltonetworks.panorama.api.methods.JAXBProvider;
+import com.paloaltonetworks.utils.LogProvider;
 
 public class AbstractPanTest {
-    protected static final Logger log = Logger.getLogger(AbstractPanTest.class);
+    protected static final Logger log = LogProvider.getLogger(AbstractPanTest.class);
 
     // Authentication
     protected static final String USERNAME = "admin";
