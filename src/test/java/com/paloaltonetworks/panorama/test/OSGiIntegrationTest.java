@@ -67,8 +67,8 @@ public class OSGiIntegrationTest extends AbstractPanTest {
                 mavenBundle("org.osc.api", "security-mgr-api").versionAsInProject(),
                 mavenBundle("javax.websocket", "javax.websocket-api").versionAsInProject(),
                 mavenBundle("org.slf4j", "slf4j-api").versionAsInProject(),
-                // Fragment bundles cannot be started
-                mavenBundle("org.slf4j", "slf4j-simple").versionAsInProject().noStart(),
+                mavenBundle("ch.qos.logback", "logback-core").versionAsInProject(),
+                mavenBundle("ch.qos.logback", "logback-classic").versionAsInProject(),
 
                 mavenBundle("commons-codec", "commons-codec").versionAsInProject(),
                 mavenBundle("javax.ws.rs", "javax.ws.rs-api").versionAsInProject(),
