@@ -14,7 +14,7 @@
  */
 package com.paloaltonetworks.osc.api;
 
-import com.paloaltonetworks.utils.LogProvider;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +32,7 @@ import com.paloaltonetworks.panorama.api.methods.ShowOperations;
  */
 public class PANManagerPolicyApi implements ManagerPolicyApi {
 
-    private static final Logger log = LogProvider.getLogger(PANManagerPolicyApi.class);
+    private static final Logger log = LoggerFactory.getLogger(PANManagerPolicyApi.class);
     static String apiKey = null;
     private VirtualSystemElement vs;
     private ApplianceManagerConnectorElement mc;

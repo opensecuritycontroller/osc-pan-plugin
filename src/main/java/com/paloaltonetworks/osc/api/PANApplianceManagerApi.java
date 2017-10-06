@@ -14,7 +14,7 @@
  */
 package com.paloaltonetworks.osc.api;
 
-import com.paloaltonetworks.utils.LogProvider;
+import org.slf4j.LoggerFactory;
 
 import static org.osc.sdk.manager.Constants.*;
 
@@ -57,7 +57,7 @@ import com.paloaltonetworks.panorama.api.methods.ShowOperations;
                 SYNC_POLICY_MAPPING + ":Boolean=false", SUPPORT_MULTIPLE_POLICIES + ":Boolean=false" })
 public class PANApplianceManagerApi implements ApplianceManagerApi {
 
-    private static final Logger LOG = LogProvider.getLogger(PANApplianceManagerApi.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PANApplianceManagerApi.class);
     private Client client;
     private Config config;
 

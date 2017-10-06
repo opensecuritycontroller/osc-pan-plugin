@@ -30,10 +30,10 @@ import org.osc.sdk.manager.element.VirtualizationConnectorElement;
 import org.slf4j.Logger;
 
 import com.paloaltonetworks.panorama.api.methods.JAXBProvider;
-import com.paloaltonetworks.utils.LogProvider;
+import org.slf4j.LoggerFactory;
 
 public class AbstractPanTest {
-    protected static final Logger log = LogProvider.getLogger(AbstractPanTest.class);
+    protected static final Logger log = LoggerFactory.getLogger(AbstractPanTest.class);
 
     // Authentication
     protected static final String USERNAME = "admin";

@@ -43,10 +43,10 @@ import com.paloaltonetworks.panorama.api.mapping.ShowDeviceResponse;
 import com.paloaltonetworks.panorama.api.mapping.ShowResponse;
 import com.paloaltonetworks.panorama.api.mapping.TagEntry;
 import com.paloaltonetworks.panorama.api.mapping.VMAuthKeyResponse;
-import com.paloaltonetworks.utils.LogProvider;
+import org.slf4j.LoggerFactory;
 
 public class ShowOperations {
-    private static final Logger LOG = LogProvider.getLogger(ShowOperations.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ShowOperations.class);
     private static final String PAN_REST_URL_BASE = "/api/";
     private static final String SUCCESS = "success";
     private static final String ERROR = "error";

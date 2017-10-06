@@ -36,10 +36,10 @@ import com.paloaltonetworks.osc.api.PANManagerSecurityGroupInterfaceApi;
 import com.paloaltonetworks.panorama.api.mapping.ShowResponse;
 import com.paloaltonetworks.panorama.api.methods.JAXBProvider;
 import com.paloaltonetworks.panorama.api.methods.ShowOperations;
-import com.paloaltonetworks.utils.LogProvider;
+import org.slf4j.LoggerFactory;
 
 public class TestPanPost extends AbstractPanTest {
-    private static final Logger log = LogProvider.getLogger(TestPanPost.class);
+    private static final Logger log = LoggerFactory.getLogger(TestPanPost.class);
     private static final String URL = "http://%s:%s/api";
     private static final String LOCALHOST = "127.0.0.1";
     private Client client;
