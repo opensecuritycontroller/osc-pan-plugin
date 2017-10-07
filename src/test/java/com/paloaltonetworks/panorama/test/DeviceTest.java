@@ -11,12 +11,12 @@ import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 
-import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.slf4j.Logger;
 
 import com.paloaltonetworks.panorama.api.methods.ShowOperations;
 /*
@@ -24,6 +24,7 @@ import com.paloaltonetworks.panorama.api.methods.ShowOperations;
  * To run this test, change the IP, username & password variables pointing to the device
  * and then uncomment the @Ignore annotation.
  */
+import org.slf4j.LoggerFactory;
 
 public class DeviceTest {
 
@@ -31,7 +32,7 @@ public class DeviceTest {
     private static final String PASSWORD = "admin";
     private static final String IP = "10.71.85.99";
 
-    private static final Logger LOG = Logger.getLogger(DeviceTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DeviceTest.class);
 
     private ShowOperations showOperations;
     private Client client;

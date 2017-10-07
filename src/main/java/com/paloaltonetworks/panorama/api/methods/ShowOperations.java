@@ -29,7 +29,7 @@ import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 
 import com.paloaltonetworks.panorama.api.mapping.CommitResponse;
 import com.paloaltonetworks.panorama.api.mapping.DAGResponse;
@@ -43,9 +43,10 @@ import com.paloaltonetworks.panorama.api.mapping.ShowDeviceResponse;
 import com.paloaltonetworks.panorama.api.mapping.ShowResponse;
 import com.paloaltonetworks.panorama.api.mapping.TagEntry;
 import com.paloaltonetworks.panorama.api.mapping.VMAuthKeyResponse;
+import org.slf4j.LoggerFactory;
 
 public class ShowOperations {
-    private static final Logger LOG = Logger.getLogger(ShowOperations.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ShowOperations.class);
     private static final String PAN_REST_URL_BASE = "/api/";
     private static final String SUCCESS = "success";
     private static final String ERROR = "error";

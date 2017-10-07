@@ -19,7 +19,6 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
-import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -30,15 +29,17 @@ import org.osc.sdk.manager.element.ManagerDeviceMemberElement;
 import org.osc.sdk.manager.element.ManagerPolicyElement;
 import org.osc.sdk.manager.element.SecurityGroupInterfaceElement;
 import org.osc.sdk.manager.element.VirtualSystemElement;
+import org.slf4j.Logger;
 
 import com.paloaltonetworks.osc.api.PANDeviceApi;
 import com.paloaltonetworks.osc.api.PANManagerSecurityGroupInterfaceApi;
 import com.paloaltonetworks.panorama.api.mapping.ShowResponse;
 import com.paloaltonetworks.panorama.api.methods.JAXBProvider;
 import com.paloaltonetworks.panorama.api.methods.ShowOperations;
+import org.slf4j.LoggerFactory;
 
 public class TestPanPost extends AbstractPanTest {
-    private static final Logger log = Logger.getLogger(TestPanPost.class);
+    private static final Logger log = LoggerFactory.getLogger(TestPanPost.class);
     private static final String URL = "http://%s:%s/api";
     private static final String LOCALHOST = "127.0.0.1";
     private Client client;
