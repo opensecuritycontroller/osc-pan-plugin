@@ -58,7 +58,7 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- Apache Felix (OSGi provider) Dependencies -->
+		<!-- Apache Felix (OSGi provider) Dependencies. -->
 		<dependency>
 			<groupId>org.apache.felix</groupId>
 			<artifactId>org.apache.felix.scr</artifactId>
