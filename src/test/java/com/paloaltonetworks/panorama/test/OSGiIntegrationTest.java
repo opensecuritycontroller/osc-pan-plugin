@@ -54,7 +54,7 @@ public class OSGiIntegrationTest extends AbstractPanTest {
                 // server can use them.
                 CoreOptions.streamBundle(TinyBundles.bundle().set(Constants.BUNDLE_MANIFESTVERSION, "2")
                         .set(Constants.BUNDLE_SYMBOLICNAME, "Test-Fragment")
-                        .set(Constants.FRAGMENT_HOST, "PANMgrPlugin")
+                        .set(Constants.FRAGMENT_HOST, "Panorama")
                         .set(Constants.EXPORT_PACKAGE,
                                 "com.paloaltonetworks.osc.model,com.paloaltonetworks.panorama.api.mapping,"
                                         + "com.paloaltonetworks.panorama.api.methods, com.paloaltonetworks.utils")

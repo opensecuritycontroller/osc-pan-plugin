@@ -3,10 +3,10 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.paloaltonetworks.osm</groupId>
-	<artifactId>PANMgrPlugin</artifactId>
+	<artifactId>Panorama</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0</version>
-	<name>PANMgrPlugin</name>
+	<version>2.0.1-SNAPSHOT</version>
+	<name>Panorama</name>
 	<url>http://maven.apache.org</url>
 
 	<properties>
@@ -17,16 +17,8 @@
 	</properties>
 
 	<repositories>
-        <repository>
-            <id>osc-nexus</id>
-            <name>OSC Nexus</name>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <url>http://ci.opensecuritycontroller.org:8082/nexus/content/repositories/releases</url>
-        </repository>
 		<repository>
-			<id>osc-nexus-snapshot</id>
+			<id>osc-nexus</id>
 			<name>OSC Nexus</name>
 			<snapshots>
 				<enabled>true</enabled>
@@ -39,7 +31,7 @@
 		<dependency>
 			<groupId>org.osc.api</groupId>
 			<artifactId>security-mgr-api</artifactId>
-			<version>2.0.0</version>
+			<version>2.0.1-SNAPSHOT</version>
 		</dependency>
 
 		<!-- OSGi dependencies -->
@@ -58,7 +50,7 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- Apache Felix (OSGi provider) Dependencies. -->
+		<!-- Apache Felix (OSGi provider) Dependencies -->
 		<dependency>
 			<groupId>org.apache.felix</groupId>
 			<artifactId>org.apache.felix.scr</artifactId>
@@ -198,7 +190,7 @@
 				<version>2.5</version>
 				<configuration>
 					<outputDirectory>${project.build.directory}/plugin</outputDirectory>
-					<finalName>PANMgrPlugin</finalName>
+					<finalName>Panorama</finalName>
 					<archive>
 						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
 						<manifestEntries>
@@ -257,15 +249,15 @@
 						<configuration>
 							<tasks>
 								<!-- Create plugin .bar -->
-								<jar destfile="${project.build.directory}/PANMgrPlugin.bar">
+								<jar destfile="${project.build.directory}/Panorama.bar">
 									<fileset dir="${project.build.directory}/plugin" />
 									<manifest>
-										<attribute name="Deployment-Name" value="PANMgrPlugin" />
+										<attribute name="Deployment-Name" value="Panorama" />
 										<attribute name="Deployment-Type" value="MANAGER" />
-										<attribute name="Deployment-SymbolicName" value="PANMgrPlugin" />
+										<attribute name="Deployment-SymbolicName" value="Panorama" />
 										<attribute name="Deployment-Version" value="${buildVersion}" />
 										<attribute name="Require-Bundle"
-											value="PANMgrPlugin,org.glassfish.jersey.core.jersey-client;version=&quot;[2.23.0,3)&quot;" />
+											value="Panorama,org.glassfish.jersey.core.jersey-client;version=&quot;[2.23.0,3)&quot;" />
 									</manifest>
 								</jar>
 							</tasks>
@@ -287,7 +279,7 @@
 							<artifacts>
 								<artifact>
 									<type>bar</type>
-									<file>${project.build.directory}/PANMgrPlugin.bar</file>
+									<file>${project.build.directory}/Panorama.bar</file>
 								</artifact>
 							</artifacts>
 						</configuration>
