@@ -14,15 +14,11 @@
  */
 package com.paloaltonetworks.osc.api;
 
-import org.slf4j.LoggerFactory;
-
 import static org.osc.sdk.manager.Constants.*;
 
 import java.security.SecureRandom;
 
-import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.client.Client;
@@ -46,12 +42,13 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.paloaltonetworks.panorama.api.methods.JAXBProvider;
 import com.paloaltonetworks.panorama.api.methods.ShowOperations;
 
 @Component(configurationPid = "com.paloaltonetworks.panorama.ApplianceManager",
-        property = { PLUGIN_NAME + "=PANMgrPlugin", VENDOR_NAME + "=Palo Alto Networks", SERVICE_NAME + "=PANMgrPlugin",
+        property = { PLUGIN_NAME + "=Panorama", VENDOR_NAME + "=Palo Alto Networks", SERVICE_NAME + "=Panorama",
                 EXTERNAL_SERVICE_NAME + "=Pan-nsx", AUTHENTICATION_TYPE + "=BASIC_AUTH", NOTIFICATION_TYPE + "=NONE",
                 SYNC_SECURITY_GROUP + ":Boolean=true", PROVIDE_DEVICE_STATUS + ":Boolean=false",
                 SYNC_POLICY_MAPPING + ":Boolean=false", SUPPORT_MULTIPLE_POLICIES + ":Boolean=false" })
@@ -85,12 +82,7 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
         this.config = config;
 
         this.client = ClientBuilder.newBuilder().property(config.max_threads_property_name(), config.max_threads())
-                .register(new JAXBProvider()).sslContext(getSSLContext()).hostnameVerifier(new HostnameVerifier() {
-                    @Override
-                    public boolean verify(String hostname, SSLSession session) {
-                        return true;
-                    }
-                }).build();
+                .register(new JAXBProvider()).sslContext(getSSLContext()).hostnameVerifier((hostname, session) -> true).build();
     }
 
     public static SSLContext getSSLContext() {
