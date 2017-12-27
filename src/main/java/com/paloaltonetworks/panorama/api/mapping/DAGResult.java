@@ -14,13 +14,9 @@
  */
 package com.paloaltonetworks.panorama.api.mapping;
 
-
 import javax.xml.bind.annotation.XmlRootElement;
-
-
 
 @XmlRootElement(name ="result")
 public class DAGResult {
-
 
 }

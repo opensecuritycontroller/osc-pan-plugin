@@ -20,21 +20,18 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
-
-
 @XmlRootElement(name = "result")
 public class ShowDeviceResult {
-	
-	@XmlElementWrapper(name="devices")
-	@XmlElement(name="entry", type = DeviceEntry.class)
-	private ArrayList<DeviceEntry> listOfDevices;
-	
-	public ArrayList<DeviceEntry> getShowDeviceEntry(){
-		return this.listOfDevices;
-	}
-	
-	public void setShowDeviceEntry(ArrayList<DeviceEntry> value){
-		this.listOfDevices = value;
-	}
 
+    @XmlElementWrapper(name="devices")
+    @XmlElement(name="entry", type = DeviceEntry.class)
+    private ArrayList<DeviceEntry> listOfDevices;
+
+    public ArrayList<DeviceEntry> getShowDeviceEntries(){
+        return this.listOfDevices;
+    }
+
+    public void setShowDeviceEntry(ArrayList<DeviceEntry> value){
+        this.listOfDevices = value;
+    }
 }

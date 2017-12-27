@@ -12,13 +12,14 @@
  *    License for the specific language governing permissions and limitations
  *    under the License.
  */
+
 package com.paloaltonetworks.osc.model;
 
-import org.osc.sdk.manager.element.ManagerDeviceElement;
+import org.osc.sdk.manager.element.ManagerDomainElement;
 
-public class Device extends BaseIdNameObject implements ManagerDeviceElement {
+public class PANDomainListElement extends BaseIdNameObject implements ManagerDomainElement {
 
-    public Device(String id, String name) {
+    public PANDomainListElement(String id, String name) {
         super(id, name);
     }
 

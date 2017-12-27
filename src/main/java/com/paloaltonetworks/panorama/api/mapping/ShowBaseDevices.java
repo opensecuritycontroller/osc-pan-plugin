@@ -20,33 +20,19 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
-
-
 @XmlRootElement(name = "result")
 public class ShowBaseDevices {
-	
-	private ArrayList<ShowBaseEntry> listOfDevices;
-	/*
-	@XmlPath("entry[@name='name']/text()")
-	private String name;
-	
-	
-	public String getName(){
-		return this.name;
-	}
-	
-	public void setName(String value){
-		this.name = value;
-	}
-	*/
-	@XmlElementWrapper(name="devices")
-	@XmlElement(name="entry")
-	public ArrayList<ShowBaseEntry> getShowBaseEntry(){
-		return this.listOfDevices;
-	}
-	
-	public void setShowBaseEntry(ArrayList<ShowBaseEntry> value){
-		this.listOfDevices = value;
-	}
+
+    private ArrayList<ShowBaseEntry> listOfDevices;
+
+    @XmlElementWrapper(name="devices")
+    @XmlElement(name="entry")
+    public ArrayList<ShowBaseEntry> getShowBaseEntry(){
+        return this.listOfDevices;
+    }
+
+    public void setShowBaseEntry(ArrayList<ShowBaseEntry> value){
+        this.listOfDevices = value;
+    }
 
 }

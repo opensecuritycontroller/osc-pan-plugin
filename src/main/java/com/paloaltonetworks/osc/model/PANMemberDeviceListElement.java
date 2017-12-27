@@ -14,11 +14,11 @@
  */
 package com.paloaltonetworks.osc.model;
 
-import org.osc.sdk.manager.element.ManagerDeviceElement;
+import org.osc.sdk.manager.element.ManagerDeviceMemberElement;
 
-public class DeviceListElement extends BaseIdNameObject implements ManagerDeviceElement {
+public class PANMemberDeviceListElement extends BaseIdNameObject implements ManagerDeviceMemberElement {
 
-    public DeviceListElement(String id, String name) {
+    public PANMemberDeviceListElement(String id, String name) {
         super(id, name);
     }
 

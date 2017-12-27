@@ -18,14 +18,14 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name = "result")
 public class ShowResult {
-	
-	private String key;
-	
-	
-	public String getKey(){
-		return this.key;
-	}	
-	public void setKey(String value){
-		this.key = value;
-	}
+
+    private String key;
+
+    public String getKey(){
+        return this.key;
+    }
+
+    public void setKey(String value){
+        this.key = value;
+    }
 }

@@ -17,10 +17,25 @@ package com.paloaltonetworks.osc.model;
 
 import org.osc.sdk.manager.element.ManagerDomainElement;
 
-public class DomainListElement extends BaseIdNameObject implements ManagerDomainElement {
-
-    public DomainListElement(String id, String name) {
-        super(id, name);
+public class PANDomainElement implements ManagerDomainElement {
+    protected String id;
+    protected String name;
+    
+    public PANDomainElement(String id, String name) {
+        this.id = id;
+        this.name = name;
     }
+
+	@Override
+	public String getId() {
+		// TODO Auto-generated method stub
+		return this.id;
+	}
+
+	@Override
+	public String getName() {
+		// TODO Auto-generated method stub
+		return this.name;
+	}
 
 }
