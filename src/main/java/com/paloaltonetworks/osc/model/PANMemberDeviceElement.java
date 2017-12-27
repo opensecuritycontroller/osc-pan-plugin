@@ -16,9 +16,9 @@ package com.paloaltonetworks.osc.model;
 
 import org.osc.sdk.manager.element.ManagerDeviceMemberElement;
 
-public class MemberDevice extends BaseIdNameObject implements ManagerDeviceMemberElement {
+public class PANMemberDeviceElement extends BaseIdNameObject implements ManagerDeviceMemberElement {
 
-    public MemberDevice(String id, String name) {
+    public PANMemberDeviceElement(String id, String name) {
     	super(id,name);
     }
 

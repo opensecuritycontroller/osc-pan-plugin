@@ -14,21 +14,17 @@
  */
 package com.paloaltonetworks.panorama.api.mapping;
 
-
 import javax.xml.bind.annotation.XmlRootElement;
-
-
 
 @XmlRootElement(name ="result")
 public class CommitResult {
-	
-	private String job;
-	
-	public String getJob(){
-		return this.job;
-	}
-	public void setJob(String value){
-		this.job = value;
-	}
 
+    private String job;
+
+    public String getJob(){
+        return this.job;
+    }
+    public void setJob(String value){
+        this.job = value;
+    }
 }

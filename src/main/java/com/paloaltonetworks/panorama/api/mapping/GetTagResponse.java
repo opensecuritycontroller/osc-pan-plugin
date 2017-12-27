@@ -14,48 +14,48 @@
  */
 package com.paloaltonetworks.panorama.api.mapping;
 
-
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAccessType;
-
-
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name="response")
-public class GetTagResponse {
+@XmlRootElement(name = "response")
+public class GetTagResponse implements PANResponse {
 
-	
-	
-	@XmlAttribute(name = "status")
-	private String status;
-	
+    @XmlAttribute(name = "status")
+    private String status;
 
-	public String getStatus(){
-		return status;
-	}
-	
-	public void setStatus(String value) {
-		this.status = value;
-	}
-	@XmlAttribute(name = "code")
-	private String code;
-	
+    @XmlAttribute(name = "code")
+    private String code;
 
-	public String getCode(){
-		return code;
-	}
-	
-	public void setCode(String value) {
-		this.code = value;
-	}
-	
-	@XmlElement(name="result")
-	private GetTagResult tagResult;
-	
-	public GetTagResult getTagResult(){
-		return tagResult;
-	}
+    @XmlElement(name = "result")
+    private GetTagResult result;
+
+    @Override
+    public String getStatus() {
+        return this.status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    @Override
+    public String getCode() {
+        return this.code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public GetTagResult getResult() {
+        return this.result;
+    }
+
+    public void setResult(GetTagResult result) {
+        this.result = result;
+    }
 }

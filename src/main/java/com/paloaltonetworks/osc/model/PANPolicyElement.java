@@ -12,30 +12,35 @@
  *    License for the specific language governing permissions and limitations
  *    under the License.
  */
-
 package com.paloaltonetworks.osc.model;
 
-import org.osc.sdk.manager.element.ManagerDomainElement;
+import org.osc.sdk.manager.element.ManagerPolicyElement;
 
-public class Domain implements ManagerDomainElement {
+public class PANPolicyElement implements ManagerPolicyElement {
+
     protected String id;
     protected String name;
-    
-    public Domain(String id, String name) {
+    protected String domainId;
+
+    public PANPolicyElement(String id, String name, String domainId) {
         this.id = id;
         this.name = name;
+        this.domainId = domainId;
     }
 
 	@Override
 	public String getId() {
-		// TODO Auto-generated method stub
 		return this.id;
 	}
 
 	@Override
 	public String getName() {
-		// TODO Auto-generated method stub
 		return this.name;
+	}
+
+	@Override
+	public String getDomainId() {
+		return this.domainId;
 	}
 
 }

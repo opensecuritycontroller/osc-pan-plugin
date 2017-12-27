@@ -14,33 +14,33 @@
  */
 package com.paloaltonetworks.panorama.api.mapping;
 
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "devices")
 public class ShowBaseEntry {
-	
-	private String serial;
-	
-	public String getSerial(){
-		return serial;
-	}
-	public void setSerial(String value){
-		this.serial = value;
-	}
-	
-	@XmlAttribute(name="name")
-	private String name;
-	
-	public String getName(){
-		return name;
-	}
-	
-	public void setName(String value){
-		this.name = value;
-	}
-	
+
+    private String serial;
+
+    @XmlAttribute(name="name")
+    private String name;
+
+    public String getSerial(){
+        return this.serial;
+    }
+
+    public void setSerial(String value){
+        this.serial = value;
+    }
+
+    public String getName(){
+        return this.name;
+    }
+
+    public void setName(String value){
+        this.name = value;
+    }
 }

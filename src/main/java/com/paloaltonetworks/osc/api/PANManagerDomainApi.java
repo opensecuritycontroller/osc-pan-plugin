@@ -14,34 +14,28 @@
  */
 package com.paloaltonetworks.osc.api;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.osc.sdk.manager.api.ManagerDomainApi;
-import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
 
-import com.paloaltonetworks.osc.model.Domain;
-import com.paloaltonetworks.osc.model.DomainListElement;
+import com.paloaltonetworks.osc.model.PANDomainElement;
+import com.paloaltonetworks.osc.model.PANDomainListElement;
 
 /**
  * This documents "Device Management Apis"
  */
 public class PANManagerDomainApi implements ManagerDomainApi {
 
-    public PANManagerDomainApi(ApplianceManagerConnectorElement mc) {
+    private static final String DEFAULT_DOMAIN = "Shared";
 
+    @Override
+    public PANDomainElement getDomain(String domainId) throws Exception {
+        return DEFAULT_DOMAIN.equals(domainId) ?  new PANDomainElement(DEFAULT_DOMAIN, DEFAULT_DOMAIN) : null;
     }
 
     @Override
-    public Domain getDomain(String domainId) throws Exception {
-        return new Domain("Roo-Domain", "Root-Domain");
+    public List<PANDomainListElement> listDomains() throws Exception {
+        return Arrays.asList(new PANDomainListElement(DEFAULT_DOMAIN, DEFAULT_DOMAIN));
     }
-
-    @Override
-    public List<DomainListElement> listDomains() throws Exception {
-        List<DomainListElement> domainList = new ArrayList<>();
-        domainList.add(new DomainListElement("Root-Domain", "Root-Domain"));
-        return domainList;
-    }
-
 }

@@ -23,39 +23,37 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "devices")
 public class ShowBaseDeviceEntry {
-	
-	@XmlElement(name="devices")
-	private ShowBaseEntry baseEntry;
-	
-	@XmlElement(name="shared-policy-md5sum")
-	private String sharedPolicy;
-	
-	//@XmlPath("entry[@name='name']/text()")
-	//private String name;
-	
-	@XmlAttribute(name="name")
-	private String name;
-	
-	public String getName(){
-		return this.name;
-	}
-	
-	public void setName(String value){
-		this.name = value;
-	}
-	
-	public String getSharedPolicy(){
-		return sharedPolicy;
-	}
-	public void setSharedPoliicy(String value){
-		this.sharedPolicy = value;
-	}
-	
-	public ShowBaseEntry getShowBaseEntry(){
-		return this.baseEntry;
-	}
-	
-	public void setShowBaseEntry(ShowBaseEntry value){
-		this.baseEntry= value;
-	}
+
+    @XmlElement(name="devices")
+    private ShowBaseEntry baseEntry;
+
+    @XmlElement(name="shared-policy-md5sum")
+    private String sharedPolicy;
+
+    @XmlAttribute(name="name")
+    private String name;
+
+    public String getName(){
+        return this.name;
+    }
+
+    public void setName(String value){
+        this.name = value;
+    }
+
+    public String getSharedPolicy(){
+        return this.sharedPolicy;
+    }
+
+    public void setSharedPoliicy(String value){
+        this.sharedPolicy = value;
+    }
+
+    public ShowBaseEntry getShowBaseEntry(){
+        return this.baseEntry;
+    }
+
+    public void setShowBaseEntry(ShowBaseEntry value){
+        this.baseEntry= value;
+    }
 }

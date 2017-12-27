@@ -14,21 +14,18 @@
  */
 package com.paloaltonetworks.panorama.api.mapping;
 
-
 import javax.xml.bind.annotation.XmlRootElement;
-
-
 
 @XmlRootElement(name ="msg")
 public class ConfigMessage {
-	
-	private String msg;
-	
-	public String getMsg(){
-		return this.msg;
-	}
-	public void setMsg(String value){
-		this.msg = value;
-	}
 
+    private String msg;
+
+    public String getMsg(){
+        return this.msg;
+    }
+
+    public void setMsg(String value){
+        this.msg = value;
+    }
 }
