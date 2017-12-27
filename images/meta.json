@@ -1,7 +1,7 @@
 {
 	"metaDataVersion": "1.1",
 	"model": "PAN-OS NGFW",
-	"managerType": "PANMgrPlugin",
+	"managerType": "Panorama",
 	"managerVersion": "1.0",
 	"virtualizationType": "OPENSTACK",
 	"virtualizationVersion": "Icehouse",
