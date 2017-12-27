@@ -14,53 +14,48 @@
  */
 package com.paloaltonetworks.panorama.api.mapping;
 
-
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAccessType;
-
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name="response")
-public class SetConfigResponse {
+public class SetConfigResponse implements PANResponse {
 
-	@XmlElement(name="msg")
-	private ConfigMessage configMessage;
-	
-	@XmlAttribute(name = "status")
-	private String status;
-	
-	public String getStatus(){
-		return status;
-	}
-	
-	public void setStatus(String value) {
-		this.status = value;
-	}
-	
-	@XmlAttribute(name = "code")
-	private String code;
-	
-	public String getCode(){
-		return status;
-	}
-	
-	public void setCode(String value) {
-		this.status = value;
-	}
-	
-	public ConfigMessage getConfigMessage(){
-		return configMessage;
-	}
-	
-	public void setConfigMessage(ConfigMessage value){
-		this.configMessage = value;
-	}
-	
-	
-	
-	
-	
+    @XmlElement(name="msg")
+    private ConfigMessage configMessage;
+
+    @XmlAttribute(name = "code")
+    private String code;
+
+    @XmlAttribute(name = "status")
+    private String status;
+
+    @Override
+    public String getStatus(){
+        return this.status;
+    }
+
+    public void setStatus(String value) {
+        this.status = value;
+    }
+
+    @Override
+    public String getCode(){
+        return this.status;
+    }
+
+    public void setCode(String value) {
+        this.status = value;
+    }
+
+    public ConfigMessage getConfigMessage(){
+        return this.configMessage;
+    }
+
+    public void setConfigMessage(ConfigMessage value){
+        this.configMessage = value;
+    }
 }

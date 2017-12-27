@@ -14,6 +14,9 @@
  */
 package com.paloaltonetworks.panorama.api.mapping;
 
+import static java.util.Collections.emptyList;
+
+import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -23,28 +26,48 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name="response")
-public class DeviceGroupResponse {
+public class DeviceGroupResponse implements PANResponse {
 
-	@XmlAttribute(name = "status")
-	private String status;
-	
-	@XmlElement(name="result")
-	private DeviceGroups deviceGroups;
-	
-	public String getStatus(){
-		return this.status;
-	}
-	
-	public void setStatus(String value) {
-		this.status = value;
-	}
-	
-	public DeviceGroups getDeviceGroups(){
-		return this.deviceGroups;
-	}
-	
-	public void setDeviceGroups(DeviceGroups value){
-		this.deviceGroups = value;
-	}
-	
+    @XmlAttribute(name = "status")
+    private String status;
+
+    @XmlAttribute(name = "code")
+    private String code;
+
+    @XmlElement(name="result")
+    private DeviceGroups deviceGroups;
+
+    @Override
+    public String getStatus(){
+        return this.status;
+    }
+
+    public void setStatus(String value) {
+        this.status = value;
+    }
+
+    public DeviceGroups getDeviceGroups() {
+        return this.deviceGroups;
+    }
+
+    public void setDeviceGroups(DeviceGroups value) {
+        this.deviceGroups = value;
+    }
+
+    public List<DeviceGroupsEntry> getEntries() {
+        if (this.deviceGroups != null) {
+            return this.deviceGroups.getEntries() != null ? this.deviceGroups.getEntries() : emptyList();
+        }
+
+        return emptyList();
+    }
+
+    @Override
+    public String getCode() {
+        return this.code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
 }

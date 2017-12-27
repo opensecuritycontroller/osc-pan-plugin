@@ -19,21 +19,18 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name="devicegroups")
 public class ShowBaseDeviceGroups {
-	
-	@XmlElement(name="devicegroups")
-	private DeviceGroups listOfDeviceGroups;
-	
-	
-	public DeviceGroups getMapDeviceGroups(){
-		return this.listOfDeviceGroups;
-	}
-	
-	public void setMapDeviceGroups(DeviceGroups value){
-		this.listOfDeviceGroups = value;
-	}
 
+    @XmlElement(name="devicegroups")
+    private DeviceGroups listOfDeviceGroups;
+
+    public DeviceGroups getMapDeviceGroups(){
+        return this.listOfDeviceGroups;
+    }
+
+    public void setMapDeviceGroups(DeviceGroups value){
+        this.listOfDeviceGroups = value;
+    }
 }

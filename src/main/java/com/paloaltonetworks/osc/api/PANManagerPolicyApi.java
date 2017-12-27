@@ -14,18 +14,16 @@
  */
 package com.paloaltonetworks.osc.api;
 
-import org.slf4j.LoggerFactory;
+import static java.util.stream.Collectors.toList;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.osc.sdk.manager.api.ManagerPolicyApi;
-import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
-import org.osc.sdk.manager.element.VirtualSystemElement;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.paloaltonetworks.osc.model.PolicyListElement;
-import com.paloaltonetworks.panorama.api.methods.ShowOperations;
+import com.paloaltonetworks.osc.model.PANPolicyListElement;
+import com.paloaltonetworks.panorama.api.methods.PanoramaApiClient;
 
 /**
  * This documents "Device Management Apis"
@@ -33,35 +31,31 @@ import com.paloaltonetworks.panorama.api.methods.ShowOperations;
 public class PANManagerPolicyApi implements ManagerPolicyApi {
 
     private static final Logger log = LoggerFactory.getLogger(PANManagerPolicyApi.class);
+    private static final String XPATH_SHARED_TAG = "/config/shared/tag";
+
     static String apiKey = null;
-    private VirtualSystemElement vs;
-    private ApplianceManagerConnectorElement mc;
-    private ShowOperations showOperations;
+    private PanoramaApiClient panClient;
 
-    private static ArrayList<PolicyListElement> policyList = new ArrayList<>();
-    static {
-        // Add domain if applicable
-        policyList.add(new PolicyListElement("Platinum", "Platinum", "Root-Domain"));
-        policyList.add(new PolicyListElement("Gold", "Gold", "Root-Domain"));
-        policyList.add(new PolicyListElement("Silver", "Silver", "Root-Domain"));
-        policyList.add(new PolicyListElement("Bronze", "Bronze", "Root-Domain"));
-    }
-
-    public PANManagerPolicyApi(ApplianceManagerConnectorElement mc, ShowOperations showOperations) {
+    public PANManagerPolicyApi(PanoramaApiClient panClient) {
         log.info("Creating new PANManagerPolicy api");
-        this.mc = mc;
-        log.info("new show operaitons in Policy");
-        this.showOperations = showOperations;
-
+        this.panClient = panClient;
     }
 
     @Override
-    public PolicyListElement getPolicy(String policyId, String domainId) throws Exception {
-        return policyList.get(Integer.valueOf(policyId));
+    public PANPolicyListElement getPolicy(String policyId, String domainId) throws Exception {
+        if (policyId == null) {
+            throw new IllegalArgumentException("Null policy id is not allowed!");
+        }
+
+        return getPolicyList(policyId).stream().filter(p -> policyId.equals(p.getId())).findAny().orElse(null);
     }
 
     @Override
-    public List<PolicyListElement> getPolicyList(String domainId) throws Exception {
-        return policyList;
+    public List<PANPolicyListElement> getPolicyList(String domainId) throws Exception {
+        return this.panClient.getTagEntries(XPATH_SHARED_TAG)
+                             .stream()
+                             .filter(t -> t != null)
+                             .map(t -> new PANPolicyListElement(t.getName(), t.getName(), domainId))
+                             .collect(toList());
     }
 }
