@@ -34,7 +34,7 @@ import org.osc.sdk.manager.element.ManagerDeviceMemberElement;
 import org.osc.sdk.manager.element.VirtualSystemElement;
 
 import com.paloaltonetworks.osc.model.Device;
-import com.paloaltonetworks.panorama.api.methods.ShowOperations;
+import com.paloaltonetworks.panorama.api.methods.PanoramaApiClient;
 
 /**
  * This documents "Device Management Apis"
@@ -47,15 +47,15 @@ public class PANDeviceApi implements ManagerDeviceApi {
     static String vmAuthKey = null;
     private VirtualSystemElement vs;
     private ApplianceManagerConnectorElement mc;
-    private ShowOperations showOperations;
+    private PanoramaApiClient panClient;
     private static final String daysforVMAuthKey = "8760";
 
-    public PANDeviceApi(ApplianceManagerConnectorElement mc, VirtualSystemElement vs, ShowOperations showOperations)
+    public PANDeviceApi(ApplianceManagerConnectorElement mc, VirtualSystemElement vs, PanoramaApiClient panClient)
             throws Exception {
         this.vs = vs;
         this.mc = mc;
-        this.showOperations = showOperations;
-        vmAuthKey = this.showOperations.getVMAuthKey(daysforVMAuthKey);
+        this.panClient = panClient;
+        vmAuthKey = this.panClient.getVMAuthKey(daysforVMAuthKey);
     }
 
     @Override
@@ -65,7 +65,7 @@ public class PANDeviceApi implements ManagerDeviceApi {
 
     @Override
     public ManagerDeviceElement getDeviceById(String id) throws Exception {
-        ArrayList<String> deviceGroups = this.showOperations.showDeviceGroups();
+        List<String> deviceGroups = this.panClient.showDeviceGroups();
         for (String deviceGroupName : deviceGroups) {
             if (deviceGroupName.equals(id)) {
                 return new Device(deviceGroupName, deviceGroupName);
@@ -85,7 +85,7 @@ public class PANDeviceApi implements ManagerDeviceApi {
     public List<? extends ManagerDeviceElement> listDevices() throws Exception {
 
         List<Device> deviceGroups = new ArrayList<>();
-        ArrayList<String> panDeviceGroups = this.showOperations.showDeviceGroups();
+        List<String> panDeviceGroups = this.panClient.showDeviceGroups();
         for (String deviceGroupName : panDeviceGroups) {
             deviceGroups.add(new Device(deviceGroupName, deviceGroupName));
         }
@@ -98,7 +98,7 @@ public class PANDeviceApi implements ManagerDeviceApi {
         // Information passed in by VSS to create device group
         // VSS is the device group
 
-        return this.showOperations.addDeviceGroup(this.vs.getName(), this.vs.getName());
+        return this.panClient.addDeviceGroup(this.vs.getName(), this.vs.getName());
     }
 
     @Override

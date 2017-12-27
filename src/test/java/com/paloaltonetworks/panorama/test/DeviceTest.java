@@ -1,7 +1,7 @@
 package com.paloaltonetworks.panorama.test;
 
 import java.security.SecureRandom;
-import java.util.ArrayList;
+import java.util.List;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -17,8 +17,6 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
-
-import com.paloaltonetworks.panorama.api.methods.ShowOperations;
 /*
  * This is an environment specific Test.
  * To run this test, change the IP, username & password variables pointing to the device
@@ -26,15 +24,18 @@ import com.paloaltonetworks.panorama.api.methods.ShowOperations;
  */
 import org.slf4j.LoggerFactory;
 
+import com.paloaltonetworks.panorama.api.methods.PanoramaApiClient;
+
 public class DeviceTest {
 
     private static final String USERNAME = "admin";
     private static final String PASSWORD = "admin";
     private static final String IP = "10.71.85.99";
+    private static final String PAN_OS_ID = "007299000003740";
 
     private static final Logger LOG = LoggerFactory.getLogger(DeviceTest.class);
 
-    private ShowOperations showOperations;
+    private PanoramaApiClient panClient;
     private Client client;
 
     @Ignore
@@ -49,7 +50,7 @@ public class DeviceTest {
         }).build();
 
         boolean isHttps = true;
-        this.showOperations = new ShowOperations(IP, 443, isHttps, USERNAME, PASSWORD, this.client);
+        this.panClient = new PanoramaApiClient(IP, 443, isHttps, USERNAME, PASSWORD, PAN_OS_ID, this.client);
 
     }
 
@@ -91,10 +92,10 @@ public class DeviceTest {
     @Test
     public void test() throws Exception{
 
-        boolean expected = this.showOperations.checkConnection();
+        boolean expected = this.panClient.checkConnection();
         Assert.assertTrue(expected);
 
-        ArrayList<String> devices = this.showOperations.showDevices();
+        List<String> devices = this.panClient.showDevices();
         System.out.println( this.getClass().getSimpleName()+ " Devices list Size is : "+devices.size());
         for (String device : devices) {
             System.out.println( this.getClass().getSimpleName()+ " Device : "+device);
@@ -103,7 +104,7 @@ public class DeviceTest {
         showDeviceGroups();
 
 //        String dgName = "dg dec28";
-//        String status = this.showOperations.AddDeviceGroup(dgName, "Device Group to be deleted");
+//        String status = this.panClient.AddDeviceGroup(dgName, "Device Group to be deleted");
 //        if(status.equals("success")) {
 //            System.out.println( this.getClass().getSimpleName()+ " Device group : "+ dgName+" added successfully");
 //        }
@@ -111,7 +112,7 @@ public class DeviceTest {
 //        showDeviceGroups();
 //
 //        status="failure";
-//        status = this.showOperations.DeleteDeviceGroup(dgName);
+//        status = this.panClient.DeleteDeviceGroup(dgName);
 //        if(status.equals("success")) {
 //            System.out.println( this.getClass().getSimpleName()+ " Device group : "+ dgName+" deleted successfully");
 //        }
@@ -124,12 +125,12 @@ public class DeviceTest {
     public void test3() throws Exception{
 
         String dgTag = "Tag-Dec25";
-        String status = this.showOperations.addDAGTag(dgTag);
+        String status = this.panClient.addDAGTag(dgTag);
         if (status.equals("success")) {
             System.out.println(this.getClass().getSimpleName()+ " Successfully added TAG: " + dgTag);
         }
 
-        boolean state = this.showOperations.TagExists(dgTag);
+        boolean state = this.panClient.policyTagExists(dgTag);
         if (state == true) {
             System.out.println(this.getClass().getSimpleName()+" TAG: " + dgTag + "exists");
         }
@@ -140,12 +141,12 @@ public class DeviceTest {
     public void test4() throws Exception{
 
         String dgTag = "Tag-Dec25";
-        String status = this.showOperations.deleteDAGTag(dgTag);
+        String status = this.panClient.deleteDAGTag(dgTag);
         if (status.equals("success")) {
             System.out.println(this.getClass().getSimpleName()+ " Successfully deleted TAG: " + dgTag);
         }
 
-        boolean state = this.showOperations.TagExists(dgTag);
+        boolean state = this.panClient.policyTagExists(dgTag);
         if (state == true) {
             System.out.println(this.getClass().getSimpleName()+" TAG: " + dgTag + "exists");
         } else {
@@ -160,7 +161,7 @@ public class DeviceTest {
 
         showDeviceGroups();
 
-        String status = this.showOperations.deleteDeviceGroup("testing");
+        String status = this.panClient.deleteDeviceGroup("testing");
         if(status.equals("success")) {
             System.out.println( this.getClass().getSimpleName()+ " Device group : "+ "testing"+" deleted successfully");
         }
@@ -169,7 +170,7 @@ public class DeviceTest {
 
     }
     private void showDeviceGroups() throws Exception{
-        ArrayList<String> dgList = this.showOperations.showDeviceGroups();
+        List<String> dgList = this.panClient.showDeviceGroups();
         System.out.println( this.getClass().getSimpleName()+ " Device Groups");
         System.out.println("------------------------------------------------------ ");
         for (String dg : dgList) {

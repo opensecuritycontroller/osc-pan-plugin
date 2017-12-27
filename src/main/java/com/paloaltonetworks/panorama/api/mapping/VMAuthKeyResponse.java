@@ -14,42 +14,41 @@
  */
 package com.paloaltonetworks.panorama.api.mapping;
 
-
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAccessType;
-
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name="response")
-public class VMAuthKeyResponse {
+public class VMAuthKeyResponse implements PANResponse {
 
-	
-	
-	@XmlAttribute(name = "status")
-	private String status;
-	
-	
-	@XmlElement(name="result")
-	private String showResult;
-	
-	
-	public String getShowResult(){
-		return showResult;
-	}
-	
-	public void setShowResult(String value){
-		this.showResult = value;
-	}
+    @XmlAttribute(name = "status")
+    private String status;
 
-	public String getStatus(){
-		return status;
-	}
-	
-	public void setStatus(String value) {
-		this.status = value;
-	}
-	
+    @XmlElement(name="result")
+    private String showResult;
+
+    public String getShowResult(){
+        return this.showResult;
+    }
+
+    public void setShowResult(String value){
+        this.showResult = value;
+    }
+
+    @Override
+    public String getStatus(){
+        return this.status;
+    }
+
+    public void setStatus(String value) {
+        this.status = value;
+    }
+
+    @Override
+    public String getCode() {
+        throw new UnsupportedOperationException("getCode not implemented for class "+ getClass());
+    }
 }

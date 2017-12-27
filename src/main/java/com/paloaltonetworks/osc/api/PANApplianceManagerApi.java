@@ -45,10 +45,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.paloaltonetworks.panorama.api.methods.JAXBProvider;
-import com.paloaltonetworks.panorama.api.methods.ShowOperations;
+import com.paloaltonetworks.panorama.api.methods.PanoramaApiClient;
 
 @Component(configurationPid = "com.paloaltonetworks.panorama.ApplianceManager",
-        property = { PLUGIN_NAME + "=Panorama", VENDOR_NAME + "=Palo Alto Networks", SERVICE_NAME + "=Panorama",
+   property = { PLUGIN_NAME + "=Panorama", VENDOR_NAME + "=Palo Alto Networks", SERVICE_NAME + "=Panorama",
                 EXTERNAL_SERVICE_NAME + "=Pan-nsx", AUTHENTICATION_TYPE + "=BASIC_AUTH", NOTIFICATION_TYPE + "=NONE",
                 SYNC_SECURITY_GROUP + ":Boolean=true", PROVIDE_DEVICE_STATUS + ":Boolean=false",
                 SYNC_POLICY_MAPPING + ":Boolean=false", SUPPORT_MULTIPLE_POLICIES + ":Boolean=false" })
@@ -75,6 +75,10 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
         @AttributeDefinition(required = false,
                 description = "The property name to use when setting the maximum thread count")
         String max_threads_property_name() default "com.sun.jersey.client.property.threadpoolSize";
+
+        @AttributeDefinition(required = false,
+                description = "PanOS id is a parameter required by commit operations")
+        String pan_os_id() default "007299000003740";
     }
 
     @Activate
@@ -125,10 +129,9 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
         this.client.close();
     }
 
-    private ShowOperations getShowOperations(ApplianceManagerConnectorElement mc) throws Exception {
-
-        return new ShowOperations(mc.getIpAddress(), this.config.port(), this.config.use_https(), mc.getUsername(),
-                mc.getPassword(), this.client);
+    private PanoramaApiClient getPanoramaApiClient(ApplianceManagerConnectorElement mc) throws Exception {
+        return new PanoramaApiClient(mc.getIpAddress(), this.config.port(), this.config.use_https(), mc.getUsername(),
+                mc.getPassword(), this.config.pan_os_id(), this.client);
     }
 
     /*
@@ -141,9 +144,9 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
 
         LOG.info(String.format("Creating Device Api for Panorama Manager : %s with ip : %s", mc.getName(),
                 mc.getIpAddress()));
-        ShowOperations showOperations = getShowOperations(mc);
+        PanoramaApiClient panClient = getPanoramaApiClient(mc);
 
-        return new PANDeviceApi(mc, vs, showOperations);
+        return new PANDeviceApi(mc, vs, panClient);
     }
 
     /*
@@ -170,8 +173,8 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
             VirtualSystemElement vs) throws Exception {
         LOG.info(String.format("Creating Security Group API for Panorama Manager : %s with ip : %s", mc.getName(),
                 mc.getIpAddress()));
-        ShowOperations showOperations = getShowOperations(mc);
-        return new PANManagerSecurityGroupApi(mc, vs, showOperations);
+        PanoramaApiClient panClient = getPanoramaApiClient(mc);
+        return new PANManagerSecurityGroupApi(mc, vs, panClient);
     }
 
     /*
@@ -184,8 +187,8 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
 
         LOG.info(String.format("Creating Policy API for Panorama Manager : %s with ip : %s", mc.getName(),
                 mc.getIpAddress()));
-        ShowOperations showOperations = getShowOperations(mc);
-        return new PANManagerPolicyApi(mc, showOperations);
+        PanoramaApiClient panClient = getPanoramaApiClient(mc);
+        return new PANManagerPolicyApi(mc, panClient);
     }
 
     /*
@@ -240,8 +243,8 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
 
         boolean connectionCheck = false;
 
-        ShowOperations showOperations = getShowOperations(mc);
-        connectionCheck = showOperations.checkConnection();
+        PanoramaApiClient panClient = getPanoramaApiClient(mc);
+        connectionCheck = panClient.checkConnection();
         if (connectionCheck == false) {
             String errorMessage = String.format("Failed to connect to Panorama Manager @ IP address : %s",
                     mc.getIpAddress());
@@ -282,5 +285,4 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
 
         return null;
     }
-
 }

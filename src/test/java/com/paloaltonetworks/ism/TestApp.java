@@ -14,19 +14,21 @@
  */
 package com.paloaltonetworks.ism;
 
-import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSession;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 
-import com.paloaltonetworks.panorama.api.methods.ShowOperations;
+import com.paloaltonetworks.panorama.api.methods.PanoramaApiClient;
 import com.paloaltonetworks.panorama.test.DeviceTest;
 
 
 public class TestApp {
+
+    private static final String PAN_OS_ID = "007299000003740";
 
 	public static void main(String[] args) throws Exception {
 
@@ -41,16 +43,16 @@ public class TestApp {
                 }).build();
 
         boolean isHttps = true;
-        ShowOperations operations = new ShowOperations("10.4.33.201", 443, isHttps, "admin", "admin", client);
+        PanoramaApiClient panClient = new PanoramaApiClient("10.4.33.201", 443, isHttps, "admin", "admin", PAN_OS_ID, client);
 
-	    ArrayList<String> devices = operations.showDevices();
+	    List<String> devices = panClient.showDevices();
 	    Iterator<String> deviceIterator = devices.iterator();
 		while (deviceIterator.hasNext()){
 			System.out.println(deviceIterator.next());
 
 		}
 
-		ArrayList<String> deviceGroups = operations.showDeviceGroups();
+		List<String> deviceGroups = panClient.showDeviceGroups();
 	    Iterator<String> deviceGroupsIterator = deviceGroups.iterator();
 		while (deviceGroupsIterator.hasNext()){
 			System.out.println(deviceGroupsIterator.next());
@@ -58,11 +60,11 @@ public class TestApp {
 		}
 
 		String dg = "testing";
-		status = operations.deleteDeviceGroup(dg);
+		status = panClient.deleteDeviceGroup(dg);
 		if (status.equals("success")){
 			System.out.println("Successfully deleted device group: " + dg);
 		}
-		status = operations.addDeviceGroup(dg, "testing dg");
+		status = panClient.addDeviceGroup(dg, "testing dg");
 		if (status.equals("success")){
 			System.out.println("Successfully added device group: " + dg);
 		}

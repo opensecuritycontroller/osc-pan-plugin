@@ -14,45 +14,41 @@
  */
 package com.paloaltonetworks.panorama.api.mapping;
 
-
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAccessType;
-
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name="response")
-public class DAGResponse {
+public class DAGResponse implements PANResponse {
 
-	
-	
-	@XmlAttribute(name = "status")
-	private String status;
-	
-	public String getStatus(){
-		return this.status;
-	}
-	
-	public void setStatus(String value) {
-		this.status = value;
-	}
-	
-	
-	@XmlElement(name="result")
-	private DAGResult dagResult;
-	
-	public DAGResult getDAGResult(){
-		return dagResult;
-	}
-	
-	public void setDAGResult(DAGResult value){
-		this.dagResult = value;
-	}
-	
-	
-	
-	
-	
+    @XmlAttribute(name = "status")
+    private String status;
+
+    @Override
+    public String getStatus(){
+        return this.status;
+    }
+
+    public void setStatus(String value) {
+        this.status = value;
+    }
+
+    @XmlElement(name="result")
+    private DAGResult dagResult;
+
+    public DAGResult getDAGResult(){
+        return this.dagResult;
+    }
+
+    public void setDAGResult(DAGResult value){
+        this.dagResult = value;
+    }
+
+    @Override
+    public String getCode() {
+        throw new UnsupportedOperationException("getCode not implemented for class "+ getClass());
+    }
 }

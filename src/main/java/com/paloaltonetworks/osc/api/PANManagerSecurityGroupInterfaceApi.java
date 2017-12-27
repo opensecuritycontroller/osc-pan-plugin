@@ -22,7 +22,7 @@ import org.osc.sdk.manager.element.ManagerSecurityGroupInterfaceElement;
 import org.osc.sdk.manager.element.SecurityGroupInterfaceElement;
 import org.osc.sdk.manager.element.VirtualSystemElement;
 
-import com.paloaltonetworks.panorama.api.methods.ShowOperations;
+import com.paloaltonetworks.panorama.api.methods.PanoramaApiClient;
 
 /**
  * This documents "Device Management Apis"
@@ -32,18 +32,18 @@ public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroup
     static String apiKey = null;
     private VirtualSystemElement vs;
     private ApplianceManagerConnectorElement mc;
-    private ShowOperations showOperations;
+    private PanoramaApiClient panClient;
 
     public PANManagerSecurityGroupInterfaceApi(ApplianceManagerConnectorElement mc, VirtualSystemElement vs,
-            ShowOperations showOperations) {
+            PanoramaApiClient panClient) {
         this.vs = vs;
         this.mc = mc;
-        this.showOperations = showOperations;
+        this.panClient = panClient;
     }
 
     @Override
     public String createSecurityGroupInterface(SecurityGroupInterfaceElement sgiElement) throws Exception {
-        String status = this.showOperations.addDAGTag(sgiElement.getTag());
+        String status = this.panClient.addDAGTag(sgiElement.getTag());
         if (status.equals("success")) {
             return sgiElement.getName();
         } else {
@@ -58,7 +58,7 @@ public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroup
 
     @Override
     public void deleteSecurityGroupInterface(String id) throws Exception {
-        this.showOperations.deleteDAGTag(id);
+        this.panClient.deleteDAGTag(id);
     }
 
     @Override

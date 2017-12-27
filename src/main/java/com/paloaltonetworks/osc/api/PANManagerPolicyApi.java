@@ -14,7 +14,7 @@
  */
 package com.paloaltonetworks.osc.api;
 
-import org.slf4j.LoggerFactory;
+import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,9 +23,10 @@ import org.osc.sdk.manager.api.ManagerPolicyApi;
 import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
 import org.osc.sdk.manager.element.VirtualSystemElement;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.paloaltonetworks.osc.model.PolicyListElement;
-import com.paloaltonetworks.panorama.api.methods.ShowOperations;
+import com.paloaltonetworks.panorama.api.methods.PanoramaApiClient;
 
 /**
  * This documents "Device Management Apis"
@@ -36,7 +37,7 @@ public class PANManagerPolicyApi implements ManagerPolicyApi {
     static String apiKey = null;
     private VirtualSystemElement vs;
     private ApplianceManagerConnectorElement mc;
-    private ShowOperations showOperations;
+    private PanoramaApiClient panClient;
 
     private static ArrayList<PolicyListElement> policyList = new ArrayList<>();
     static {
@@ -47,21 +48,26 @@ public class PANManagerPolicyApi implements ManagerPolicyApi {
         policyList.add(new PolicyListElement("Bronze", "Bronze", "Root-Domain"));
     }
 
-    public PANManagerPolicyApi(ApplianceManagerConnectorElement mc, ShowOperations showOperations) {
+    public PANManagerPolicyApi(ApplianceManagerConnectorElement mc, PanoramaApiClient panClient) {
         log.info("Creating new PANManagerPolicy api");
         this.mc = mc;
         log.info("new show operaitons in Policy");
-        this.showOperations = showOperations;
+        this.panClient = panClient;
 
     }
 
     @Override
     public PolicyListElement getPolicy(String policyId, String domainId) throws Exception {
-        return policyList.get(Integer.valueOf(policyId));
+        if (this.panClient.policyTagExists(policyId)) {
+            return new PolicyListElement(policyId, policyId, domainId);
+        }
+
+        return null;
     }
 
     @Override
     public List<PolicyListElement> getPolicyList(String domainId) throws Exception {
-        return policyList;
+        return this.panClient.fetchPolicyTags().stream().map(t -> new PolicyListElement(t.getName(), t.getName(), domainId))
+                .collect(toList());
     }
 }

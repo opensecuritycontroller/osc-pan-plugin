@@ -21,22 +21,21 @@ import javax.xml.bind.annotation.XmlElement;
 
 import javax.xml.bind.annotation.XmlElementWrapper;
 
-
 import java.util.ArrayList;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "result")
 public class DeviceGroups {
 
-	@XmlElementWrapper(name="devicegroups")
-	@XmlElement(name="entry" , type=DeviceGroupsEntry.class)
-	private ArrayList<DeviceGroupsEntry> entry;
-	
-	public ArrayList<DeviceGroupsEntry> getEntry(){
-		return this.entry;
-	}
-	
-	public void setEntry(ArrayList<DeviceGroupsEntry> value){
-		this.entry = value;
-	}
+    @XmlElementWrapper(name="devicegroups")
+    @XmlElement(name="entry" , type=DeviceGroupsEntry.class)
+    private ArrayList<DeviceGroupsEntry> entry;
+
+    public ArrayList<DeviceGroupsEntry> getEntries(){
+        return this.entry;
+    }
+
+    public void setEntry(ArrayList<DeviceGroupsEntry> value){
+        this.entry = value;
+    }
 }

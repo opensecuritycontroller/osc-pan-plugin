@@ -9,9 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.client.Client;
@@ -22,7 +20,6 @@ import javax.ws.rs.core.UriBuilder;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Test;
 import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
 import org.osc.sdk.manager.element.ManagerDeviceElement;
 import org.osc.sdk.manager.element.ManagerDeviceMemberElement;
@@ -30,39 +27,33 @@ import org.osc.sdk.manager.element.ManagerPolicyElement;
 import org.osc.sdk.manager.element.SecurityGroupInterfaceElement;
 import org.osc.sdk.manager.element.VirtualSystemElement;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.paloaltonetworks.osc.api.PANDeviceApi;
 import com.paloaltonetworks.osc.api.PANManagerSecurityGroupInterfaceApi;
 import com.paloaltonetworks.panorama.api.mapping.ShowResponse;
 import com.paloaltonetworks.panorama.api.methods.JAXBProvider;
-import com.paloaltonetworks.panorama.api.methods.ShowOperations;
-import org.slf4j.LoggerFactory;
+import com.paloaltonetworks.panorama.api.methods.PanoramaApiClient;
 
 public class TestPanPost extends AbstractPanTest {
     private static final Logger log = LoggerFactory.getLogger(TestPanPost.class);
     private static final String URL = "http://%s:%s/api";
     private static final String LOCALHOST = "127.0.0.1";
+
     private Client client;
 
     @Before
     public void setUp() {
         this.client = ClientBuilder.newBuilder().register(JAXBProvider.class).sslContext(getSSLContext())
-                .hostnameVerifier(new HostnameVerifier() {
-                    @Override
-                    public boolean verify(String hostname, SSLSession session) {
-                        return true;
-                    }
-                }).build();
+                .hostnameVerifier((hostname, session) -> true).build();
 
     }
 
     @After
     public void close() {
-
         this.client.close();
     }
 
-    @Test
     public void testLogin() throws Exception {
 
         UriBuilder uriBuilder = (UriBuilder.fromPath("/api").scheme("http").host(LOCALHOST).port(this.serverPort));
@@ -87,47 +78,45 @@ public class TestPanPost extends AbstractPanTest {
         Assert.assertEquals(APIKEY, key);
     }
 
-    @Test
     public void testCreateSecurityGroupInterface() throws Exception {
         ApplianceManagerConnectorElement amce = getConnector();
         VirtualSystemElement vse = getVirtualSystem();
 
-        ShowOperations showOperations = new ShowOperations(LOCALHOST, this.serverPort, false, USERNAME, PASSWORD,
-                this.client);
-        PANManagerSecurityGroupInterfaceApi sgiApi = new PANManagerSecurityGroupInterfaceApi(amce, vse, showOperations);
+        PanoramaApiClient panClient = new PanoramaApiClient(LOCALHOST, this.serverPort, false, USERNAME, PASSWORD,
+                PAN_OS_ID, this.client);
+        PANManagerSecurityGroupInterfaceApi sgiApi = new PANManagerSecurityGroupInterfaceApi(amce, vse, panClient);
         SecurityGroupInterfaceElement sgiElement = new SecurityGroupInterfaceElement() {
 
-			@Override
-			public String getTag() {
-				return "Tag1";
-			}
+            @Override
+            public String getTag() {
+                return "Tag1";
+            }
 
-			@Override
-			public String getName() {
-				return "Tag Name";
-			}
+            @Override
+            public String getName() {
+                return "Tag Name";
+            }
 
-			@Override
-			public String getManagerSecurityGroupId() {
-				return null;
-			}
+            @Override
+            public String getManagerSecurityGroupId() {
+                return null;
+            }
 
-			@Override
-			public String getManagerSecurityGroupInterfaceId() {
-				return null;
-			}
+            @Override
+            public String getManagerSecurityGroupInterfaceId() {
+                return null;
+            }
 
-			@Override
-			public Set<ManagerPolicyElement> getManagerPolicyElements() {
-				return null;
-			}
-		};
+            @Override
+            public Set<ManagerPolicyElement> getManagerPolicyElements() {
+                return null;
+            }
+        };
         String result = sgiApi.createSecurityGroupInterface(sgiElement);
 
         assertEquals("Tag Name", result);
 
     }
-
 
     private static SSLContext getSSLContext() {
         TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
@@ -162,42 +151,41 @@ public class TestPanPost extends AbstractPanTest {
         return ctx;
     }
 
-    @Test
     public void testDeviceListing() throws Exception {
         ApplianceManagerConnectorElement amce = getConnector();
         VirtualSystemElement vse = getVirtualSystem();
 
-        ShowOperations showOperations = new ShowOperations(LOCALHOST, this.serverPort, false, USERNAME, PASSWORD,
-                this.client);
-        PANDeviceApi deviceApi = new PANDeviceApi(amce, vse, showOperations);
+        PanoramaApiClient panClient = new PanoramaApiClient(LOCALHOST, this.serverPort, false, USERNAME, PASSWORD,
+                PAN_OS_ID, this.client);
+        PANDeviceApi deviceApi = new PANDeviceApi(amce, vse, panClient);
         String id = deviceApi.findDeviceByName("Pan-NGFW-5");
 
         assertEquals("Pan-NGFW-5", id);
 
     }
 
-    @Test
     public void testDeviceDetail() throws Exception {
         ApplianceManagerConnectorElement amce = getConnector();
         VirtualSystemElement vse = getVirtualSystem();
 
-        ShowOperations showOperations = new ShowOperations(LOCALHOST, this.serverPort, false, USERNAME, PASSWORD,
-                this.client);
-        PANDeviceApi deviceApi = new PANDeviceApi(amce, vse, showOperations);
+        PanoramaApiClient panClient = new PanoramaApiClient(LOCALHOST, this.serverPort, false, USERNAME, PASSWORD,
+                PAN_OS_ID, this.client);
+        @SuppressWarnings("resource")
+        PANDeviceApi deviceApi = new PANDeviceApi(amce, vse, panClient);
         ManagerDeviceElement id = deviceApi.getDeviceById("Pan-NGFW-10");
 
         assertEquals("Pan-NGFW-10", id.getId());
 
     }
 
-    @Test
     public void testMemberDevices() throws Exception {
         ApplianceManagerConnectorElement amce = getConnector();
         VirtualSystemElement vse = getVirtualSystem();
 
-        ShowOperations showOperations = new ShowOperations(LOCALHOST, this.serverPort, false, USERNAME, PASSWORD,
-                this.client);
-        PANDeviceApi deviceApi = new PANDeviceApi(amce, vse, showOperations);
+        PanoramaApiClient panClient = new PanoramaApiClient(LOCALHOST, this.serverPort, false, USERNAME, PASSWORD,
+                PAN_OS_ID, this.client);
+        @SuppressWarnings("resource")
+        PANDeviceApi deviceApi = new PANDeviceApi(amce, vse, panClient);
         List<? extends ManagerDeviceMemberElement> devices = deviceApi.listDeviceMembers();
 
         assertEquals(0, devices.size());

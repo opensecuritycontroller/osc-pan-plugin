@@ -14,29 +14,27 @@
  */
 package com.paloaltonetworks.panorama.api.mapping;
 
-import javax.xml.bind.annotation.XmlRootElement;
+import java.util.List;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
-
 import javax.xml.bind.annotation.XmlElementWrapper;
+import javax.xml.bind.annotation.XmlRootElement;
 
-
-import java.util.ArrayList;
-
-@XmlAccessorType(XmlAccessType.FIELD)
+@XmlAccessorType(XmlAccessType.PROPERTY)
 @XmlRootElement(name = "result")
 public class GetTagResult {
 
-	@XmlElementWrapper(name="tag")
-	@XmlElement(name="entry" , type=TagEntry.class)
-	private ArrayList<TagEntry> entry;
-	
-	public ArrayList<TagEntry> getEntry(){
-		return this.entry;
-	}
-	
-	public void setEntry(ArrayList<TagEntry> value){
-		this.entry = value;
-	}
+    private List<TagEntry> entries;
+
+    @XmlElementWrapper(name = "tag")
+    @XmlElement(name = "entry", type = TagEntry.class)
+    public List<TagEntry> getEntries() {
+        return this.entries;
+    }
+
+    public void setEntries(List<TagEntry> entries) {
+        this.entries = entries;
+    }
 }

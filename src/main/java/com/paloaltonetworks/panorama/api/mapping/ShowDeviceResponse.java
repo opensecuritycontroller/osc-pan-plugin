@@ -15,42 +15,42 @@
 package com.paloaltonetworks.panorama.api.mapping;
 
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAccessType;
-
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name="response")
-public class ShowDeviceResponse {
+public class ShowDeviceResponse  implements PANResponse {
 
-	@XmlElement(name="result")
-	private ShowDeviceResult showDeviceResult;
-	
-	@XmlAttribute(name = "status")
-	private String status;
-	
-	public String getStatus(){
-		return status;
-	}
-	
-	public void setStatus(String value) {
-		this.status = value;
-	}
-	
+    @XmlElement(name="result")
+    private ShowDeviceResult showDeviceResult;
 
-	public ShowDeviceResult getShowDeviceResult(){
-		return showDeviceResult;
-	}
-	
-	public void setShowDeviceResult(ShowDeviceResult value){
-		this.showDeviceResult = value;
-	}
-	
-	
-	
-	
-	
+    @XmlAttribute(name = "status")
+    private String status;
+
+    @Override
+    public String getStatus(){
+        return this.status;
+    }
+
+    public void setStatus(String value) {
+        this.status = value;
+    }
+
+
+    public ShowDeviceResult getShowDeviceResult(){
+        return this.showDeviceResult;
+    }
+
+    public void setShowDeviceResult(ShowDeviceResult value){
+        this.showDeviceResult = value;
+    }
+
+    @Override
+    public String getCode() {
+        throw new UnsupportedOperationException("getCode not implemented for class "+ getClass());
+    }
 }

@@ -15,40 +15,51 @@
 package com.paloaltonetworks.panorama.api.mapping;
 
 
-import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "entry")
+@XmlRootElement(name = "entry")
 public class TagEntry {
-	
-	private String color;
-	private String comment;
-	@XmlAttribute
-	private String name;
-	
-	public String getName(){
-		return this.name;
-	}
-	
-	public void setName(String value){
-		this.name = value;
-	}
-	
-	public String getColor(){
-		return color;
-	}
-	public void setColor(String value){
-		this.color = value;
-	}
-	
-	public String getComment(){
-		return comment;
-	}
-	
-	public void setComment(String value){
-		this.comment = value;
-	}
+    public TagEntry() {
+    }
+
+    public TagEntry(String color, String comment, String name) {
+        this.color = color;
+        this.comment = comment;
+        this.name = name;
+    }
+
+    private String color;
+    private String comment;
+
+    @XmlAttribute
+    private String name;
+
+    public String getName(){
+        return this.name;
+    }
+
+    public void setName(String value){
+        this.name = value;
+    }
+
+    public String getColor(){
+        return this.color;
+    }
+    public void setColor(String value){
+        this.color = value;
+    }
+
+    public String getComment(){
+        return this.comment;
+    }
+
+    public void setComment(String value){
+        this.comment = value;
+    }
 }

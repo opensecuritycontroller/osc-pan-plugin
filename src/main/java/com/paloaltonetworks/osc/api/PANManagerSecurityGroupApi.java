@@ -24,7 +24,7 @@ import org.osc.sdk.manager.element.SecurityGroupMemberElement;
 import org.osc.sdk.manager.element.SecurityGroupMemberListElement;
 import org.osc.sdk.manager.element.VirtualSystemElement;
 
-import com.paloaltonetworks.panorama.api.methods.ShowOperations;
+import com.paloaltonetworks.panorama.api.methods.PanoramaApiClient;
 
 /**
  * This documents "Device Management Apis"
@@ -34,13 +34,13 @@ public class PANManagerSecurityGroupApi implements ManagerSecurityGroupApi {
     static String apiKey = null;
     private VirtualSystemElement vs;
     private ApplianceManagerConnectorElement mc;
-    private ShowOperations showOperations;
+    private PanoramaApiClient panClient;
 
     public PANManagerSecurityGroupApi(ApplianceManagerConnectorElement mc, VirtualSystemElement vs,
-            ShowOperations showOperations) {
+            PanoramaApiClient panClient) {
         this.vs = vs;
         this.mc = mc;
-        this.showOperations = showOperations;
+        this.panClient = panClient;
 
     }
 
@@ -51,12 +51,12 @@ public class PANManagerSecurityGroupApi implements ManagerSecurityGroupApi {
          * Check if tag exists - if not create
          */
         boolean tagExists;
-        String status;
+        String status = null;
         String pan_serial = null;
 
-        tagExists = this.showOperations.TagExists(name);
+        tagExists = this.panClient.policyTagExists(name);
         if (!tagExists) {
-            status = this.showOperations.addDAGTag(name);
+            status = this.panClient.addDAGTag(name);
             if (!status.equals("success")) {
                 return null;
             }
@@ -70,11 +70,16 @@ public class PANManagerSecurityGroupApi implements ManagerSecurityGroupApi {
         /*
          * Add TAG and IP address
          */
-        ArrayList<String> pan_serialList = this.showOperations.showDevices();
-        status = this.showOperations.addDAG(name, pan_serialList.get(0), ipList);
-        if (!status.equals("success")) {
+        List<String> pan_serialList = this.panClient.showDevices();
+
+        if (pan_serialList != null && pan_serialList.size() > 0) {
+            status = this.panClient.addDAG(name, ipList);
+        }
+
+        if (!"success".equals(status)) {
             return null;
         }
+
         return name;
 
     }
@@ -87,7 +92,7 @@ public class PANManagerSecurityGroupApi implements ManagerSecurityGroupApi {
 
     @Override
     public void deleteSecurityGroup(String sgId) throws Exception {
-        this.showOperations.deleteDAGTag(sgId);
+        this.panClient.deleteDAGTag(sgId);
 
     }
 
