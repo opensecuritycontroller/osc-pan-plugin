@@ -113,29 +113,25 @@ public class PanoramaApiClient {
 
     private final String host;
     private final int port;
-    private final String panos_id;
     private final Client client;
     private final String scheme;
     private final String oscDevGroupName;
     private String apiKey;
-    private String xpathAddress;
 
-    public PanoramaApiClient(String panServer, int port, boolean isHttps, String loginName, String password, String panos_id, Client client)
+    public PanoramaApiClient(String panServer, int port, boolean isHttps, String loginName, String password, Client client)
             throws Exception {
-        this(panServer, port, isHttps, loginName, password, panos_id, client, DEFAULT_OSC_DEVGROUP_NAME);
+        this(panServer, port, isHttps, loginName, password, client, DEFAULT_OSC_DEVGROUP_NAME);
     }
 
     public PanoramaApiClient(String panServer, int port, boolean isHttps, String loginName, String password,
-            String panos_id, Client client, String oscDevGroupName)
+            Client client, String oscDevGroupName)
             throws Exception {
         this.host = panServer;
         this.port = port <= 0 ? isHttps ? HTTPS_DEFAULT_PORT : HTTP_DEFAULT_PORT : port;
-        this.panos_id = panos_id;
         this.scheme = isHttps ? HTTPS : HTTP;
         this.client = client;
         this.apiKey = login(loginName, password);
         this.oscDevGroupName = oscDevGroupName;
-        this.xpathAddress = String.format(XPATH_ADDRESS_TEMPL, this.oscDevGroupName);
     }
 
     public boolean checkConnection() {
@@ -203,7 +199,6 @@ public class PanoramaApiClient {
 
     public String addDeviceGroup(String name, String description) throws Exception {
         LOG.info("Adding device group " + name);
-        // "<entry name=\'" + name + "\'><description>" + description + "</description><devices/></entry>";
         String element = makeEntryElement(name, null, description, null);
         Map<String, String> queryStrings = makeSetConfigRequestParams(XPATH_DEVGROUP_PREFIX, element, null);
         String status = getRequest(queryStrings, SetConfigResponse.class).getStatus();
@@ -223,14 +218,14 @@ public class PanoramaApiClient {
         return dagResponse.getStatus();
     }
 
-    public String deleteDAG(String name, String panos_id, String IPAddress) throws Exception {
-        LOG.info("Deleting address %s from Dynamic Address Group %s", IPAddress, name);
-        String cmd = "<uid-message><version>1.0</version><type>update</type><payload><unregister>" + "<entry ip=\""
-                + IPAddress + "\"><tag><member>" + name + "</member></tag></entry>"
-                + "</unregister></payload></uid-message>";
-        Map<String, String> queryStrings = makeRequestParams(SET_ACTION, USER_ID_TYPE, null, null, cmd);
-        queryStrings.put("target", panos_id);
-        return getRequest(queryStrings, DAGResponse.class).getStatus();
+    public String deleteDAG(String name) throws Exception {
+        LOG.info("Deleting dynamic Address Group %s", name);
+        String xpath = String .format(XPATH_ADDRESS_GROUP_TEMPL, this.oscDevGroupName);
+        String element = makeEntryElement(name);
+        Map<String, String> queryStrings = makeDeleteConfigRequestParams(xpath, element, null);
+        DAGResponse dagResponse = getRequest(queryStrings, DAGResponse.class);
+        configCommit();
+        return dagResponse.getStatus();
     }
 
     public String addDAGTag(String name) throws Exception {
@@ -542,7 +537,6 @@ public class PanoramaApiClient {
         String status = FAILURE;
 
         Map<String, String> queryStrings = makeRequestParams(null, COMMIT_TYPE, null, null, COMMIT_CMD);
-        queryStrings.put("target", this.panos_id);
 
         try {
             CommitResponse commitResponse = getRequest(queryStrings, CommitResponse.class);

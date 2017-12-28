@@ -16,6 +16,7 @@ package com.paloaltonetworks.ism;
 
 import static org.junit.Assert.*;
 
+import java.util.Arrays;
 import java.util.List;
 
 import javax.net.ssl.HostnameVerifier;
@@ -24,6 +25,7 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -38,7 +40,6 @@ import com.paloaltonetworks.panorama.test.DeviceTest;
  */
 public class PanoramaApiClientIntegrationTest{
     private static final String PANORAMA_IP = "10.3.240.15";
-    private static final String PAN_OS_ID = "007299000003740";
     private static final String EXISTING_POLICY_TAG = "EXISTING_POLICY_TAG";
     private static final String EXISTING_POLICY_TAG_OTHER = "EXISTING_POLICY_TAG_OTHER";
     private static final String TEST_SETUP_MSG = String.format("Test setup expects the following shared tags on panorama %s: %s and %s!",
@@ -60,7 +61,7 @@ public class PanoramaApiClientIntegrationTest{
                     }
                 }).build();
         this.panClient = new PanoramaApiClient(PANORAMA_IP, 443, true, "admin", "admin",
-                PAN_OS_ID, this.client, OSC_DEVGROUP_NAME);
+                this.client, OSC_DEVGROUP_NAME);
     }
 
     @After
@@ -152,7 +153,7 @@ public class PanoramaApiClientIntegrationTest{
 
     @Ignore
     @Test
-    public void tesBindPolicyToAddress() throws Exception {
+    public void testBindPolicyToAddress() throws Exception {
         String ip = "10.2.3.4";
 
         List<AddressEntry> addresses = this.panClient.fetchAddressesByPolicy(EXISTING_POLICY_TAG);
@@ -172,5 +173,17 @@ public class PanoramaApiClientIntegrationTest{
         assertEquals(0, addresses.size());
 
         this.panClient.deleteAddress(ip);
+    }
+
+    @Ignore
+    @Test
+    public void testAddDAG() throws Exception {
+        String ip = "10.2.3.4";
+
+        String dag = "dummyDAG";
+        String status = this.panClient.addDAG(dag, Arrays.asList(EXISTING_POLICY_TAG, EXISTING_POLICY_TAG_OTHER));
+        Assert.assertEquals("success", status);
+        status = this.panClient.deleteDAG(dag);
+        Assert.assertEquals("success", status);
     }
 }

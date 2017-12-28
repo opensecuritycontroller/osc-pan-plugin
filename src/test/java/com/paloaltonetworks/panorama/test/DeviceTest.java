@@ -31,8 +31,6 @@ public class DeviceTest {
     private static final String USERNAME = "admin";
     private static final String PASSWORD = "admin";
     private static final String IP = "10.71.85.99";
-    private static final String PAN_OS_ID = "007299000003740";
-
     private static final Logger LOG = LoggerFactory.getLogger(DeviceTest.class);
 
     private PanoramaApiClient panClient;
@@ -50,7 +48,7 @@ public class DeviceTest {
         }).build();
 
         boolean isHttps = true;
-        this.panClient = new PanoramaApiClient(IP, 443, isHttps, USERNAME, PASSWORD, PAN_OS_ID, this.client);
+        this.panClient = new PanoramaApiClient(IP, 443, isHttps, USERNAME, PASSWORD, this.client);
 
     }
 

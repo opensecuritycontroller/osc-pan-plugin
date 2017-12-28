@@ -75,10 +75,6 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
         @AttributeDefinition(required = false,
                 description = "The property name to use when setting the maximum thread count")
         String max_threads_property_name() default "com.sun.jersey.client.property.threadpoolSize";
-
-        @AttributeDefinition(required = false,
-                description = "PanOS id is a parameter required by commit operations")
-        String pan_os_id() default "007299000003740";
     }
 
     @Activate
@@ -131,7 +127,7 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
 
     private PanoramaApiClient getPanoramaApiClient(ApplianceManagerConnectorElement mc) throws Exception {
         return new PanoramaApiClient(mc.getIpAddress(), this.config.port(), this.config.use_https(), mc.getUsername(),
-                mc.getPassword(), this.config.pan_os_id(), this.client);
+                mc.getPassword(), this.client);
     }
 
     /*

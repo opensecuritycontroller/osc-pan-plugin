@@ -83,7 +83,7 @@ public class TestPanPost extends AbstractPanTest {
         VirtualSystemElement vse = getVirtualSystem();
 
         PanoramaApiClient panClient = new PanoramaApiClient(LOCALHOST, this.serverPort, false, USERNAME, PASSWORD,
-                PAN_OS_ID, this.client);
+                this.client);
         PANManagerSecurityGroupInterfaceApi sgiApi = new PANManagerSecurityGroupInterfaceApi(amce, vse, panClient);
         SecurityGroupInterfaceElement sgiElement = new SecurityGroupInterfaceElement() {
 
@@ -156,7 +156,7 @@ public class TestPanPost extends AbstractPanTest {
         VirtualSystemElement vse = getVirtualSystem();
 
         PanoramaApiClient panClient = new PanoramaApiClient(LOCALHOST, this.serverPort, false, USERNAME, PASSWORD,
-                PAN_OS_ID, this.client);
+                this.client);
         PANDeviceApi deviceApi = new PANDeviceApi(amce, vse, panClient);
         String id = deviceApi.findDeviceByName("Pan-NGFW-5");
 
@@ -169,7 +169,7 @@ public class TestPanPost extends AbstractPanTest {
         VirtualSystemElement vse = getVirtualSystem();
 
         PanoramaApiClient panClient = new PanoramaApiClient(LOCALHOST, this.serverPort, false, USERNAME, PASSWORD,
-                PAN_OS_ID, this.client);
+                this.client);
         @SuppressWarnings("resource")
         PANDeviceApi deviceApi = new PANDeviceApi(amce, vse, panClient);
         ManagerDeviceElement id = deviceApi.getDeviceById("Pan-NGFW-10");
@@ -183,7 +183,7 @@ public class TestPanPost extends AbstractPanTest {
         VirtualSystemElement vse = getVirtualSystem();
 
         PanoramaApiClient panClient = new PanoramaApiClient(LOCALHOST, this.serverPort, false, USERNAME, PASSWORD,
-                PAN_OS_ID, this.client);
+                this.client);
         @SuppressWarnings("resource")
         PANDeviceApi deviceApi = new PANDeviceApi(amce, vse, panClient);
         List<? extends ManagerDeviceMemberElement> devices = deviceApi.listDeviceMembers();

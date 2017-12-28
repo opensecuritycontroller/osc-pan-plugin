@@ -28,9 +28,7 @@ import com.paloaltonetworks.panorama.test.DeviceTest;
 
 public class TestApp {
 
-    private static final String PAN_OS_ID = "007299000003740";
-
-	public static void main(String[] args) throws Exception {
+    public static void main(String[] args) throws Exception {
 
         String status = "failure";
 
@@ -43,31 +41,31 @@ public class TestApp {
                 }).build();
 
         boolean isHttps = true;
-        PanoramaApiClient panClient = new PanoramaApiClient("10.4.33.201", 443, isHttps, "admin", "admin", PAN_OS_ID, client);
+        PanoramaApiClient panClient = new PanoramaApiClient("10.4.33.201", 443, isHttps, "admin", "admin", client);
 
-	    List<String> devices = panClient.showDevices();
-	    Iterator<String> deviceIterator = devices.iterator();
-		while (deviceIterator.hasNext()){
-			System.out.println(deviceIterator.next());
+        List<String> devices = panClient.showDevices();
+        Iterator<String> deviceIterator = devices.iterator();
+        while (deviceIterator.hasNext()){
+            System.out.println(deviceIterator.next());
 
-		}
+        }
 
-		List<String> deviceGroups = panClient.showDeviceGroups();
-	    Iterator<String> deviceGroupsIterator = deviceGroups.iterator();
-		while (deviceGroupsIterator.hasNext()){
-			System.out.println(deviceGroupsIterator.next());
+        List<String> deviceGroups = panClient.showDeviceGroups();
+        Iterator<String> deviceGroupsIterator = deviceGroups.iterator();
+        while (deviceGroupsIterator.hasNext()){
+            System.out.println(deviceGroupsIterator.next());
 
-		}
+        }
 
-		String dg = "testing";
-		status = panClient.deleteDeviceGroup(dg);
-		if (status.equals("success")){
-			System.out.println("Successfully deleted device group: " + dg);
-		}
-		status = panClient.addDeviceGroup(dg, "testing dg");
-		if (status.equals("success")){
-			System.out.println("Successfully added device group: " + dg);
-		}
-	}
+        String dg = "testing";
+        status = panClient.deleteDeviceGroup(dg);
+        if (status.equals("success")){
+            System.out.println("Successfully deleted device group: " + dg);
+        }
+        status = panClient.addDeviceGroup(dg, "testing dg");
+        if (status.equals("success")){
+            System.out.println("Successfully added device group: " + dg);
+        }
+    }
 
 }

@@ -28,9 +28,9 @@ import org.osc.sdk.manager.element.ManagerTypeElement;
 import org.osc.sdk.manager.element.VirtualSystemElement;
 import org.osc.sdk.manager.element.VirtualizationConnectorElement;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.paloaltonetworks.panorama.api.methods.JAXBProvider;
-import org.slf4j.LoggerFactory;
 
 public class AbstractPanTest {
     protected static final Logger log = LoggerFactory.getLogger(AbstractPanTest.class);
@@ -74,9 +74,6 @@ public class AbstractPanTest {
     protected static final String DG_ELEMENT_DESCRIPTION = "<entry name='DG1'><description>DG1 description</description><devices/></entry>";
     protected static final String DG_ELEMENT = "<entry name='DG1'></entry>";
     protected static final String TAG_ELEMENT = "<entry name='Tag1'><color>color3</color><comments>OSC Tag</comments></entry>";
-
-    // Target
-    protected static final String PAN_OS_ID = "007299000003740";
 
     protected int serverPort;
 
@@ -167,11 +164,9 @@ public class AbstractPanTest {
                 }
                 break;
             case USER_ID:
-                if (SET_ACTION.equals(action) && APIKEY.equals(apiKey) && PAN_OS_ID.equals(target)
-                        && ADD_DAG_COMMAND.equals(command)) {
+                if (SET_ACTION.equals(action) && APIKEY.equals(apiKey) && ADD_DAG_COMMAND.equals(command)) {
 
-                } else if (SET_ACTION.equals(action) && APIKEY.equals(apiKey) && PAN_OS_ID.equals(target)
-                        && DELETE_DAG_COMMAND.equals(command)) {
+                } else if (SET_ACTION.equals(action) && APIKEY.equals(apiKey) && DELETE_DAG_COMMAND.equals(command)) {
 
                 }
                 break;
