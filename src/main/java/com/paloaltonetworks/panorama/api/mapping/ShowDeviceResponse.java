@@ -14,7 +14,6 @@
  */
 package com.paloaltonetworks.panorama.api.mapping;
 
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -39,7 +38,6 @@ public class ShowDeviceResponse  implements PANResponse {
     public void setStatus(String value) {
         this.status = value;
     }
-
 
     public ShowDeviceResult getShowDeviceResult(){
         return this.showDeviceResult;

@@ -27,6 +27,9 @@ public class ShowBaseResponse implements PANResponse {
     @XmlAttribute(name = "status")
     private String status;
 
+    @XmlElement(name="result")
+    private ShowBaseDeviceGroups showBaseDeviceGroups;
+
     @Override
     public String getStatus(){
         return this.status;
@@ -35,9 +38,6 @@ public class ShowBaseResponse implements PANResponse {
     public void setStatus(String value) {
         this.status = value;
     }
-
-    @XmlElement(name="result")
-    private ShowBaseDeviceGroups showBaseDeviceGroups;
 
     public ShowBaseDeviceGroups getShowBaseDeviceGroups(){
         return this.showBaseDeviceGroups;

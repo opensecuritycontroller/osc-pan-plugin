@@ -14,7 +14,6 @@
  */
 package com.paloaltonetworks.panorama.api.mapping;
 
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -25,43 +24,38 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name="response")
 public class CommitResponse implements PANResponse {
 
-	@XmlAttribute(name = "status")
-	private String status;
+    @XmlAttribute(name = "status")
+    private String status;
 
-	@Override
+    @XmlElement(name="result")
+    private CommitResult commitResult;
+
+    @XmlAttribute(name = "code")
+    private String code;
+
+    @Override
     public String getStatus(){
-		return this.status;
-	}
+        return this.status;
+    }
 
-	public void setStatus(String value) {
-		this.status = value;
-	}
+    public void setStatus(String value) {
+        this.status = value;
+    }
 
-	@XmlAttribute(name = "code")
-	private String code;
-
-	@Override
+    @Override
     public String getCode(){
-		return this.code;
-	}
+        return this.code;
+    }
 
-	public void setCode(String value) {
-		this.code = value;
-	}
+    public void setCode(String value) {
+        this.code = value;
+    }
 
-	@XmlElement(name="result")
-	private CommitResult commitResult;
+    public CommitResult getCommitResult(){
+        return this.commitResult;
+    }
 
-	public CommitResult getCommitResult(){
-		return this.commitResult;
-	}
-
-	public void setCommitResult(CommitResult value){
-		this.commitResult = value;
-	}
-
-
-
-
-
+    public void setCommitResult(CommitResult value){
+        this.commitResult = value;
+    }
 }

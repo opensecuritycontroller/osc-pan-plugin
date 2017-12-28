@@ -27,6 +27,9 @@ public class SetConfigResponse implements PANResponse {
     @XmlElement(name="msg")
     private ConfigMessage configMessage;
 
+    @XmlAttribute(name = "code")
+    private String code;
+
     @XmlAttribute(name = "status")
     private String status;
 
@@ -38,9 +41,6 @@ public class SetConfigResponse implements PANResponse {
     public void setStatus(String value) {
         this.status = value;
     }
-
-    @XmlAttribute(name = "code")
-    private String code;
 
     @Override
     public String getCode(){

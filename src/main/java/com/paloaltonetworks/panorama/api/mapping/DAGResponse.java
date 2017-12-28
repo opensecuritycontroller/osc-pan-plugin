@@ -27,6 +27,9 @@ public class DAGResponse implements PANResponse {
     @XmlAttribute(name = "status")
     private String status;
 
+    @XmlElement(name="result")
+    private DAGResult dagResult;
+
     @Override
     public String getStatus(){
         return this.status;
@@ -35,9 +38,6 @@ public class DAGResponse implements PANResponse {
     public void setStatus(String value) {
         this.status = value;
     }
-
-    @XmlElement(name="result")
-    private DAGResult dagResult;
 
     public DAGResult getDAGResult(){
         return this.dagResult;

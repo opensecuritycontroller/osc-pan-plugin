@@ -27,10 +27,8 @@ public class ShowResponse implements PANResponse {
     @XmlAttribute(name = "status")
     private String status;
 
-
     @XmlElement(name="result")
     private ShowResult showResult;
-
 
     public ShowResult getShowResult(){
         return this.showResult;

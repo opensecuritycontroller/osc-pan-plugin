@@ -14,7 +14,6 @@
  */
 package com.paloaltonetworks.panorama.api.mapping;
 
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -51,6 +50,7 @@ public class TagEntry {
     public String getColor(){
         return this.color;
     }
+
     public void setColor(String value){
         this.color = value;
     }

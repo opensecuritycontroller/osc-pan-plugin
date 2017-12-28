@@ -34,5 +34,4 @@ public class ShowDeviceResult {
     public void setShowDeviceEntry(ArrayList<DeviceEntry> value){
         this.listOfDevices = value;
     }
-
 }
