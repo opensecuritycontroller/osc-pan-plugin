@@ -16,12 +16,9 @@ package com.paloaltonetworks.osc.api;
 
 import static java.util.stream.Collectors.toList;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.osc.sdk.manager.api.ManagerPolicyApi;
-import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
-import org.osc.sdk.manager.element.VirtualSystemElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,25 +32,11 @@ public class PANManagerPolicyApi implements ManagerPolicyApi {
 
     private static final Logger log = LoggerFactory.getLogger(PANManagerPolicyApi.class);
     static String apiKey = null;
-    private VirtualSystemElement vs;
-    private ApplianceManagerConnectorElement mc;
     private PanoramaApiClient panClient;
 
-    private static ArrayList<PolicyListElement> policyList = new ArrayList<>();
-    static {
-        // Add domain if applicable
-        policyList.add(new PolicyListElement("Platinum", "Platinum", "Root-Domain"));
-        policyList.add(new PolicyListElement("Gold", "Gold", "Root-Domain"));
-        policyList.add(new PolicyListElement("Silver", "Silver", "Root-Domain"));
-        policyList.add(new PolicyListElement("Bronze", "Bronze", "Root-Domain"));
-    }
-
-    public PANManagerPolicyApi(ApplianceManagerConnectorElement mc, PanoramaApiClient panClient) {
+    public PANManagerPolicyApi(PanoramaApiClient panClient) {
         log.info("Creating new PANManagerPolicy api");
-        this.mc = mc;
-        log.info("new show operaitons in Policy");
         this.panClient = panClient;
-
     }
 
     @Override

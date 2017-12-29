@@ -22,7 +22,7 @@ public class QuickXmlizerUtil {
      * @throws JAXBException
      * @throws IOException
      *
-     * @see  javax.xml.bind.annotation.XmlRootElement
+     * @see javax.xml.bind.annotation.XmlRootElement
      */
     public static String xmlString(Object object) throws JAXBException, IOException {
         Marshaller marshaller = JAXBContext.newInstance(object.getClass()).createMarshaller();

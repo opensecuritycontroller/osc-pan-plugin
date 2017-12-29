@@ -125,11 +125,6 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
         this.client.close();
     }
 
-    private PanoramaApiClient getPanoramaApiClient(ApplianceManagerConnectorElement mc) throws Exception {
-        return new PanoramaApiClient(mc.getIpAddress(), this.config.port(), this.config.use_https(), mc.getUsername(),
-                mc.getPassword(), this.client);
-    }
-
     /*
      * @see org.osc.sdk.manager.api.ApplianceManagerApi#createManagerDeviceApi(org.osc.sdk.manager.element.
      * ApplianceManagerConnectorElement, org.osc.sdk.manager.element.VirtualSystemElement)
@@ -140,7 +135,7 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
 
         LOG.info(String.format("Creating Device Api for Panorama Manager : %s with ip : %s", mc.getName(),
                 mc.getIpAddress()));
-        PanoramaApiClient panClient = getPanoramaApiClient(mc);
+        PanoramaApiClient panClient = makePanoramaApiClient(mc);
 
         return new PANDeviceApi(mc, vs, panClient);
     }
@@ -156,8 +151,8 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
 
         LOG.info(String.format("Creating Security Group interface API for Panorama Manager : %s with ip : %s",
                 mc.getName(), mc.getIpAddress()));
-        //return PANManagerSecurityGroupInterfaceApi.create(mc,vs);
-        return null;
+        PanoramaApiClient panClient = makePanoramaApiClient(mc);
+        return new PANManagerSecurityGroupInterfaceApi(mc,vs, panClient);
     }
 
     /*
@@ -169,7 +164,7 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
             VirtualSystemElement vs) throws Exception {
         LOG.info(String.format("Creating Security Group API for Panorama Manager : %s with ip : %s", mc.getName(),
                 mc.getIpAddress()));
-        PanoramaApiClient panClient = getPanoramaApiClient(mc);
+        PanoramaApiClient panClient = makePanoramaApiClient(mc);
         return new PANManagerSecurityGroupApi(mc, vs, panClient);
     }
 
@@ -183,8 +178,8 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
 
         LOG.info(String.format("Creating Policy API for Panorama Manager : %s with ip : %s", mc.getName(),
                 mc.getIpAddress()));
-        PanoramaApiClient panClient = getPanoramaApiClient(mc);
-        return new PANManagerPolicyApi(mc, panClient);
+        PanoramaApiClient panClient = makePanoramaApiClient(mc);
+        return new PANManagerPolicyApi(panClient);
     }
 
     /*
@@ -239,7 +234,7 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
 
         boolean connectionCheck = false;
 
-        PanoramaApiClient panClient = getPanoramaApiClient(mc);
+        PanoramaApiClient panClient = makePanoramaApiClient(mc);
         connectionCheck = panClient.checkConnection();
         if (connectionCheck == false) {
             String errorMessage = String.format("Failed to connect to Panorama Manager @ IP address : %s",
@@ -280,5 +275,10 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
             VirtualSystemElement vs) throws Exception {
 
         return null;
+    }
+
+    private PanoramaApiClient makePanoramaApiClient(ApplianceManagerConnectorElement mc) throws Exception {
+        return new PanoramaApiClient(mc.getIpAddress(), this.config.port(), this.config.use_https(), mc.getUsername(),
+                mc.getPassword(), this.client);
     }
 }

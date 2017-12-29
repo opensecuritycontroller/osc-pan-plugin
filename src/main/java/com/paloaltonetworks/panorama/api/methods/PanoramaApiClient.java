@@ -208,7 +208,23 @@ public class PanoramaApiClient {
         return status;
     }
 
-     public String addDAG(String name, List<String> tags) throws Exception {
+    public String deleteDeviceGroup(String name) throws Exception {
+        String configStatus = FAILURE;
+
+        String element = makeEntryElement(name);
+        Map<String, String> queryStrings = makeRequestParams(DELETE_ACTION, CONFIG_TYPE, XPATH_DEVGROUP_PREFIX, element, null);
+        SetConfigResponse setConfigResponse = getRequest(queryStrings, SetConfigResponse.class);
+        configStatus = configCommit();
+        if (configStatus.equals(ERROR)) {
+            String errorMessage = String.format("Commit failed when deleting Device Group Name: %s ", name);
+            LOG.error(errorMessage);
+            throw new Exception(errorMessage);
+        }
+
+        return setConfigResponse.getStatus();
+    }
+
+    public String addDAG(String name, List<String> tags) throws Exception {
         LOG.info("Adding Dynamic Address Group %s with tags: %s", name, tags);
         String xpath = String .format(XPATH_ADDRESS_GROUP_TEMPL, this.oscDevGroupName);
         String element = makeDynamicAddressGroupElement(name, tags);
@@ -334,21 +350,6 @@ public class PanoramaApiClient {
         }
     }
 
-    public String deleteDeviceGroup(String name) throws Exception {
-        String configStatus = FAILURE;
-        String element = makeEntryElement(name);
-        Map<String, String> queryStrings = makeRequestParams(DELETE_ACTION, CONFIG_TYPE, XPATH_DEVGROUP_PREFIX, element, null);
-        SetConfigResponse setConfigResponse = getRequest(queryStrings, SetConfigResponse.class);
-        configStatus = configCommit();
-        if (configStatus.equals(ERROR)) {
-            String errorMessage = String.format("Commit failed when deleting Device Group Name: %s ", name);
-            LOG.error(errorMessage);
-            throw new Exception(errorMessage);
-        }
-
-        return setConfigResponse.getStatus();
-    }
-
     private void addTagToAddress(String ip, String tag) throws Exception {
         LOG.info("Adding tag %s to address %s", tag, ip);
         String xpath = String.format(XPATH_ADDRESS_TEMPL, this.oscDevGroupName);
@@ -456,7 +457,11 @@ public class PanoramaApiClient {
         }
 
         Map<String, String> queryStrings = new HashMap<>();
-        queryStrings.put(ACTION, action);
+
+        if (action != null) {
+            queryStrings.put(ACTION, action);
+        }
+
         queryStrings.put(TYPE, type);
         queryStrings.put(KEY, this.apiKey);
 

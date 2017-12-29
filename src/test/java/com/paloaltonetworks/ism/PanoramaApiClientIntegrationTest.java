@@ -69,6 +69,32 @@ public class PanoramaApiClientIntegrationTest{
         this.client.close();
     }
 
+    @Test
+    public void testDeviceGroups() throws Exception {
+        String devGroup = "PANMgrTestDevGroup";
+        List<String> devGroups = this.panClient.showDeviceGroups();
+        assertNotNull(devGroups);
+        assertFalse(devGroups.contains(devGroup));
+        int origSize = devGroups.size();
+
+        String status = this.panClient.addDeviceGroup(devGroup, "just because");
+        assertEquals("success", status);
+        int nTries = 10;
+        int sleepMillis = 1000;
+        for (int i = 0; i < nTries && !devGroups.contains(devGroup); i++) {
+            devGroups = this.panClient.showDeviceGroups();
+            Thread.sleep(sleepMillis);
+        }
+        assertTrue(devGroups.contains(devGroup));
+        assertEquals(origSize + 1, devGroups.size());
+
+//        this.panClient.deleteDeviceGroup(devGroup);
+//        devGroups = this.panClient.showDeviceGroups();
+//        assertNotNull(devGroups);
+//        assertFalse(devGroups.contains(devGroup));
+//        Assert.assertEquals(origSize, devGroups.size());
+    }
+
     @Ignore
     @Test
     public void testListPolicyTags() throws Exception {
@@ -124,7 +150,6 @@ public class PanoramaApiClientIntegrationTest{
         assertEquals(0, addresses.size());
     }
 
-    @Ignore
     @Test
     public void testAddSGToAddress() throws Exception {
         String ip = "10.2.3.4";

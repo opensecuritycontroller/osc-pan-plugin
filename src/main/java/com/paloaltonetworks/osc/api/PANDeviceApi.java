@@ -14,6 +14,8 @@
  */
 package com.paloaltonetworks.osc.api;
 
+import static java.util.stream.Collectors.toList;
+
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -69,7 +71,6 @@ public class PANDeviceApi implements ManagerDeviceApi {
         for (String deviceGroupName : deviceGroups) {
             if (deviceGroupName.equals(id)) {
                 return new Device(deviceGroupName, deviceGroupName);
-
             }
         }
 
@@ -86,10 +87,7 @@ public class PANDeviceApi implements ManagerDeviceApi {
 
         List<Device> deviceGroups = new ArrayList<>();
         List<String> panDeviceGroups = this.panClient.showDeviceGroups();
-        for (String deviceGroupName : panDeviceGroups) {
-            deviceGroups.add(new Device(deviceGroupName, deviceGroupName));
-        }
-        return deviceGroups;
+        return panDeviceGroups.stream().map(s -> new Device(s, s)).collect(toList());
     }
 
     @Override
