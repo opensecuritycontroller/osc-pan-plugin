@@ -27,6 +27,9 @@ public class DeviceGroupResponse implements PANResponse {
     @XmlAttribute(name = "status")
     private String status;
 
+    @XmlAttribute(name = "code")
+    private String code;
+
     @XmlElement(name="result")
     private DeviceGroups deviceGroups;
 
@@ -39,16 +42,20 @@ public class DeviceGroupResponse implements PANResponse {
         this.status = value;
     }
 
-    public DeviceGroups getDeviceGroups(){
+    public DeviceGroups getDeviceGroups() {
         return this.deviceGroups;
     }
 
-    public void setDeviceGroups(DeviceGroups value){
+    public void setDeviceGroups(DeviceGroups value) {
         this.deviceGroups = value;
     }
 
     @Override
     public String getCode() {
-        throw new UnsupportedOperationException("getCode not implemented for class "+ getClass());
+        return this.code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 }

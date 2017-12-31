@@ -27,11 +27,14 @@ public class DAGResponse implements PANResponse {
     @XmlAttribute(name = "status")
     private String status;
 
+    @XmlAttribute(name = "code")
+    private String code;
+
     @XmlElement(name="result")
     private DAGResult dagResult;
 
     @Override
-    public String getStatus(){
+    public String getStatus() {
         return this.status;
     }
 
@@ -39,16 +42,20 @@ public class DAGResponse implements PANResponse {
         this.status = value;
     }
 
-    public DAGResult getDAGResult(){
+    public DAGResult getDAGResult() {
         return this.dagResult;
     }
 
-    public void setDAGResult(DAGResult value){
+    public void setDAGResult(DAGResult value) {
         this.dagResult = value;
     }
 
     @Override
     public String getCode() {
-        throw new UnsupportedOperationException("getCode not implemented for class "+ getClass());
+        return this.code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 }

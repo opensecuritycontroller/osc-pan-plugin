@@ -14,6 +14,10 @@
  */
 package com.paloaltonetworks.osc.api;
 
+import static com.paloaltonetworks.panorama.api.methods.PanoramaApiClient.*;
+import static com.paloaltonetworks.utils.VsToDevGroupNameUtil.devGroupName;
+import static com.paloaltonetworks.utils.VsToDevGroupNameUtil.vsId;
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
 import java.io.IOException;
@@ -21,9 +25,9 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
 import org.osc.sdk.manager.api.ManagerDeviceApi;
@@ -34,8 +38,13 @@ import org.osc.sdk.manager.element.DistributedApplianceInstanceElement;
 import org.osc.sdk.manager.element.ManagerDeviceElement;
 import org.osc.sdk.manager.element.ManagerDeviceMemberElement;
 import org.osc.sdk.manager.element.VirtualSystemElement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.paloaltonetworks.osc.model.Device;
+import com.paloaltonetworks.panorama.api.mapping.DeviceGroupResponse;
+import com.paloaltonetworks.panorama.api.mapping.DeviceGroupsEntry;
+import com.paloaltonetworks.panorama.api.mapping.SetConfigResponse;
 import com.paloaltonetworks.panorama.api.methods.PanoramaApiClient;
 
 /**
@@ -44,12 +53,15 @@ import com.paloaltonetworks.panorama.api.methods.PanoramaApiClient;
 public class PANDeviceApi implements ManagerDeviceApi {
 
     // "I4745132";"I2306077";
+    private static final Logger LOG = LoggerFactory.getLogger(PANDeviceApi.class);
     private static final String LICENSE_AUTH_CODE = "I7517916";
-    static String apiKey = null;
-    static String vmAuthKey = null;
+    private static final String SHOW_DEVICEGROUPS_CMD = "<show><devicegroups></devicegroups></show>";
+
+    private static String vmAuthKey = null;
     private VirtualSystemElement vs;
     private ApplianceManagerConnectorElement mc;
     private PanoramaApiClient panClient;
+
     private static final String daysforVMAuthKey = "8760";
 
     public PANDeviceApi(ApplianceManagerConnectorElement mc, VirtualSystemElement vs, PanoramaApiClient panClient)
@@ -67,10 +79,19 @@ public class PANDeviceApi implements ManagerDeviceApi {
 
     @Override
     public ManagerDeviceElement getDeviceById(String id) throws Exception {
-        List<String> deviceGroups = this.panClient.showDeviceGroups();
-        for (String deviceGroupName : deviceGroups) {
-            if (deviceGroupName.equals(id)) {
-                return new Device(deviceGroupName, deviceGroupName);
+
+        String devGroup = devGroupName(id);
+        Map<String, String> queryStrings = this.panClient.makeRequestParams(null, OP_TYPE, null, null, SHOW_DEVICEGROUPS_CMD);
+
+        DeviceGroupResponse deviceGroupResponse = this.panClient.getRequest(queryStrings, DeviceGroupResponse.class);
+
+        if (deviceGroupResponse.getDeviceGroups() != null && deviceGroupResponse.getDeviceGroups().getEntries() != null) {
+            List<DeviceGroupsEntry> deviceGroups = deviceGroupResponse.getDeviceGroups().getEntries();
+
+            boolean found = deviceGroups.stream().filter(dg -> dg != null).anyMatch(dg -> devGroup.equals(dg.getName()));
+
+            if (found) {
+                return new Device(id, id);
             }
         }
 
@@ -84,10 +105,20 @@ public class PANDeviceApi implements ManagerDeviceApi {
 
     @Override
     public List<? extends ManagerDeviceElement> listDevices() throws Exception {
+        Map<String, String> queryStrings = this.panClient.makeRequestParams(null, OP_TYPE, null, null, SHOW_DEVICEGROUPS_CMD);
 
-        List<Device> deviceGroups = new ArrayList<>();
-        List<String> panDeviceGroups = this.panClient.showDeviceGroups();
-        return panDeviceGroups.stream().map(s -> new Device(s, s)).collect(toList());
+        DeviceGroupResponse deviceGroupResponse = this.panClient.getRequest(queryStrings, DeviceGroupResponse.class);
+
+        if (deviceGroupResponse.getDeviceGroups() != null
+                && deviceGroupResponse.getDeviceGroups().getEntries() != null) {
+            List<DeviceGroupsEntry> deviceGroups = deviceGroupResponse.getDeviceGroups().getEntries();
+            return deviceGroups.stream()
+                               .filter(dg -> dg != null)
+                               .map(dg -> new Device(vsId(dg.getName()), vsId(dg.getName())))
+                               .collect(toList());
+        }
+
+        return emptyList();
     }
 
     @Override
@@ -95,8 +126,18 @@ public class PANDeviceApi implements ManagerDeviceApi {
         // Create a device group in panorama
         // Information passed in by VSS to create device group
         // VSS is the device group
+        LOG.info("Adding device group " + this.vs.getName());
+        String devGroup = devGroupName(this.vs.getId());
 
-        return this.panClient.addDeviceGroup(this.vs.getName(), this.vs.getName());
+        String element = makeEntryElement(devGroup, null, "OSC Device group - do not remove", null);
+        element = element.replace("</entry>", "<devices/></entry>");
+        Map<String, String> queryStrings = this.panClient.makeSetConfigRequestParams(XPATH_DEVGROUP_PREFIX, element, null);
+        String status = this.panClient.getRequest(queryStrings, SetConfigResponse.class).getStatus();
+        String errorMessage = String.format(
+                "Commit failed when adding Device Group Name: %s", this.vs.getName());
+        this.panClient.configCommitOrThrow(errorMessage);
+
+        return this.vs.getId().toString();  // TODO : one per vs?
     }
 
     @Override
@@ -106,7 +147,18 @@ public class PANDeviceApi implements ManagerDeviceApi {
 
     @Override
     public void deleteVSSDevice() throws Exception {
-
+        LOG.info("Deleting device group " + this.vs.getName());
+        String devGroup = devGroupName(this.vs.getId());
+        String xpath = XPATH_DEVGROUP_PREFIX + "/entry[ @name=\""+ devGroup + "\"]";
+        String element = PanoramaApiClient.makeEntryElement(devGroup);
+        Map<String, String> queryStrings = this.panClient.makeRequestParams(DELETE_ACTION, CONFIG_TYPE, xpath, element, null);
+        this.panClient.getRequest(queryStrings, SetConfigResponse.class);
+        String configStatus = this.panClient.configCommit();
+        if (configStatus.equals("error")) {
+            String errorMessage = String.format("Commit failed when deleting Device Group Name: %s ", this.vs.getName());
+            LOG.error(errorMessage);
+            throw new Exception(errorMessage);
+        }
     }
 
     @Override

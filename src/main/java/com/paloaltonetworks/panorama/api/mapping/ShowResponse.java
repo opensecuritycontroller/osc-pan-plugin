@@ -27,19 +27,22 @@ public class ShowResponse implements PANResponse {
     @XmlAttribute(name = "status")
     private String status;
 
+    @XmlAttribute(name = "code")
+    private String code;
+
     @XmlElement(name="result")
     private ShowResult showResult;
 
-    public ShowResult getShowResult(){
+    public ShowResult getShowResult() {
         return this.showResult;
     }
 
-    public void setShowResult(ShowResult value){
+    public void setShowResult(ShowResult value) {
         this.showResult = value;
     }
 
     @Override
-    public String getStatus(){
+    public String getStatus() {
         return this.status;
     }
 
@@ -49,6 +52,10 @@ public class ShowResponse implements PANResponse {
 
     @Override
     public String getCode() {
-        throw new UnsupportedOperationException("getCode not implemented for class "+ getClass());
+        return this.code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 }

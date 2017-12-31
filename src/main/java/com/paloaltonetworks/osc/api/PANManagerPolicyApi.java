@@ -31,6 +31,8 @@ import com.paloaltonetworks.panorama.api.methods.PanoramaApiClient;
 public class PANManagerPolicyApi implements ManagerPolicyApi {
 
     private static final Logger log = LoggerFactory.getLogger(PANManagerPolicyApi.class);
+    private static final String XPATH_SHARED_TAG = "/config/shared/tag";
+
     static String apiKey = null;
     private PanoramaApiClient panClient;
 
@@ -41,7 +43,7 @@ public class PANManagerPolicyApi implements ManagerPolicyApi {
 
     @Override
     public PolicyListElement getPolicy(String policyId, String domainId) throws Exception {
-        if (this.panClient.policyTagExists(policyId)) {
+        if (this.panClient.tagExists(policyId, XPATH_SHARED_TAG)) {
             return new PolicyListElement(policyId, policyId, domainId);
         }
 
@@ -50,7 +52,10 @@ public class PANManagerPolicyApi implements ManagerPolicyApi {
 
     @Override
     public List<PolicyListElement> getPolicyList(String domainId) throws Exception {
-        return this.panClient.fetchPolicyTags().stream().map(t -> new PolicyListElement(t.getName(), t.getName(), domainId))
-                .collect(toList());
+        return this.panClient.getTagEntries(XPATH_SHARED_TAG)
+                             .stream()
+                             .filter(t -> t != null)
+                             .map(t -> new PolicyListElement(t.getName(), t.getName(), domainId))
+                             .collect(toList());
     }
 }

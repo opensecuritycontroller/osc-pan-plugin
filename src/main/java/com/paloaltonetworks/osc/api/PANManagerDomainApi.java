@@ -43,5 +43,4 @@ public class PANManagerDomainApi implements ManagerDomainApi {
         domainList.add(new DomainListElement("Root-Domain", "Root-Domain"));
         return domainList;
     }
-
 }

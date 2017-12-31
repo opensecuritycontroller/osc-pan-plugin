@@ -14,9 +14,10 @@
  */
 package com.paloaltonetworks.ism;
 
-import static org.junit.Assert.*;
+import static com.paloaltonetworks.utils.SSLContextFactory.getSSLContext;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
-import java.util.Arrays;
 import java.util.List;
 
 import javax.net.ssl.HostnameVerifier;
@@ -25,35 +26,31 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.paloaltonetworks.panorama.api.mapping.AddressEntry;
 import com.paloaltonetworks.panorama.api.mapping.TagEntry;
 import com.paloaltonetworks.panorama.api.methods.PanoramaApiClient;
-import com.paloaltonetworks.panorama.test.DeviceTest;
 
 /**
  * Unit test for simple App.
  */
-public class PanoramaApiClientIntegrationTest{
+public class PanoramaApiClientIntegrationTest {
     private static final String PANORAMA_IP = "10.3.240.15";
     private static final String EXISTING_POLICY_TAG = "EXISTING_POLICY_TAG";
     private static final String EXISTING_POLICY_TAG_OTHER = "EXISTING_POLICY_TAG_OTHER";
     private static final String TEST_SETUP_MSG = String.format("Test setup expects the following shared tags on panorama %s: %s and %s!",
                                                     PANORAMA_IP, EXISTING_POLICY_TAG, EXISTING_POLICY_TAG_OTHER);
 
-    // TODO : move out to property
-    private static final String OSC_DEVGROUP_NAME = "OpenSecurityController_Reserved";
+    private static final String XPATH_SHARED_TAG = "/config/shared/tag";
 
     private Client client;
     private PanoramaApiClient panClient;
 
     @Before
     public void setup() throws Exception {
-        this.client = ClientBuilder.newBuilder().sslContext(DeviceTest.getSSLContext())
+        this.client = ClientBuilder.newBuilder().sslContext(getSSLContext())
                 .hostnameVerifier(new HostnameVerifier() {
                     @Override
                     public boolean verify(String hostname, SSLSession session) {
@@ -61,7 +58,7 @@ public class PanoramaApiClientIntegrationTest{
                     }
                 }).build();
         this.panClient = new PanoramaApiClient(PANORAMA_IP, 443, true, "admin", "admin",
-                this.client, OSC_DEVGROUP_NAME);
+                this.client);
     }
 
     @After
@@ -69,146 +66,15 @@ public class PanoramaApiClientIntegrationTest{
         this.client.close();
     }
 
-    @Test
-    public void testDeviceGroups() throws Exception {
-        String devGroup = "PANMgrTestDevGroup";
-        List<String> devGroups = this.panClient.showDeviceGroups();
-        assertNotNull(devGroups);
-        assertFalse(devGroups.contains(devGroup));
-        int origSize = devGroups.size();
-
-        String status = this.panClient.addDeviceGroup(devGroup, "just because");
-        assertEquals("success", status);
-        int nTries = 10;
-        int sleepMillis = 1000;
-        for (int i = 0; i < nTries && !devGroups.contains(devGroup); i++) {
-            devGroups = this.panClient.showDeviceGroups();
-            Thread.sleep(sleepMillis);
-        }
-        assertTrue(devGroups.contains(devGroup));
-        assertEquals(origSize + 1, devGroups.size());
-
-//        this.panClient.deleteDeviceGroup(devGroup);
-//        devGroups = this.panClient.showDeviceGroups();
-//        assertNotNull(devGroups);
-//        assertFalse(devGroups.contains(devGroup));
-//        Assert.assertEquals(origSize, devGroups.size());
-    }
-
     @Ignore
     @Test
     public void testListPolicyTags() throws Exception {
-        List<TagEntry> tags = this.panClient.fetchPolicyTags();
+        List<TagEntry> tags = this.panClient.getTagEntries(XPATH_SHARED_TAG);
         assertNotNull(tags);
         assertTrue(TEST_SETUP_MSG, tags.size() > 1);
         assertTrue(tags.stream().anyMatch(t -> EXISTING_POLICY_TAG.equals(t.getName())));
         assertTrue(tags.stream().anyMatch(t -> EXISTING_POLICY_TAG_OTHER.equals(t.getName())));
-        assertTrue(this.panClient.policyTagExists(EXISTING_POLICY_TAG));
-        assertTrue(this.panClient.policyTagExists(EXISTING_POLICY_TAG_OTHER));
-    }
-
-    @Ignore
-    @Test
-    public void testAddSGTag() throws Exception {
-        String tagName = "MyFancyTag";
-
-        List<TagEntry> tags = this.panClient.fetchSGTags();
-        assertEquals(0, tags.size());
-        assertFalse(this.panClient.sgTagExists(tagName));
-
-        this.panClient.addSGTag(tagName);
-        assertTrue(this.panClient.sgTagExists(tagName));
-        tags = this.panClient.fetchSGTags();
-        assertEquals(1, tags.size());
-        assertEquals(tags.get(0).getName(), tagName);
-
-        this.panClient.deleteSGTag(tagName);
-        tags = this.panClient.fetchSGTags();
-        assertEquals(0, tags.size());
-        assertFalse(this.panClient.sgTagExists(tagName));
-    }
-
-    @Ignore
-    @Test
-    public void testAddAddress() throws Exception {
-        String ip = "10.2.3.4";
-        String tagName = "MyFancyTag";
-
-        List<AddressEntry> addresses = this.panClient.fetchAddresses();
-        assertNotNull(addresses);
-        assertEquals("The system should be preset with no addresses!", 0, addresses.size());
-
-        this.panClient.addAddress(ip);
-        addresses = this.panClient.fetchAddresses();
-        assertNotNull(addresses);
-        assertTrue(addresses.stream().anyMatch(a -> ip.equals(a.getName())));
-        assertEquals(1, addresses.size());
-
-        this.panClient.deleteAddress(ip);
-        addresses = this.panClient.fetchAddresses();
-        assertNotNull(addresses);
-        assertEquals(0, addresses.size());
-    }
-
-    @Test
-    public void testAddSGToAddress() throws Exception {
-        String ip = "10.2.3.4";
-        String tagName = "MyFancyTag";
-
-        this.panClient.addSGTag(tagName);
-        List<AddressEntry> addresses = this.panClient.fetchAddressesBySGTag(tagName);
-        assertNotNull(addresses);
-        assertFalse(addresses.stream().anyMatch(a -> ip.equals(a.getName())));
-
-        this.panClient.addAddress(ip);
-        this.panClient.addSGTagToAddress(ip, tagName);
-        addresses = this.panClient.fetchAddressesBySGTag(tagName);
-        assertTrue(addresses.stream().anyMatch(a -> ip.equals(a.getName())));
-        assertEquals(1, addresses.size());
-
-        this.panClient.removeSGTagFromAddress(ip, tagName);
-        addresses = this.panClient.fetchAddressesBySGTag(tagName);
-        assertFalse(addresses.stream().anyMatch(a -> ip.equals(a.getName())));
-        addresses = this.panClient.fetchAddresses();
-        assertEquals(1, addresses.size());
-
-        this.panClient.deleteAddress(ip);
-        this.panClient.deleteSGTag(tagName);
-    }
-
-    @Ignore
-    @Test
-    public void testBindPolicyToAddress() throws Exception {
-        String ip = "10.2.3.4";
-
-        List<AddressEntry> addresses = this.panClient.fetchAddressesByPolicy(EXISTING_POLICY_TAG);
-        assertNotNull(addresses);
-        assertEquals(0, addresses.size());
-
-        this.panClient.addAddress(ip);
-
-        this.panClient.bindPolicyTagToAddress(ip, EXISTING_POLICY_TAG);
-        addresses = this.panClient.fetchAddressesByPolicy(EXISTING_POLICY_TAG);
-        assertTrue(addresses.stream().anyMatch(a -> ip.equals(a.getName())));
-        assertEquals(1, addresses.size());
-
-        this.panClient.unbindPolicyTagFromAddress(ip, EXISTING_POLICY_TAG);
-        addresses = this.panClient.fetchAddressesByPolicy(EXISTING_POLICY_TAG);
-        assertFalse(addresses.contains(ip));
-        assertEquals(0, addresses.size());
-
-        this.panClient.deleteAddress(ip);
-    }
-
-    @Ignore
-    @Test
-    public void testAddDAG() throws Exception {
-        String ip = "10.2.3.4";
-
-        String dag = "dummyDAG";
-        String status = this.panClient.addDAG(dag, Arrays.asList(EXISTING_POLICY_TAG, EXISTING_POLICY_TAG_OTHER));
-        Assert.assertEquals("success", status);
-        status = this.panClient.deleteDAG(dag);
-        Assert.assertEquals("success", status);
+        assertTrue(this.panClient.tagExists(EXISTING_POLICY_TAG, XPATH_SHARED_TAG));
+        assertTrue(this.panClient.tagExists(EXISTING_POLICY_TAG_OTHER, XPATH_SHARED_TAG));
     }
 }

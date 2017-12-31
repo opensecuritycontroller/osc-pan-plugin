@@ -30,6 +30,9 @@ public class ShowDeviceResponse  implements PANResponse {
     @XmlAttribute(name = "status")
     private String status;
 
+    @XmlAttribute(name = "code")
+    private String code;
+
     @Override
     public String getStatus(){
         return this.status;
@@ -39,16 +42,20 @@ public class ShowDeviceResponse  implements PANResponse {
         this.status = value;
     }
 
-    public ShowDeviceResult getShowDeviceResult(){
+    public ShowDeviceResult getShowDeviceResult() {
         return this.showDeviceResult;
     }
 
-    public void setShowDeviceResult(ShowDeviceResult value){
+    public void setShowDeviceResult(ShowDeviceResult value) {
         this.showDeviceResult = value;
     }
 
     @Override
     public String getCode() {
-        throw new UnsupportedOperationException("getCode not implemented for class "+ getClass());
+        return this.code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 }

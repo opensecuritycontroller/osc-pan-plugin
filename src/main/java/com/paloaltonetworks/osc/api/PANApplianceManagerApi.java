@@ -14,13 +14,9 @@
  */
 package com.paloaltonetworks.osc.api;
 
+import static com.paloaltonetworks.utils.SSLContextFactory.getSSLContext;
 import static org.osc.sdk.manager.Constants.*;
 
-import java.security.SecureRandom;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 
@@ -85,41 +81,6 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
                 .register(new JAXBProvider()).sslContext(getSSLContext()).hostnameVerifier((hostname, session) -> true).build();
     }
 
-    public static SSLContext getSSLContext() {
-        // TODO: Future. We trust all managers right now. Later we need to import certificates and verify every connection with
-        // given Trust store
-        TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
-
-            @Override
-            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                return null;
-            }
-
-            @Override
-            public void checkServerTrusted(java.security.cert.X509Certificate[] arg0, String arg1)
-                    throws java.security.cert.CertificateException {
-
-            }
-
-            @Override
-            public void checkClientTrusted(java.security.cert.X509Certificate[] arg0, String arg1)
-                    throws java.security.cert.CertificateException {
-
-            }
-        } };
-        SSLContext ctx = null;
-        try {
-            ctx = SSLContext.getInstance("TLS");
-            ctx.init(null, trustAllCerts, new SecureRandom());
-
-        } catch (java.security.GeneralSecurityException ex) {
-
-            LOG.error("Encountering security exception", ex);
-        }
-
-        return ctx;
-    }
-
     @Deactivate
     void stop() {
         this.client.close();
@@ -133,8 +94,8 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
     public ManagerDeviceApi createManagerDeviceApi(ApplianceManagerConnectorElement mc, VirtualSystemElement vs)
             throws Exception {
 
-        LOG.info(String.format("Creating Device Api for Panorama Manager : %s with ip : %s", mc.getName(),
-                mc.getIpAddress()));
+        LOG.info("Creating Device Api for Panorama Manager : {} with ip : {}", mc.getName(),
+                mc.getIpAddress());
         PanoramaApiClient panClient = makePanoramaApiClient(mc);
 
         return new PANDeviceApi(mc, vs, panClient);
@@ -149,8 +110,8 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
     public ManagerSecurityGroupInterfaceApi createManagerSecurityGroupInterfaceApi(ApplianceManagerConnectorElement mc,
             VirtualSystemElement vs) throws Exception {
 
-        LOG.info(String.format("Creating Security Group interface API for Panorama Manager : %s with ip : %s",
-                mc.getName(), mc.getIpAddress()));
+        LOG.info("Creating Security Group interface API for Panorama Manager : {} with ip : {}",
+                mc.getName(), mc.getIpAddress());
         PanoramaApiClient panClient = makePanoramaApiClient(mc);
         return new PANManagerSecurityGroupInterfaceApi(mc,vs, panClient);
     }
@@ -162,8 +123,8 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
     @Override
     public ManagerSecurityGroupApi createManagerSecurityGroupApi(ApplianceManagerConnectorElement mc,
             VirtualSystemElement vs) throws Exception {
-        LOG.info(String.format("Creating Security Group API for Panorama Manager : %s with ip : %s", mc.getName(),
-                mc.getIpAddress()));
+        LOG.info("Creating Security Group API for Panorama Manager : {} with ip : {}", mc.getName(),
+                mc.getIpAddress());
         PanoramaApiClient panClient = makePanoramaApiClient(mc);
         return new PANManagerSecurityGroupApi(mc, vs, panClient);
     }
@@ -176,8 +137,8 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
     @Override
     public ManagerPolicyApi createManagerPolicyApi(ApplianceManagerConnectorElement mc) throws Exception {
 
-        LOG.info(String.format("Creating Policy API for Panorama Manager : %s with ip : %s", mc.getName(),
-                mc.getIpAddress()));
+        LOG.info("Creating Policy API for Panorama Manager : {} with ip : {}", mc.getName(),
+                mc.getIpAddress());
         PanoramaApiClient panClient = makePanoramaApiClient(mc);
         return new PANManagerPolicyApi(panClient);
     }
@@ -189,8 +150,8 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
      */
     @Override
     public ManagerDomainApi createManagerDomainApi(ApplianceManagerConnectorElement mc) throws Exception {
-        LOG.info(String.format("Creating Domain API for Panorama Manager : %s with ip : %s", mc.getName(),
-                mc.getIpAddress()));
+        LOG.info("Creating Domain API for Panorama Manager : {} with ip : {}", mc.getName(),
+                mc.getIpAddress());
         return new PANManagerDomainApi(mc);
     }
 
@@ -202,8 +163,8 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
     public ManagerDeviceMemberApi createManagerDeviceMemberApi(ApplianceManagerConnectorElement mc,
             VirtualSystemElement vs) throws Exception {
 
-        LOG.info(String.format("Creating Device Member API for Panorama Manager : %s with ip : %s", mc.getName(),
-                mc.getIpAddress()));
+        LOG.info("Creating Device Member API for Panorama Manager : {} with ip : {}", mc.getName(),
+                mc.getIpAddress());
         return new PANManagerDeviceMemberApi(mc, vs);
     }
 
@@ -213,7 +174,6 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
      */
     @Override
     public byte[] getPublicKey(ApplianceManagerConnectorElement mc) throws Exception {
-
         return null;
     }
 
@@ -277,7 +237,8 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
         return null;
     }
 
-    private PanoramaApiClient makePanoramaApiClient(ApplianceManagerConnectorElement mc) throws Exception {
+    private PanoramaApiClient makePanoramaApiClient(ApplianceManagerConnectorElement mc)
+            throws Exception {
         return new PanoramaApiClient(mc.getIpAddress(), this.config.port(), this.config.use_https(), mc.getUsername(),
                 mc.getPassword(), this.client);
     }

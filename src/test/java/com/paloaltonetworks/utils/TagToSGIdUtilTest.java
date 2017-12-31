@@ -11,11 +11,11 @@ public class TagToSGIdUtilTest {
 
     @Test
     public void testGetTag_WithNonNullId_ShouldYieldTag() {
-        assertEquals(PREFIX + TEST_ID, TagToSGIdUtil.getSecurityGroupTag(TEST_ID));
+        assertEquals(PREFIX + TEST_ID, TagToSGIdUtil.securityGroupTag(TEST_ID));
     }
 
     @Test
     public void testGetId_WithNonNullTag_ShouldYieldId() {
-        assertEquals(TEST_ID, TagToSGIdUtil.getSecurityGroupId(PREFIX + TEST_ID));
+        assertEquals(TEST_ID, TagToSGIdUtil.securityGroupId(PREFIX + TEST_ID));
     }
 }

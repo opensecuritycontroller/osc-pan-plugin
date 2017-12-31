@@ -32,5 +32,4 @@ public class PANManagerDeviceMemberApi implements ManagerDeviceMemberApi {
     @Override
     public void syncAgent() {
     }
-
 }

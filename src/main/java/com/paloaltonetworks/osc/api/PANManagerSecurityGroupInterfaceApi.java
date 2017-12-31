@@ -14,9 +14,8 @@
  */
 package com.paloaltonetworks.osc.api;
 
-import static com.paloaltonetworks.utils.SecurityGroupIntefaceIdUtil.getSecurityGroupId;
-import static com.paloaltonetworks.utils.SecurityGroupIntefaceIdUtil.getSecurityGroupIntefaceId;
-import static com.paloaltonetworks.utils.TagToSGIdUtil.getSecurityGroupTag;
+import static com.paloaltonetworks.utils.TagToSGIdUtil.securityGroupTag;
+import static com.paloaltonetworks.utils.VsToDevGroupNameUtil.devGroupName;
 import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toSet;
 
@@ -35,7 +34,6 @@ import org.slf4j.LoggerFactory;
 
 import com.paloaltonetworks.panorama.api.mapping.AddressEntry;
 import com.paloaltonetworks.panorama.api.methods.PanoramaApiClient;
-import com.paloaltonetworks.utils.TagToSGIdUtil;
 
 /**
  * This documents "Device Management Apis"
@@ -44,16 +42,20 @@ public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroup
 
     private static final Logger LOG = LoggerFactory.getLogger(PANManagerSecurityGroupInterfaceApi.class);
 
-    static String apiKey = null;
+    private static final Character IDSTRING_SEPARATOR = '_';
+
     private VirtualSystemElement vs;
     private ApplianceManagerConnectorElement mc;
     private PanoramaApiClient panClient;
+
+    private String devGroup;
 
     public PANManagerSecurityGroupInterfaceApi(ApplianceManagerConnectorElement mc, VirtualSystemElement vs,
             PanoramaApiClient panClient) {
         this.vs = vs;
         this.mc = mc;
         this.panClient = panClient;
+        this.devGroup = devGroupName(vs.getId());
     }
 
     @Override
@@ -67,31 +69,23 @@ public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroup
     }
 
     @Override
-    public void deleteSecurityGroupInterface(String id) throws Exception {
-        String sgId = getSecurityGroupId(id);
-        String sgTag = getSecurityGroupTag(id);
-        String status = "success";
+    public void deleteSecurityGroupInterface(String sgInterfaceId) throws Exception {
+        String sgId = extractSGId(sgInterfaceId);
+        String sgTag = securityGroupTag(sgId);
 
-        List<AddressEntry> ipsOnMgr = this.panClient.fetchAddressesBySGTag(sgTag);
+        List<AddressEntry> ipsOnMgr = this.panClient.fetchAddressesWithTag(sgTag, this.devGroup);
 
         if (ipsOnMgr.isEmpty()) {
-            LOG.info("Security group %s on VS %d has no addresses. Delete SGi is a no-op.", sgId, this.vs.getId());
+            LOG.info("Security group {} on VS {} has no addresses. Delete SGi is a no-op.", sgId, this.vs.getId());
         }
 
         for (AddressEntry entry : ipsOnMgr) {
             List<String> tags = entry.getTagNames();
             tags.remove(sgTag); // only policy tags left!
-            try {
-                unbindAll(entry, tags);
-            } catch (Exception e) {
-                LOG.error("Exception conforming address object " + entry.getName(), e);
-                status = "error";
-            }
+            unbindAll(entry, tags);
         }
 
-        if (!"success".equals(status)) {
-            throw new Exception("Errors encountered deleting the security group interface " + id);
-        }
+        this.panClient.configCommit();
     }
 
     @Override
@@ -117,19 +111,20 @@ public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroup
     private String doUpdateSecurityGroupInterface(SecurityGroupInterfaceElement sgiElement)
             throws Exception {
         String sgMgrId = sgiElement.getManagerSecurityGroupId();
-        String sgiId = getSecurityGroupIntefaceId(sgMgrId, this.vs.getId().toString());
-        String sgTag = TagToSGIdUtil.getSecurityGroupTag(sgMgrId);
+        String sgInterfaceId = combineToSGIntefaceId(sgMgrId, this.vs.getId().toString());
+        String sgTag = securityGroupTag(sgMgrId);
 
-        List<AddressEntry> ipsOnMgr = this.panClient.fetchAddressesBySGTag(sgTag);
+        List<AddressEntry> ipsOnMgr = this.panClient.fetchAddressesWithTag(sgTag, this.devGroup);
 
         if (ipsOnMgr.isEmpty()) {
-            LOG.info("Security group %s on VS %d has no addresses. Cannot conform policies for SGI.", sgiId, this.vs.getId());
+            LOG.info("Security group {} on VS {} has no addresses. Cannot conform policies for SGI.", sgInterfaceId, this.vs.getId());
             return null;
         }
 
         Set<String> policyTags = emptySet();
         if (sgiElement.getManagerPolicyElements() != null) {
-            policyTags = sgiElement.getManagerPolicyElements().stream().map(e -> e.getName()).collect(toSet());
+            policyTags = sgiElement.getManagerPolicyElements().stream().filter(e -> e != null)
+                                   .map(e -> e.getName()).collect(toSet());
         }
 
         try {
@@ -145,22 +140,32 @@ public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroup
                 bindAll(entry, tmp);
             }
         } catch (Exception e) {
-            LOG.error(String.format("Exception conforming SGI for security group %s on VS %d .", sgiId, this.vs.getId()), e);
+            LOG.error(String.format("Exception conforming SGI for security group %s on VS %d .", sgInterfaceId, this.vs.getId()), e);
             throw e;
         }
-
-        return sgiId;
+        this.panClient.configCommit();
+        return sgInterfaceId;
     }
 
     private void unbindAll(AddressEntry entry, Collection<String> tags) throws Exception {
         for (String tag : tags) {
-            this.panClient.unbindPolicyTagFromAddress(entry.getName(), tag);
+            this.panClient.removeTagFromAddress(entry.getName(), tag, this.devGroup);
         }
     }
 
     private void bindAll(AddressEntry entry, Collection<String> tags) throws Exception {
         for (String tag : tags) {
-            this.panClient.bindPolicyTagToAddress(entry.getName(), tag);
+            this.panClient.addTagToAddress(entry.getName(), tag, this.devGroup);
         }
+    }
+
+    private static String extractSGId(String sgInterfaceId) {
+        @SuppressWarnings("boxing")
+        int i = sgInterfaceId.indexOf(IDSTRING_SEPARATOR);
+        return sgInterfaceId.substring(0, i);
+    }
+
+    private static String combineToSGIntefaceId(String sgId, String vsId) {
+        return sgId + IDSTRING_SEPARATOR + vsId;
     }
 }
