@@ -1,5 +1,9 @@
 package com.paloaltonetworks.panorama.api.mapping;
 
+import static java.util.Collections.emptyList;
+
+import java.util.List;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -43,4 +47,13 @@ public class GetAddressResponse implements PANResponse {
     public void setResult(GetAddressResult result) {
         this.result = result;
     }
+
+    public List<AddressEntry> getAddressEntries() {
+        if (this.result != null) {
+            return this.result.getEntries() != null ? this.result.getEntries() : emptyList();
+        }
+
+        return emptyList();
+    }
+
 }

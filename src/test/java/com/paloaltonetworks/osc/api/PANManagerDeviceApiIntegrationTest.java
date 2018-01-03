@@ -33,9 +33,9 @@ public class PANManagerDeviceApiIntegrationTest extends AbstractPANApiIntegratio
         // Device group should have been created in the setup
         List<? extends ManagerDeviceElement> deviceMembers = this.api.listDevices();
         assertNotNull(deviceMembers);
-        assertTrue(deviceMembers.stream().anyMatch(dm -> this.vs.getId().toString().equals(dm.getName())));
+        assertTrue(deviceMembers.stream().anyMatch(dm -> this.vs.getName().equals(dm.getName())));
 
-        ManagerDeviceElement mde = this.api.getDeviceById(this.vs.getId().toString());
-        assertEquals(this.vs.getId().toString(), mde.getName());
+        ManagerDeviceElement mde = this.api.getDeviceById(this.vs.getName());
+        assertEquals(this.vs.getName(), mde.getName());
     }
 }

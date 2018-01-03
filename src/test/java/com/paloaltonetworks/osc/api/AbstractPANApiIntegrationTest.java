@@ -1,7 +1,6 @@
 package com.paloaltonetworks.osc.api;
 
 import static com.paloaltonetworks.utils.SSLContextFactory.getSSLContext;
-import static org.junit.Assert.assertNotNull;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSession;
@@ -16,7 +15,6 @@ import org.osc.sdk.manager.element.ManagerDeviceElement;
 import org.osc.sdk.manager.element.VirtualSystemElement;
 
 import com.paloaltonetworks.panorama.api.methods.PanoramaApiClient;
-import com.paloaltonetworks.utils.VsToDevGroupNameUtil;
 
 public abstract class AbstractPANApiIntegrationTest {
 
@@ -24,6 +22,8 @@ public abstract class AbstractPANApiIntegrationTest {
     protected static final String EXISTING_POLICY_TAG_OTHER = "EXISTING_POLICY_TAG_OTHER";
     protected static final long VS_ID = 32123L;
 
+    private static final long DEVGPS_SLEEP_MS = 10;
+    private static final int DEVGPS_TIMEOUT_TRIES = 10;
     private static final String PANORAMA_IP = "10.3.240.15";
 
     protected PanoramaApiClient panClient;
@@ -52,18 +52,25 @@ public abstract class AbstractPANApiIntegrationTest {
 
         MockitoAnnotations.initMocks(this);
         Mockito.when(this.mgrConnector.getName()).thenReturn("OSCTestAppMgr");
-        Mockito.when(this.vs.getName()).thenReturn("OSCTestVs");
+        Mockito.when(this.vs.getName()).thenReturn("OSCTestVs32123");
         Mockito.when(this.vs.getId()).thenReturn(32123L);
-        Mockito.when(this.vs.getMgrId()).thenReturn("" + VS_ID);
+        Mockito.when(this.vs.getMgrId()).thenReturn("OSCTestVs32123");
 
-        PANDeviceApi devApi = new PANDeviceApi(this.mgrConnector, this.vs, this.panClient);
-        if (devApi.getDeviceById(this.vs.getId().toString()) == null) {
-            devApi.createVSSDevice();
-            ManagerDeviceElement mde = devApi.getDeviceById(this.vs.getId().toString());
-            assertNotNull(mde);
+        int count = 0;
+
+        try (PANDeviceApi devApi = new PANDeviceApi(this.mgrConnector, this.vs, this.panClient);) {
+            if (devApi.getDeviceById(this.vs.getName()) == null) {
+                devApi.createVSSDevice();
+
+                ManagerDeviceElement mde = devApi.getDeviceById(this.vs.getName());
+                while (count++ < DEVGPS_TIMEOUT_TRIES && mde == null) {
+                    mde = devApi.getDeviceById(this.vs.getName());
+                    Thread.sleep(DEVGPS_SLEEP_MS);
+                }
+            }
         }
 
-        this.devGroup = VsToDevGroupNameUtil.devGroupName(this.vs.getId());
+        this.devGroup = this.vs.getName();
     }
 
     public void cleanup() {

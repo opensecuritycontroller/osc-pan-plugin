@@ -14,11 +14,9 @@
  */
 package com.paloaltonetworks.osc.api;
 
-import static com.paloaltonetworks.panorama.api.methods.PanoramaApiClient.makeEntryElement;
-import static com.paloaltonetworks.utils.TagToSGIdUtil.securityGroupTag;
-import static com.paloaltonetworks.utils.VsToDevGroupNameUtil.devGroupName;
 import static java.util.Collections.emptyList;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -34,11 +32,13 @@ import org.osc.sdk.manager.element.VirtualSystemElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.paloaltonetworks.osc.model.PANSecurityGroupElement;
 import com.paloaltonetworks.panorama.api.mapping.AddressEntry;
 import com.paloaltonetworks.panorama.api.mapping.GetAddressResponse;
 import com.paloaltonetworks.panorama.api.mapping.GetTagResponse;
 import com.paloaltonetworks.panorama.api.methods.PanoramaApiClient;
 import com.paloaltonetworks.utils.QuickXmlizerUtil;
+import com.paloaltonetworks.utils.TagToSGIdUtil;
 
 /**
  * This documents "Device Management Apis"
@@ -63,92 +63,81 @@ public class PANManagerSecurityGroupApi implements ManagerSecurityGroupApi {
         this.mc = mc;
         this.panClient = panClient;
 
-        this.devGroup = devGroupName(vs.getId());
+        this.devGroup = vs.getName();
         this.addrXpath = String.format(PanoramaApiClient.XPATH_DEVGROUP_TEMPL + "/address", this.devGroup);
         this.tagXpath = String.format(PanoramaApiClient.XPATH_DEVGROUP_TEMPL + "/tag", this.devGroup);
     }
 
-    /**
-    *
-    * Note that the order of arguments is reversed: {@code updateSecurityGroup} has {@code name} as a first argument
-    * and {@code id} as a second.
-    *
-    * @see ManagerSecurityGroupApi
-    *
-    */
     @Override
     public String createSecurityGroup(String name, String sgId, SecurityGroupMemberListElement memberList)
             throws Exception {
         try {
             LOG.info("Adding security group {} with members {}", name, memberList);
-            doUpdateSecurityGroup(sgId, name, memberList);
+            String sgMgrId = TagToSGIdUtil.securityGroupTag(sgId);
+            return doUpdateSecurityGroup(sgMgrId, name, memberList);
         } catch (Exception e) {
             LOG.error("Exception adding security group " + name, e);
-            return null;
+            throw e;
         }
-
-        return sgId;
     }
 
-    /**
-     *
-     * Note that the order of arguments is reversed: {@code createSecurityGroup} has {@code name} as a first argument
-     * and {@code id} as a second.
-     *
-     * @see ManagerSecurityGroupApi
-     *
-     */
     @Override
-    public void updateSecurityGroup(String sgId, String name, SecurityGroupMemberListElement memberList)
+    public void updateSecurityGroup(String sgMgrId, String name, SecurityGroupMemberListElement memberList)
             throws Exception {
         try {
-            doUpdateSecurityGroup(sgId, name, memberList);
+            doUpdateSecurityGroup(sgMgrId, name, memberList);
         } catch (Exception e) {
-            LOG.error("Exception updating security group " + sgId, e);
+            LOG.error("Exception updating security group " + sgMgrId, e);
+            throw e;
         }
     }
 
     @Override
-    public void deleteSecurityGroup(String sgId) throws Exception {
-        String sgTag = securityGroupTag(sgId);
-        Set<String> ipsOnMgr = fetchMgrIpsByTag(sgTag);
+    public void deleteSecurityGroup(String sgMgrId) throws Exception {
+        Set<String> ipsOnMgr = fetchMgrIpsByTag(sgMgrId);
         try {
             for (String ip : ipsOnMgr) {
                 LOG.info("Deleting address {}", ip);
                 deleteAddress(ip);
             }
         } catch (Exception e) {
-            LOG.error("Exception deleting security group " + sgId, e);
+            LOG.error("Exception deleting security group " + sgMgrId, e);
             throw e;
         }
 
-        deleteSGTag(sgId);
+        LOG.info("Deleting Panorama tag {}", sgMgrId);
+        deleteSGTag(sgMgrId);
         this.panClient.configCommit();
     }
 
     @Override
     public List<? extends ManagerSecurityGroupElement> getSecurityGroupList() throws Exception {
-        return null;
+        return this.panClient.getAddressEntries(this.devGroup).stream()
+                        .map(ae -> ae.getTagNames())
+                        .reduce(new ArrayList<String>(), (c1, c2) -> {c1.addAll(c2); return c1;})
+                        .stream()
+                        .filter(TagToSGIdUtil::isSGTag)
+                        .map(s -> new PANSecurityGroupElement(s, s))
+                        .collect(Collectors.toList());
     }
 
     @Override
-    public ManagerSecurityGroupElement getSecurityGroupById(String sgId) throws Exception {
-        return null;
+    public ManagerSecurityGroupElement getSecurityGroupById(String sgMgrId) throws Exception {
+        return new PANSecurityGroupElement(sgMgrId, sgMgrId);
     }
 
     @Override
     public void close() {
     }
 
-    private void doUpdateSecurityGroup(String sgId, String name, SecurityGroupMemberListElement memberList)
+    private String doUpdateSecurityGroup(String sgMgrId, String name, SecurityGroupMemberListElement memberList)
             throws Exception {
         LOG.info("Populating security group {} with members: {}", name, memberList.toString());
-        String sgTag = securityGroupTag(sgId);
 
-        addSGTagAndCheck(sgTag);
+        addSGTag(sgMgrId);
 
         Set<String> ipsToSet = computeIps(memberList);
-        Set<String> ipsOnMgr = fetchMgrIpsByTag(sgTag);
+        Set<String> ipsOnMgr = fetchMgrIpsByTag(sgMgrId);
         Set<String> tmp = new HashSet<>(ipsOnMgr);
         ipsOnMgr.removeAll(ipsToSet);
         ipsToSet.removeAll(tmp);
@@ -157,21 +146,23 @@ public class PANManagerSecurityGroupApi implements ManagerSecurityGroupApi {
             LOG.info("Creating address {}", ip);
             addAddress(ip);
             LOG.info("Adding address {} to security group {} ", ip, name);
-            this.panClient.addTagToAddress(ip, sgTag, this.devGroup);
+            this.panClient.addTagToAddress(ip, sgMgrId, this.devGroup);
         }
 
         for (String ip : ipsOnMgr) {
-            this.panClient.removeTagFromAddress(ip, sgTag, this.devGroup);
+            this.panClient.removeTagFromAddress(ip, sgMgrId, this.devGroup);
             LOG.info("Deleting address {}", ip);
             deleteAddress(ip);
         }
 
         this.panClient.configCommit();
+        return sgMgrId;
     }
 
     private Set<String> fetchMgrIpsByTag(String sgTag) throws Exception {
         return this.panClient
-                .fetchAddressesWithTag(sgTag, this.devGroup).stream().map(ae -> ae.getName())
+                .fetchAddressesWithTag(sgTag, this.devGroup).stream()
+                .map(ae -> ae.getName())
                 .collect(Collectors.toSet());
     }
 
@@ -183,21 +174,6 @@ public class PANManagerSecurityGroupApi implements ManagerSecurityGroupApi {
         }
 
         return rightIps;
-    }
-
-    private void addSGTagAndCheck(String sgTag) throws Exception {
-        try {
-            LOG.info("Adding tag {} under xpath {}", sgTag, this.tagXpath);
-            addSGTag(sgTag); // OK if exists
-        } catch (Exception e) {
-            LOG.error("Exception adding security group " + sgTag, e);
-            throw e;
-        }
-
-        if (!this.panClient.tagExists(sgTag, this.tagXpath)) {
-            throw new Exception("Security group " + sgTag + " not found after add call to panorama!");
-        }
-
     }
 
     private void addAddress(String ip) throws Exception {
@@ -215,13 +191,15 @@ public class PANManagerSecurityGroupApi implements ManagerSecurityGroupApi {
     }
 
     private void addSGTag(String sgTag) throws Exception {
-        String element = makeEntryElement(sgTag, "OSC Security group -- autocreated tag", null, null);
+        LOG.info("Adding tag {} under xpath {}", sgTag, this.tagXpath);
+        String element = PanoramaApiClient.makeEntryElement(sgTag, "OSC Security group -- autocreated tag", null, null);
         Map<String, String> queryStrings =  this.panClient.makeSetConfigRequestParams(this.tagXpath, element, null);
         this.panClient.getRequest(queryStrings, GetTagResponse.class);
     }
 
     private void deleteSGTag(String sgTag) throws Exception {
-        String element = makeEntryElement(sgTag);
+        LOG.info("Deleting tag {} under xpath {}", sgTag, this.tagXpath);
+        String element = PanoramaApiClient.makeEntryElement(sgTag);
         Map<String, String> queryStrings = this.panClient.makeDeleteConfigRequestParams(this.tagXpath, element, null);
         this.panClient.getRequest(queryStrings, GetTagResponse.class);
     }

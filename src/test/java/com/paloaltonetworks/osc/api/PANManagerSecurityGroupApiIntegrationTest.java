@@ -80,28 +80,28 @@ public class PANManagerSecurityGroupApiIntegrationTest extends AbstractPANApiInt
     public void testCRUDOperations() throws Exception {
         List<AddressEntry> addresses =  this.panClient.fetchAddressesWithTag(this.sgTag, this.devGroup);
         assertEquals(0, addresses.size());
-        this.sgApi.createSecurityGroup(SGNAME, SG_ID, this.with1and2);
+        String sgMgrId = this.sgApi.createSecurityGroup(SGNAME, SG_ID, this.with1and2);
         addresses =  this.panClient.fetchAddressesWithTag(this.sgTag, this.devGroup);
         assertEquals(2, addresses.size());
         assertEquals(addresses.get(0).getName(), "1.1.1.1");
 
-        this.sgApi.updateSecurityGroup(SG_ID, SGNAME, this.with2);
+        this.sgApi.updateSecurityGroup(sgMgrId, SGNAME, this.with2);
         addresses =  this.panClient.fetchAddressesWithTag(this.sgTag, this.devGroup);
         assertEquals(1, addresses.size());
         assertEquals(addresses.get(0).getName(), "2.2.2.2");
 
-        this.sgApi.updateSecurityGroup(SG_ID, SGNAME, this.with1and2);
+        this.sgApi.updateSecurityGroup(sgMgrId, SGNAME, this.with1and2);
         addresses =  this.panClient.fetchAddressesWithTag(this.sgTag, this.devGroup);
         assertEquals(2, addresses.size());
         Assert.assertTrue(addresses.stream().anyMatch(e -> "1.1.1.1".equals(e.getName())));
         Assert.assertTrue(addresses.stream().anyMatch(e -> "2.2.2.2".equals(e.getName())));
 
-        this.sgApi.updateSecurityGroup(SG_ID, SGNAME, this.with2);
+        this.sgApi.updateSecurityGroup(sgMgrId, SGNAME, this.with2);
         addresses =  this.panClient.fetchAddressesWithTag(this.sgTag, this.devGroup);
         assertEquals(1, addresses.size());
         assertEquals(addresses.get(0).getName(), "2.2.2.2");
 
-        this.sgApi.deleteSecurityGroup(SG_ID);
+        this.sgApi.deleteSecurityGroup(sgMgrId);
         addresses =  this.panClient.fetchAddressesWithTag(this.sgTag, this.devGroup);
         assertEquals(0, addresses.size());
         addresses =  this.panClient.getAddressEntries(this.devGroup);

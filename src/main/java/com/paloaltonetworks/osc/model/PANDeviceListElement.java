@@ -14,20 +14,12 @@
  */
 package com.paloaltonetworks.osc.model;
 
-import org.osc.sdk.manager.element.ManagerPolicyElement;
+import org.osc.sdk.manager.element.ManagerDeviceElement;
 
-public class PolicyListElement extends BaseIdNameObject implements ManagerPolicyElement {
+public class PANDeviceListElement extends BaseIdNameObject implements ManagerDeviceElement {
 
-	String domainId;
-
-	public PolicyListElement(String id, String name, String domainId) {
-		super(id, name);
-		this.domainId = domainId;
-	}
-
-	@Override
-	public String getDomainId() {
-		return this.domainId;
-	}
+    public PANDeviceListElement(String id, String name) {
+        super(id, name);
+    }
 
 }

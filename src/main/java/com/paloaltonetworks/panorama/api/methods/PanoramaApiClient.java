@@ -128,7 +128,7 @@ public class PanoramaApiClient {
 
         LOG.info("Generating VM Auth Key for " + days + " days");
         String cmd = String.format(GENKEY_CMD_TEMPL, days);
-        Map<String, String> queryStrings = makeRequestParams(null, OP_TYPE, null, null, cmd);
+        Map<String, String> queryStrings = makeOpCmdRequestParams(cmd);
         VMAuthKeyResponse vmAuthKeyResponse = getRequest(queryStrings, VMAuthKeyResponse.class);
         String vmAuthKeyString = vmAuthKeyResponse.getShowResult();
         if (vmAuthKeyString == null) {
@@ -221,7 +221,7 @@ public class PanoramaApiClient {
         String xpath = String.format(XPATH_ADDRESS_TEMPL, devGroup);
         Map<String, String> queryStrings = makeGetConfigRequestParams(xpath, null, null);
         GetAddressResponse getAddressResponse = getRequest(queryStrings, GetAddressResponse.class);
-        List<AddressEntry> addrEntries = getAddressResponse.getResult().getEntries();
+        List<AddressEntry> addrEntries = getAddressResponse.getAddressEntries();
         return addrEntries != null ? addrEntries : emptyList();
     }
 
@@ -241,6 +241,10 @@ public class PanoramaApiClient {
         return makeRequestParams(DELETE_ACTION, CONFIG_TYPE, xpath, element, cmd);
     }
 
+    public Map<String, String> makeOpCmdRequestParams(String cmd) {
+        return makeRequestParams(null, OP_TYPE, null, null, cmd);
+    }
+
     public Map<String, String> makeRequestParams(String action, String type, String xpath, String element, String cmd) {
         if (type == null) {
             throw new IllegalArgumentException("Type parameter required for panorama API requests!");
@@ -248,19 +252,19 @@ public class PanoramaApiClient {
 
         Map<String, String> queryStrings = new HashMap<>();
 
-        if (element != null) {
-            queryStrings.put(ELEMENT, element);
-        }
+        queryStrings.put(TYPE, type);
+        queryStrings.put(KEY, this.apiKey);
 
         if (action != null) {
             queryStrings.put(ACTION, action);
         }
 
-        queryStrings.put(TYPE, type);
-        queryStrings.put(KEY, this.apiKey);
-
         if (xpath != null) {
             queryStrings.put(XPATH, xpath);
+        }
+
+        if (element != null) {
+            queryStrings.put(ELEMENT, element);
         }
 
         if (cmd != null) {

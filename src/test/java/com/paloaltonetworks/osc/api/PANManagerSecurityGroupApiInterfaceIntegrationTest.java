@@ -53,9 +53,8 @@ public class PANManagerSecurityGroupApiInterfaceIntegrationTest
         this.sgInterfaceApi = new PANManagerSecurityGroupInterfaceApi(this.mgrConnector, this.vs, this.panClient);
 
         MockitoAnnotations.initMocks(this);
+        // OSC_SecurityGroup_
 
-        Mockito.when(this.sgMember1.getId()).thenReturn(SG_ID);
-        Mockito.when(this.sgMember1.getName()).thenReturn("sgMember_" + SG_ID);
         Mockito.when(this.sgMember1.getIpAddresses()).thenReturn(asList("1.1.1.1"));
         Mockito.when(this.sgMember1.getMacAddresses()).thenReturn(asList("1.1.1.1"));
 
@@ -67,7 +66,7 @@ public class PANManagerSecurityGroupApiInterfaceIntegrationTest
         policyElements.add(this.existingPolicyTag);
 
         Mockito.when(this.sgInterfaceElement.getManagerSecurityGroupInterfaceId()).thenReturn(SG_INTERFACE_ID);
-        Mockito.when(this.sgInterfaceElement.getManagerSecurityGroupId()).thenReturn(SG_ID);
+        Mockito.when(this.sgInterfaceElement.getManagerSecurityGroupId()).thenReturn("OSCSecurityGroup_" + SG_ID);
         Mockito.when(this.sgInterfaceElement.getManagerPolicyElements()).thenReturn(policyElements);
 
         this.sgTag = securityGroupTag(SG_ID);
@@ -85,12 +84,12 @@ public class PANManagerSecurityGroupApiInterfaceIntegrationTest
         List<AddressEntry> addresses =  this.panClient.fetchAddressesWithTag(EXISTING_POLICY_TAG, this.devGroup);
         assertEquals(0, addresses.size());
 
-        this.sgApi.createSecurityGroup(SGNAME, SG_ID, this.with1);
+        this.sgTag = this.sgApi.createSecurityGroup(SGNAME, SG_ID, this.with1);
         addresses =  this.panClient.fetchAddressesWithTag(EXISTING_POLICY_TAG, this.devGroup);
         assertEquals(0, addresses.size());
 
         String sgInterfaceId = this.sgInterfaceApi.createSecurityGroupInterface(this.sgInterfaceElement);
-        assertEquals(SG_ID + "_" + VS_ID, sgInterfaceId);
+        assertEquals(this.sgTag + "_" + this.devGroup, sgInterfaceId);
 
         addresses =  this.panClient.fetchAddressesWithTag(EXISTING_POLICY_TAG, this.devGroup);
         assertEquals(1, addresses.size());
@@ -100,6 +99,6 @@ public class PANManagerSecurityGroupApiInterfaceIntegrationTest
         addresses =  this.panClient.fetchAddressesWithTag(EXISTING_POLICY_TAG, this.devGroup);
         assertEquals(0, addresses.size());
 
-        this.sgApi.deleteSecurityGroup(SG_ID);
+        this.sgApi.deleteSecurityGroup(this.sgTag);
     }
 }

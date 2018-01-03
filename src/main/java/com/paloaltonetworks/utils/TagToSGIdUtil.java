@@ -6,7 +6,7 @@ package com.paloaltonetworks.utils;
 public class TagToSGIdUtil {
 
     // TODO: property?
-    static final String PREFIX = "OSC_SecurityGroup_";
+    static final String PREFIX = "OSCSecurityGroup_";
 
     /**
      * Convert from Panorama-Side Security Group Tag to OSC SG id.
@@ -20,5 +20,9 @@ public class TagToSGIdUtil {
      */
     public static String securityGroupTag(String sgId) {
         return PREFIX + sgId;
+    }
+
+    public static boolean isSGTag(String tag) {
+        return tag != null && tag.startsWith(PREFIX);
     }
 }

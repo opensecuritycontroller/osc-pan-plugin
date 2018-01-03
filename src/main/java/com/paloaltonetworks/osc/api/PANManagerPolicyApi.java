@@ -22,7 +22,7 @@ import org.osc.sdk.manager.api.ManagerPolicyApi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.paloaltonetworks.osc.model.PolicyListElement;
+import com.paloaltonetworks.osc.model.PANPolicyListElement;
 import com.paloaltonetworks.panorama.api.methods.PanoramaApiClient;
 
 /**
@@ -42,20 +42,20 @@ public class PANManagerPolicyApi implements ManagerPolicyApi {
     }
 
     @Override
-    public PolicyListElement getPolicy(String policyId, String domainId) throws Exception {
+    public PANPolicyListElement getPolicy(String policyId, String domainId) throws Exception {
         if (this.panClient.tagExists(policyId, XPATH_SHARED_TAG)) {
-            return new PolicyListElement(policyId, policyId, domainId);
+            return new PANPolicyListElement(policyId, policyId, domainId);
         }
 
         return null;
     }
 
     @Override
-    public List<PolicyListElement> getPolicyList(String domainId) throws Exception {
+    public List<PANPolicyListElement> getPolicyList(String domainId) throws Exception {
         return this.panClient.getTagEntries(XPATH_SHARED_TAG)
                              .stream()
                              .filter(t -> t != null)
-                             .map(t -> new PolicyListElement(t.getName(), t.getName(), domainId))
+                             .map(t -> new PANPolicyListElement(t.getName(), t.getName(), domainId))
                              .collect(toList());
     }
 }

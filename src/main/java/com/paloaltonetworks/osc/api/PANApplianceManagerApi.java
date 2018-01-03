@@ -14,9 +14,9 @@
  */
 package com.paloaltonetworks.osc.api;
 
-import static com.paloaltonetworks.utils.SSLContextFactory.getSSLContext;
 import static org.osc.sdk.manager.Constants.*;
 
+import javax.net.ssl.SSLContext;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 
@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
 
 import com.paloaltonetworks.panorama.api.methods.JAXBProvider;
 import com.paloaltonetworks.panorama.api.methods.PanoramaApiClient;
+import com.paloaltonetworks.utils.SSLContextFactory;
 
 @Component(configurationPid = "com.paloaltonetworks.panorama.ApplianceManager",
    property = { PLUGIN_NAME + "=Panorama", VENDOR_NAME + "=Palo Alto Networks", SERVICE_NAME + "=Panorama",
@@ -76,9 +77,9 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
     @Activate
     void start(Config config) {
         this.config = config;
-
+        SSLContext sslCtx =  SSLContextFactory.getSSLContext();
         this.client = ClientBuilder.newBuilder().property(config.max_threads_property_name(), config.max_threads())
-                .register(new JAXBProvider()).sslContext(getSSLContext()).hostnameVerifier((hostname, session) -> true).build();
+                .register(new JAXBProvider()).sslContext(sslCtx).hostnameVerifier((hostname, session) -> true).build();
     }
 
     @Deactivate

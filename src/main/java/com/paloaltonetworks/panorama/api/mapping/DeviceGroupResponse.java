@@ -14,6 +14,10 @@
  */
 package com.paloaltonetworks.panorama.api.mapping;
 
+import static java.util.Collections.emptyList;
+
+import java.util.List;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -48,6 +52,14 @@ public class DeviceGroupResponse implements PANResponse {
 
     public void setDeviceGroups(DeviceGroups value) {
         this.deviceGroups = value;
+    }
+
+    public List<DeviceGroupsEntry> getEntries() {
+        if (this.deviceGroups != null) {
+            return this.deviceGroups.getEntries() != null ? this.deviceGroups.getEntries() : emptyList();
+        }
+
+        return emptyList();
     }
 
     @Override

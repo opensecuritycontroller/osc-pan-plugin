@@ -9,11 +9,9 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.paloaltonetworks.osc.model.PolicyListElement;
+import com.paloaltonetworks.osc.model.PANPolicyListElement;
 
 public class PANManagerPolicyApiIntegrationTest extends AbstractPANApiIntegrationTest {
-
-    private static final String EXISTING_POLICY_TAG = "EXISTING_POLICY_TAG";
 
     private PANManagerPolicyApi api;
 
@@ -34,12 +32,12 @@ public class PANManagerPolicyApiIntegrationTest extends AbstractPANApiIntegratio
     @Ignore
     @Test
     public void testListPolicies() throws Exception {
-        List<PolicyListElement> elements = this.api.getPolicyList("domain");
+        List<PANPolicyListElement> elements = this.api.getPolicyList("domain");
 
         assertNotNull(elements);
         assertTrue(elements.stream().anyMatch(e -> EXISTING_POLICY_TAG.equals(e.getName())));
 
-        PolicyListElement element = this.api.getPolicy(EXISTING_POLICY_TAG, "domain");
+        PANPolicyListElement element = this.api.getPolicy(EXISTING_POLICY_TAG, "domain");
         assertNotNull(element);
         assertEquals(EXISTING_POLICY_TAG, element.getName());
     }
@@ -47,7 +45,7 @@ public class PANManagerPolicyApiIntegrationTest extends AbstractPANApiIntegratio
     @Ignore
     @Test
     public void testGetPolicy() throws Exception {
-        PolicyListElement element = this.api.getPolicy(EXISTING_POLICY_TAG, "domain");
+        PANPolicyListElement element = this.api.getPolicy(EXISTING_POLICY_TAG, "domain");
         assertNotNull(element);
         assertEquals(EXISTING_POLICY_TAG, element.getName());
     }
