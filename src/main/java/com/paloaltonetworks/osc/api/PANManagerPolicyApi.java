@@ -47,7 +47,7 @@ public class PANManagerPolicyApi implements ManagerPolicyApi {
             throw new IllegalArgumentException("Null policy id is not allowed!");
         }
 
-        return getPolicyList(policyId).stream().filter(p -> policyId.equals(p.getId())).findAny().get();
+        return getPolicyList(policyId).stream().filter(p -> policyId.equals(p.getId())).findAny().orElse(null);
     }
 
     @Override

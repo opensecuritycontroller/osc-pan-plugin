@@ -85,7 +85,7 @@ public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroup
         for (AddressEntry entry : ipsOnMgr) {
             List<String> tagToUnbind = entry.getTagNames();
             tagToUnbind.remove(sgMgrId); // Keep sgMgrId bound
-            unbindAll(entry, tagToUnbind);
+            removeTagsFromAllAddresses(entry, tagToUnbind);
         }
 
         this.panClient.configCommit();
@@ -123,7 +123,7 @@ public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroup
         Map<String, ManagerSecurityGroupInterfaceElement> results = new HashMap<>();
 
         for (AddressEntry ae : this.panClient.getAddressEntries(this.devGroup)) {
-            String sgMgrId = ae.getTagNames().stream().filter(TagToSGIdUtil::isSGTag).findFirst().get();
+            String sgMgrId = ae.getTagNames().stream().filter(TagToSGIdUtil::isSGTag).findFirst().orElse(null);
 
             if (sgMgrId != null) {
                 String sgInfcMgrId = combineToSGIntefaceId(sgMgrId, this.vs.getName());
@@ -178,8 +178,8 @@ public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroup
                 tmp.removeAll(tags);
                 tags.removeAll(policyTags);
 
-                unbindAll(entry, tags);
-                bindAll(entry, tmp);
+                removeTagsFromAllAddresses(entry, tags);
+                addTagsToAllAddresses(entry, tmp);
             }
         } catch (Exception e) {
             LOG.error(String.format("Exception conforming SGI for security group %s on VS %d .", sgInterfaceId, this.vs.getName()), e);
@@ -189,18 +189,33 @@ public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroup
         return sgInterfaceId;
     }
 
-    private void unbindAll(AddressEntry entry, Collection<String> tags) throws Exception {
+    private void removeTagsFromAllAddresses(AddressEntry entry, Collection<String> tags) throws Exception {
         for (String tag : tags) {
             this.panClient.removeTagFromAddress(entry.getName(), tag, this.devGroup);
         }
     }
 
-    private void bindAll(AddressEntry entry, Collection<String> tags) throws Exception {
+    private void addTagsToAllAddresses(AddressEntry entry, Collection<String> tags) throws Exception {
         for (String tag : tags) {
             this.panClient.addTagToAddress(entry.getName(), tag, this.devGroup);
         }
     }
 
+    /**
+     * The manager-side security group interface id is a string tag. It is a
+     * combination of Security Group Id and the Virtual System name.
+     * This method extracts the sgId part.
+     * <p/>
+     * That simply splits away the first part of the interface id. For example: <p/>
+     *
+     * {@code "OSCSecurityGroup_54321_MyVirtSys" -> "OSCSecurityGroup_54321"}
+     *
+     * <p/>
+     * Virtual system names cannot contain underscores.
+     *
+     * @param sgInterfaceId
+     * @return Security Group Id on the appliance manager (Panorama).
+     */
     private static String extractSGId(String sgInterfaceId) {
         // Underscores are not allowed in DA names and hence in VS names.
         @SuppressWarnings("boxing")
@@ -209,10 +224,30 @@ public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroup
         return withoutSGPrefix.substring(0, i);
     }
 
-    private static String combineToSGIntefaceId(String sgId, String vsId) {
-        return sgId + IDSTRING_SEPARATOR + vsId;
+    /**
+     * The manager-side security group interface id is a string tag. It is a
+     * combination of Security Group Id and the Virtual System name.
+     * This method combines the two arguments into that interface id.
+     * <p/>
+     * That is just a concatenation with a separator. For example: <p/>
+     *
+     * {@code ("OSCSecurityGroup_54321", "MyVirtSys") -> "OSCSecurityGroup_54321_MyVirtSys"}
+     *
+     * <p/>
+     * Virtual system names cannot contain underscores.
+     *
+     * @param sgId
+     * @param vsName
+     * @return Security InterfaceGroup Id on the appliance manager (Panorama).
+     */
+    private static String combineToSGIntefaceId(String sgId, String vsName) {
+        return sgId + IDSTRING_SEPARATOR + vsName;
     }
 
+    /**
+     * @param ae
+     * @return Policy list element objects for each
+     */
     private Set<ManagerPolicyElement> extractPolicyElements(AddressEntry ae) {
         return ae.getTagNames().stream()
                 .filter(s -> !TagToSGIdUtil.isSGTag(s))

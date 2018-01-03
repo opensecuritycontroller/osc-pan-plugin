@@ -12,7 +12,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
-import org.osc.sdk.manager.element.ManagerDeviceElement;
 import org.osc.sdk.manager.element.VirtualSystemElement;
 
 import com.paloaltonetworks.panorama.api.methods.PanoramaApiClient;
@@ -22,9 +21,6 @@ public abstract class AbstractPANApiIntegrationTest {
     protected static final String EXISTING_POLICY_TAG = "EXISTING_POLICY_TAG";
     protected static final String EXISTING_POLICY_TAG_OTHER = "EXISTING_POLICY_TAG_OTHER";
     protected static final long VS_ID = 32123L;
-
-    private static final long DEVGPS_SLEEP_MS = 10;
-    private static final int DEVGPS_TIMEOUT_TRIES = 10;
 
     protected PanoramaApiClient panClient;
 
@@ -62,12 +58,6 @@ public abstract class AbstractPANApiIntegrationTest {
         try (PANDeviceApi devApi = new PANDeviceApi(this.mgrConnector, this.vs, this.panClient);) {
             if (devApi.getDeviceById(this.vs.getName()) == null) {
                 devApi.createVSSDevice();
-
-                ManagerDeviceElement mde = devApi.getDeviceById(this.vs.getName());
-                while (count++ < DEVGPS_TIMEOUT_TRIES && mde == null) {
-                    mde = devApi.getDeviceById(this.vs.getName());
-                    Thread.sleep(DEVGPS_SLEEP_MS);
-                }
             }
         }
 

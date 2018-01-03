@@ -56,6 +56,10 @@ public class PANDeviceApi implements ManagerDeviceApi {
     private static final String SHOW_DEVICEGROUPS_CMD = "<show><devicegroups></devicegroups></show>";
     private static final String DAYS_FOR_VMAUTH_KEY = "8760";
 
+    // TODO: use properties to configure!
+    private static final long DEVGPS_SLEEP_MS = 1000L;
+    private static final int DEVGPS_TIMEOUT_TRIES = 10;
+
     private String vmAuthKey = null;
     private VirtualSystemElement vs;
     private ApplianceManagerConnectorElement mc;
@@ -81,7 +85,7 @@ public class PANDeviceApi implements ManagerDeviceApi {
             throw new IllegalArgumentException("Null device id is not allowed!");
         }
 
-        return listDevices().stream().filter(de -> id.equals(de.getName())).findAny().get();
+        return listDevices().stream().filter(de -> id.equals(de.getName())).findAny().orElse(null);
     }
 
     @Override
@@ -115,6 +119,11 @@ public class PANDeviceApi implements ManagerDeviceApi {
         LOG.info("Adding device group " + this.vs.getName());
         String devGroup = this.vs.getName();
 
+        if (getDeviceById(devGroup) != null) {
+            LOG.error("Device group {} already exists!", devGroup);
+            return devGroup;
+        }
+
         String element = PanoramaApiClient.makeEntryElement(devGroup, null, "OSC Device group - do not remove", null);
         element = element.replace("</entry>", "<devices/></entry>");
         Map<String, String> queryStrings = this.panClient.makeSetConfigRequestParams(XPATH_DEVGROUP_PREFIX, element, null);
@@ -122,6 +131,15 @@ public class PANDeviceApi implements ManagerDeviceApi {
         String errorMessage = String.format(
                 "Commit failed when adding Device Group Name: %s", this.vs.getName());
         this.panClient.configCommitOrThrow(errorMessage);
+
+        ManagerDeviceElement mde;
+        for (int i = 0; (mde = getDeviceById(devGroup)) == null && i < DEVGPS_TIMEOUT_TRIES; i++) {
+            Thread.sleep(DEVGPS_SLEEP_MS);
+        }
+
+        if (mde == null) {
+            throw new IllegalStateException("Failed to add the device group after multiple tries: " + devGroup);
+        }
 
         return devGroup;  // TODO : one per vs?
     }
@@ -134,13 +152,30 @@ public class PANDeviceApi implements ManagerDeviceApi {
     @Override
     public void deleteVSSDevice() throws Exception {
         LOG.info("Deleting device group " + this.vs.getName());
+
         String devGroup = this.vs.getName();
-        String xpath = XPATH_DEVGROUP_PREFIX + "/entry[ @name=\""+ devGroup + "\"]";
+
+        if (getDeviceById(devGroup) == null) {
+            LOG.error("Device group {} does not exist!", devGroup);
+            return;
+        }
+
+        String xpath = XPATH_DEVGROUP_PREFIX + "/entry[ @name=\"" + devGroup + "\" ]";
         String element = PanoramaApiClient.makeEntryElement(devGroup);
         Map<String, String> queryStrings = this.panClient.makeRequestParams(DELETE_ACTION, CONFIG_TYPE, xpath, element, null);
         this.panClient.getRequest(queryStrings, SetConfigResponse.class);
-        String errorMessage = String.format("Commit failed when deleting Device Group Name: %s ", this.vs.getName());
+        String errorMessage = String.format("Commit failed when deleting Device Group Name: %s. Does it contain objects?",
+                                            this.vs.getName());
         this.panClient.configCommitOrThrow(errorMessage);
+
+        ManagerDeviceElement mde;
+        for (int i = 0; (mde = getDeviceById(devGroup)) != null && i < DEVGPS_TIMEOUT_TRIES; i++) {
+            Thread.sleep(DEVGPS_SLEEP_MS);
+        }
+
+        if (mde == null) {
+            throw new IllegalStateException("Failed to delete the device group: " + devGroup);
+        }
     }
 
     @Override

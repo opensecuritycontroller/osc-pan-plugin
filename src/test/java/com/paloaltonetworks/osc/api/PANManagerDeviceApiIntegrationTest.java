@@ -33,9 +33,16 @@ public class PANManagerDeviceApiIntegrationTest extends AbstractPANApiIntegratio
         // Device group should have been created in the setup
         List<? extends ManagerDeviceElement> deviceMembers = this.api.listDevices();
         assertNotNull(deviceMembers);
-        assertTrue(deviceMembers.stream().anyMatch(dm -> this.vs.getName().equals(dm.getName())));
+        assertTrue("Existing DevGroup not found in the list! " + this.devGroup,
+                deviceMembers.stream().anyMatch(dm -> this.vs.getName().equals(dm.getName())));
 
         ManagerDeviceElement mde = this.api.getDeviceById(this.vs.getName());
+        assertNotNull("getDeviceById failed to retrieve an existing group: " + this.devGroup, mde);
         assertEquals(this.vs.getName(), mde.getName());
+
+        this.api.deleteVSSDevice();
+        deviceMembers = this.api.listDevices();
+        assertFalse("Failed to delete " + this.devGroup,
+                    deviceMembers.stream().anyMatch(dm -> this.vs.getName().equals(dm.getName())));
     }
 }

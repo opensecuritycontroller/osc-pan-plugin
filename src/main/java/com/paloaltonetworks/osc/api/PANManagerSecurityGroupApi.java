@@ -16,7 +16,6 @@ package com.paloaltonetworks.osc.api;
 
 import static java.util.Collections.emptyList;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +24,6 @@ import java.util.stream.Collectors;
 
 import org.osc.sdk.manager.api.ManagerSecurityGroupApi;
 import org.osc.sdk.manager.element.ManagerSecurityGroupElement;
-import org.osc.sdk.manager.element.SecurityGroupMemberElement;
 import org.osc.sdk.manager.element.SecurityGroupMemberListElement;
 import org.osc.sdk.manager.element.VirtualSystemElement;
 import org.slf4j.Logger;
@@ -107,8 +105,7 @@ public class PANManagerSecurityGroupApi implements ManagerSecurityGroupApi {
     public List<? extends ManagerSecurityGroupElement> getSecurityGroupList() throws Exception {
         return this.panClient.getAddressEntries(this.devGroup).stream()
                         .map(ae -> ae.getTagNames())
-                        .reduce(new ArrayList<String>(), (c1, c2) -> {c1.addAll(c2); return c1;})
-                        .stream()
+                        .flatMap(list -> list.stream())
                         .filter(TagToSGIdUtil::isSGTag)
                         .map(s -> new PANSecurityGroupElement(s, s))
                         .collect(Collectors.toList());
@@ -120,7 +117,7 @@ public class PANManagerSecurityGroupApi implements ManagerSecurityGroupApi {
             throw new IllegalArgumentException("Null Id is not allowed!");
         }
 
-        return getSecurityGroupList().stream().filter(sg -> sgMgrId.equals(sg.getSGId())).findAny().get();
+        return getSecurityGroupList().stream().filter(sg -> sgMgrId.equals(sg.getSGId())).findAny().orElse(null);
     }
 
     @Override
@@ -155,18 +152,29 @@ public class PANManagerSecurityGroupApi implements ManagerSecurityGroupApi {
     private Set<String> fetchMgrIpsByTag(String sgTag) throws Exception {
         return this.panClient
                 .fetchAddressesWithTag(sgTag, this.devGroup).stream()
+                .filter(ae -> ae != null)
                 .map(ae -> ae.getName())
                 .collect(Collectors.toSet());
     }
 
+    /**
+     * Iterates through the list SecurityGroupMemberElements and collects all their ip addresses
+     * into a single set.
+     *
+     * @param memberList
+     * @return Set of all the ip addresses in all the SecurityGroupMemberElements in the list.
+     *
+     */
     private Set<String> computeIps(SecurityGroupMemberListElement memberList) {
-        Set<String> rightIps = new HashSet<>();
-
-        for (SecurityGroupMemberElement member : memberList.getMembers()) {
-            rightIps.addAll(member.getIpAddresses());
+        if (memberList == null || memberList.getMembers() == null) {
+            throw new IllegalArgumentException("Null member lists are not allowed!");
         }
 
-        return rightIps;
+        return memberList.getMembers().stream()
+                .filter(e -> e != null)
+                .map(e -> e.getIpAddresses())
+                .flatMap(list -> list.stream())
+                .collect(Collectors.toSet());
     }
 
     private void addAddress(String ip) throws Exception {
