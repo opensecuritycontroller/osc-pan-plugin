@@ -49,8 +49,8 @@ public class PANManagerSecurityGroupApiInterfaceIntegrationTest
     public void setup() throws Exception {
         super.setup();
 
-        this.sgApi = new PANManagerSecurityGroupApi(this.mgrConnector, this.vs, this.panClient);
-        this.sgInterfaceApi = new PANManagerSecurityGroupInterfaceApi(this.mgrConnector, this.vs, this.panClient);
+        this.sgApi = new PANManagerSecurityGroupApi(this.vs, this.panClient);
+        this.sgInterfaceApi = new PANManagerSecurityGroupInterfaceApi(this.vs, this.panClient);
 
         MockitoAnnotations.initMocks(this);
         // OSC_SecurityGroup_

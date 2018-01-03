@@ -114,7 +114,7 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
         LOG.info("Creating Security Group interface API for Panorama Manager : {} with ip : {}",
                 mc.getName(), mc.getIpAddress());
         PanoramaApiClient panClient = makePanoramaApiClient(mc);
-        return new PANManagerSecurityGroupInterfaceApi(mc,vs, panClient);
+        return new PANManagerSecurityGroupInterfaceApi(vs, panClient);
     }
 
     /*
@@ -127,7 +127,7 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
         LOG.info("Creating Security Group API for Panorama Manager : {} with ip : {}", mc.getName(),
                 mc.getIpAddress());
         PanoramaApiClient panClient = makePanoramaApiClient(mc);
-        return new PANManagerSecurityGroupApi(mc, vs, panClient);
+        return new PANManagerSecurityGroupApi(vs, panClient);
     }
 
     /*
@@ -153,7 +153,7 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
     public ManagerDomainApi createManagerDomainApi(ApplianceManagerConnectorElement mc) throws Exception {
         LOG.info("Creating Domain API for Panorama Manager : {} with ip : {}", mc.getName(),
                 mc.getIpAddress());
-        return new PANManagerDomainApi(mc);
+        return new PANManagerDomainApi();
     }
 
     /*
@@ -166,7 +166,7 @@ public class PANApplianceManagerApi implements ApplianceManagerApi {
 
         LOG.info("Creating Device Member API for Panorama Manager : {} with ip : {}", mc.getName(),
                 mc.getIpAddress());
-        return new PANManagerDeviceMemberApi(mc, vs);
+        return new PANManagerDeviceMemberApi();
     }
 
     /*

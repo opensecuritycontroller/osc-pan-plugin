@@ -24,7 +24,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.osc.sdk.manager.api.ManagerSecurityGroupApi;
-import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
 import org.osc.sdk.manager.element.ManagerSecurityGroupElement;
 import org.osc.sdk.manager.element.SecurityGroupMemberElement;
 import org.osc.sdk.manager.element.SecurityGroupMemberListElement;
@@ -47,20 +46,14 @@ public class PANManagerSecurityGroupApi implements ManagerSecurityGroupApi {
 
     private static final Logger LOG = LoggerFactory.getLogger(PANManagerSecurityGroupApi.class);
 
-    public static final String SG_TAG_PREFIX = "OSC_SecurityGroup_";
-
-    private VirtualSystemElement vs;
-    private ApplianceManagerConnectorElement mc;
     private PanoramaApiClient panClient;
 
     private String addrXpath;
     private String tagXpath;
     private String devGroup;
 
-    public PANManagerSecurityGroupApi(ApplianceManagerConnectorElement mc, VirtualSystemElement vs,
+    public PANManagerSecurityGroupApi(VirtualSystemElement vs,
             PanoramaApiClient panClient) {
-        this.vs = vs;
-        this.mc = mc;
         this.panClient = panClient;
 
         this.devGroup = vs.getName();
@@ -94,10 +87,10 @@ public class PANManagerSecurityGroupApi implements ManagerSecurityGroupApi {
 
     @Override
     public void deleteSecurityGroup(String sgMgrId) throws Exception {
+        LOG.info("Deleting security group {} ", sgMgrId);
         Set<String> ipsOnMgr = fetchMgrIpsByTag(sgMgrId);
         try {
             for (String ip : ipsOnMgr) {
-                LOG.info("Deleting address {}", ip);
                 deleteAddress(ip);
             }
         } catch (Exception e) {
@@ -143,15 +136,12 @@ public class PANManagerSecurityGroupApi implements ManagerSecurityGroupApi {
         ipsToSet.removeAll(tmp);
 
         for (String ip : ipsToSet) {
-            LOG.info("Creating address {}", ip);
             addAddress(ip);
-            LOG.info("Adding address {} to security group {} ", ip, name);
             this.panClient.addTagToAddress(ip, sgMgrId, this.devGroup);
         }
 
         for (String ip : ipsOnMgr) {
             this.panClient.removeTagFromAddress(ip, sgMgrId, this.devGroup);
-            LOG.info("Deleting address {}", ip);
             deleteAddress(ip);
         }
 
@@ -177,6 +167,7 @@ public class PANManagerSecurityGroupApi implements ManagerSecurityGroupApi {
     }
 
     private void addAddress(String ip) throws Exception {
+        LOG.info("Creating address {}", ip);
         AddressEntry address = new AddressEntry(ip, ip, "Address added and managed by OSC", emptyList());
         String element = QuickXmlizerUtil.xmlString(address);
         Map<String, String> queryStrings = this.panClient.makeSetConfigRequestParams(this.addrXpath, element, null);
@@ -184,6 +175,7 @@ public class PANManagerSecurityGroupApi implements ManagerSecurityGroupApi {
     }
 
     private void deleteAddress(String ip) throws Exception {
+        LOG.info("Deleting address {}", ip);
         // After some experimentation, this is how delete works with addresses.
         Map<String, String> queryStrings = this.panClient.makeDeleteConfigRequestParams(this.addrXpath
                 + "/entry[ @name=\""+ ip + "\"]", null, null);

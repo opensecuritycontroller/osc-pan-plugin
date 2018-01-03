@@ -83,11 +83,7 @@ public class PanoramaApiClient {
     private static final String PASSWORD = "password";
 
     // Values for xpath parameter
-    private static final String XPATH_CONFIG = "/config";
-    private static final String XPATH_SHARED = XPATH_CONFIG + "/shared";
-    private static final String XPATH_SHARED_TAG = XPATH_SHARED + "/tag";
 
-    private static final String XPATH_SG_TAG_TEMPL = XPATH_DEVGROUP_TEMPL + "/tag";
     private static final String XPATH_ADDRESS_TEMPL = XPATH_DEVGROUP_TEMPL + "/address";
     private static final String XPATH_ADDRESS_TAG_TEMPL = XPATH_ADDRESS_TEMPL + "/entry[ @name=\"%s\" ]/tag";
 

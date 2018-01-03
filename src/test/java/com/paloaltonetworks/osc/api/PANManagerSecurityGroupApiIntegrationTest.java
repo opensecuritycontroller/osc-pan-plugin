@@ -47,7 +47,7 @@ public class PANManagerSecurityGroupApiIntegrationTest extends AbstractPANApiInt
     public void setup() throws Exception {
         super.setup();
 
-        this.sgApi = new PANManagerSecurityGroupApi(this.mgrConnector, this.vs, this.panClient);
+        this.sgApi = new PANManagerSecurityGroupApi(this.vs, this.panClient);
 
         MockitoAnnotations.initMocks(this);
 

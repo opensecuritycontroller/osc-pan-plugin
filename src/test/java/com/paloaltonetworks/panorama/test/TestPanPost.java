@@ -26,8 +26,6 @@ import org.osc.sdk.manager.element.ManagerDeviceMemberElement;
 import org.osc.sdk.manager.element.ManagerPolicyElement;
 import org.osc.sdk.manager.element.SecurityGroupInterfaceElement;
 import org.osc.sdk.manager.element.VirtualSystemElement;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.paloaltonetworks.osc.api.PANDeviceApi;
 import com.paloaltonetworks.osc.api.PANManagerSecurityGroupInterfaceApi;
@@ -36,8 +34,6 @@ import com.paloaltonetworks.panorama.api.methods.JAXBProvider;
 import com.paloaltonetworks.panorama.api.methods.PanoramaApiClient;
 
 public class TestPanPost extends AbstractPanTest {
-    private static final Logger log = LoggerFactory.getLogger(TestPanPost.class);
-    private static final String URL = "http://%s:%s/api";
     private static final String LOCALHOST = "127.0.0.1";
 
     private Client client;
@@ -79,43 +75,42 @@ public class TestPanPost extends AbstractPanTest {
     }
 
     public void testCreateSecurityGroupInterface() throws Exception {
-        ApplianceManagerConnectorElement amce = getConnector();
         VirtualSystemElement vse = getVirtualSystem();
 
         PanoramaApiClient panClient = new PanoramaApiClient(LOCALHOST, this.serverPort, false, USERNAME, PASSWORD,
                 this.client);
-        PANManagerSecurityGroupInterfaceApi sgiApi = new PANManagerSecurityGroupInterfaceApi(amce, vse, panClient);
-        SecurityGroupInterfaceElement sgiElement = new SecurityGroupInterfaceElement() {
+        try (PANManagerSecurityGroupInterfaceApi sgiApi = new PANManagerSecurityGroupInterfaceApi(vse, panClient);) {
 
-            @Override
-            public String getTag() {
-                return "Tag1";
-            }
+            SecurityGroupInterfaceElement sgiElement = new SecurityGroupInterfaceElement() {
 
-            @Override
-            public String getName() {
-                return "Tag Name";
-            }
+                @Override
+                public String getTag() {
+                    return "Tag1";
+                }
 
-            @Override
-            public String getManagerSecurityGroupId() {
-                return null;
-            }
+                @Override
+                public String getName() {
+                    return "Tag Name";
+                }
 
-            @Override
-            public String getManagerSecurityGroupInterfaceId() {
-                return null;
-            }
+                @Override
+                public String getManagerSecurityGroupId() {
+                    return null;
+                }
 
-            @Override
-            public Set<ManagerPolicyElement> getManagerPolicyElements() {
-                return null;
-            }
-        };
-        String result = sgiApi.createSecurityGroupInterface(sgiElement);
+                @Override
+                public String getManagerSecurityGroupInterfaceId() {
+                    return null;
+                }
 
-        assertEquals("Tag Name", result);
-
+                @Override
+                public Set<ManagerPolicyElement> getManagerPolicyElements() {
+                    return null;
+                }
+            };
+            String result = sgiApi.createSecurityGroupInterface(sgiElement);
+            assertEquals("Tag Name", result);
+        }
     }
 
     private static SSLContext getSSLContext() {
@@ -157,11 +152,10 @@ public class TestPanPost extends AbstractPanTest {
 
         PanoramaApiClient panClient = new PanoramaApiClient(LOCALHOST, this.serverPort, false, USERNAME, PASSWORD,
                 this.client);
-        PANDeviceApi deviceApi = new PANDeviceApi(amce, vse, panClient);
-        String id = deviceApi.findDeviceByName("Pan-NGFW-5");
-
-        assertEquals("Pan-NGFW-5", id);
-
+        try (PANDeviceApi deviceApi = new PANDeviceApi(amce, vse, panClient);) {
+            String id = deviceApi.findDeviceByName("Pan-NGFW-5");
+            assertEquals("Pan-NGFW-5", id);
+        }
     }
 
     public void testDeviceDetail() throws Exception {

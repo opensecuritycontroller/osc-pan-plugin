@@ -27,7 +27,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.osc.sdk.manager.api.ManagerSecurityGroupInterfaceApi;
-import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
 import org.osc.sdk.manager.element.ManagerPolicyElement;
 import org.osc.sdk.manager.element.ManagerSecurityGroupInterfaceElement;
 import org.osc.sdk.manager.element.SecurityGroupInterfaceElement;
@@ -51,15 +50,13 @@ public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroup
     private static final Character IDSTRING_SEPARATOR = '_';
 
     private VirtualSystemElement vs;
-    private ApplianceManagerConnectorElement mc;
     private PanoramaApiClient panClient;
 
     private String devGroup;
 
-    public PANManagerSecurityGroupInterfaceApi(ApplianceManagerConnectorElement mc, VirtualSystemElement vs,
+    public PANManagerSecurityGroupInterfaceApi(VirtualSystemElement vs,
             PanoramaApiClient panClient) {
         this.vs = vs;
-        this.mc = mc;
         this.panClient = panClient;
         this.devGroup = vs.getName();
     }
@@ -85,9 +82,9 @@ public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroup
         }
 
         for (AddressEntry entry : ipsOnMgr) {
-            List<String> tagToUnbinds = entry.getTagNames();
-            tagToUnbinds.remove(sgMgrId); // Keep sgTag bound
-            unbindAll(entry, tagToUnbinds);
+            List<String> tagToUnbind = entry.getTagNames();
+            tagToUnbind.remove(sgMgrId); // Keep sgMgrId bound
+            unbindAll(entry, tagToUnbind);
         }
 
         this.panClient.configCommit();

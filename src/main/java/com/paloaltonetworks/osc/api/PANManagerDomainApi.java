@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.osc.sdk.manager.api.ManagerDomainApi;
-import org.osc.sdk.manager.element.ApplianceManagerConnectorElement;
 
 import com.paloaltonetworks.osc.model.PANDomainElement;
 import com.paloaltonetworks.osc.model.PANDomainListElement;
@@ -27,10 +26,6 @@ import com.paloaltonetworks.osc.model.PANDomainListElement;
  * This documents "Device Management Apis"
  */
 public class PANManagerDomainApi implements ManagerDomainApi {
-
-    public PANManagerDomainApi(ApplianceManagerConnectorElement mc) {
-
-    }
 
     @Override
     public PANDomainElement getDomain(String domainId) throws Exception {
