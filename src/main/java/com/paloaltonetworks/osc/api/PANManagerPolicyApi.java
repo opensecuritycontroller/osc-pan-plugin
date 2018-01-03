@@ -43,11 +43,11 @@ public class PANManagerPolicyApi implements ManagerPolicyApi {
 
     @Override
     public PANPolicyListElement getPolicy(String policyId, String domainId) throws Exception {
-        if (this.panClient.tagExists(policyId, XPATH_SHARED_TAG)) {
-            return new PANPolicyListElement(policyId, policyId, domainId);
+        if (policyId == null) {
+            throw new IllegalArgumentException("Null policy id is not allowed!");
         }
 
-        return null;
+        return getPolicyList(policyId).stream().filter(p -> policyId.equals(p.getId())).findAny().get();
     }
 
     @Override

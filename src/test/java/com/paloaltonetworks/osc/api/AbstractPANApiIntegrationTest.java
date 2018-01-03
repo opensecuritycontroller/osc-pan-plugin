@@ -1,5 +1,6 @@
 package com.paloaltonetworks.osc.api;
 
+import static com.paloaltonetworks.ism.PanoramaApiClientIntegrationTest.PANORAMA_IP;
 import static com.paloaltonetworks.utils.SSLContextFactory.getSSLContext;
 
 import javax.net.ssl.HostnameVerifier;
@@ -24,12 +25,12 @@ public abstract class AbstractPANApiIntegrationTest {
 
     private static final long DEVGPS_SLEEP_MS = 10;
     private static final int DEVGPS_TIMEOUT_TRIES = 10;
-    private static final String PANORAMA_IP = "10.3.240.15";
 
     protected PanoramaApiClient panClient;
 
     @Mock
     protected ApplianceManagerConnectorElement mgrConnector;
+
     @Mock
     protected VirtualSystemElement vs;
 

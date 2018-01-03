@@ -15,6 +15,7 @@
 package com.paloaltonetworks.osc.api;
 
 import static java.util.Collections.emptySet;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
 import java.util.ArrayList;
@@ -93,15 +94,21 @@ public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroup
     @Override
     public ManagerSecurityGroupInterfaceElement getSecurityGroupInterfaceById(String sgInfcMgrId) throws Exception {
         String sgMgrId = extractSGId(sgInfcMgrId);
-        final PANSecurityGroupInterfaceElement retVal = new PANSecurityGroupInterfaceElement(sgInfcMgrId, sgInfcMgrId,
+        PANSecurityGroupInterfaceElement retVal = new PANSecurityGroupInterfaceElement(sgInfcMgrId, sgInfcMgrId,
                                                             new HashSet<>(), sgInfcMgrId, sgMgrId);
 
-        this.panClient.getAddressEntries(this.devGroup).stream()
-            .filter(ae -> ae.getTagNames().contains(sgMgrId))
-            .forEach(ae -> {
-                Set<ManagerPolicyElement> currElements = extractPolicyElements(ae);
-                retVal.addManagerPolicyElements(currElements);
-            });
+        List<AddressEntry> addresses = this.panClient.getAddressEntries(this.devGroup)
+                                                    .stream()
+                                                    .filter(ae -> ae.getTagNames().contains(sgMgrId))
+                                                    .collect(toList());
+        if (addresses.isEmpty()) {
+            return null;
+        }
+
+        for (AddressEntry ae : addresses) {
+            Set<ManagerPolicyElement> currElements = extractPolicyElements(ae);
+            retVal.addManagerPolicyElements(currElements);
+        }
 
         return retVal;
     }

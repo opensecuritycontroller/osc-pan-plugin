@@ -116,7 +116,11 @@ public class PANManagerSecurityGroupApi implements ManagerSecurityGroupApi {
 
     @Override
     public ManagerSecurityGroupElement getSecurityGroupById(String sgMgrId) throws Exception {
-        return new PANSecurityGroupElement(sgMgrId, sgMgrId);
+        if(sgMgrId == null) {
+            throw new IllegalArgumentException("Null Id is not allowed!");
+        }
+
+        return getSecurityGroupList().stream().filter(sg -> sgMgrId.equals(sg.getSGId())).findAny().get();
     }
 
     @Override
@@ -128,7 +132,6 @@ public class PANManagerSecurityGroupApi implements ManagerSecurityGroupApi {
         LOG.info("Populating security group {} with members: {}", name, memberList.toString());
 
         addSGTag(sgMgrId);
-
         Set<String> ipsToSet = computeIps(memberList);
         Set<String> ipsOnMgr = fetchMgrIpsByTag(sgMgrId);
         Set<String> tmp = new HashSet<>(ipsOnMgr);

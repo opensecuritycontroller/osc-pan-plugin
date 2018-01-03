@@ -14,7 +14,7 @@
  */
 package com.paloaltonetworks.osc.api;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.osc.sdk.manager.api.ManagerDomainApi;
@@ -27,15 +27,15 @@ import com.paloaltonetworks.osc.model.PANDomainListElement;
  */
 public class PANManagerDomainApi implements ManagerDomainApi {
 
+    private static final String DEFAULT_DOMAIN = "Shared";
+
     @Override
     public PANDomainElement getDomain(String domainId) throws Exception {
-        return new PANDomainElement("Roo-Domain", "Root-Domain");
+        return DEFAULT_DOMAIN.equals(domainId) ?  new PANDomainElement(DEFAULT_DOMAIN, DEFAULT_DOMAIN) : null;
     }
 
     @Override
     public List<PANDomainListElement> listDomains() throws Exception {
-        List<PANDomainListElement> domainList = new ArrayList<>();
-        domainList.add(new PANDomainListElement("Root-Domain", "Root-Domain"));
-        return domainList;
+        return Arrays.asList(new PANDomainListElement(DEFAULT_DOMAIN, DEFAULT_DOMAIN));
     }
 }

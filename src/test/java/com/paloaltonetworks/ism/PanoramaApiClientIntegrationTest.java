@@ -37,7 +37,8 @@ import com.paloaltonetworks.panorama.api.methods.PanoramaApiClient;
  * Unit test for simple App.
  */
 public class PanoramaApiClientIntegrationTest {
-    private static final String PANORAMA_IP = "10.3.240.15";
+    public static final String PANORAMA_IP = "10.3.240.15";
+
     private static final String EXISTING_POLICY_TAG = "EXISTING_POLICY_TAG";
     private static final String EXISTING_POLICY_TAG_OTHER = "EXISTING_POLICY_TAG_OTHER";
     private static final String TEST_SETUP_MSG = String.format("Test setup expects the following shared tags on panorama %s: %s and %s!",

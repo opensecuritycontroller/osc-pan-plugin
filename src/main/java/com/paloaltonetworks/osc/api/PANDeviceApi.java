@@ -77,21 +77,11 @@ public class PANDeviceApi implements ManagerDeviceApi {
     @Override
     public ManagerDeviceElement getDeviceById(String id) throws Exception {
 
-        String devGroup = id;
-        Map<String, String> queryStrings = this.panClient.makeOpCmdRequestParams(SHOW_DEVICEGROUPS_CMD);
-
-        DeviceGroupResponse deviceGroupResponse = this.panClient.getRequest(queryStrings, DeviceGroupResponse.class);
-
-        List<DeviceGroupsEntry> deviceGroups = deviceGroupResponse.getEntries();
-
-        LOG.debug("Entries found : {}", deviceGroups);
-        boolean found = deviceGroups.stream().filter(dg -> dg != null).anyMatch(dg -> devGroup.equals(dg.getName()));
-
-        if (found) {
-            return new PANDeviceElement(id, id);
+        if (id == null) {
+            throw new IllegalArgumentException("Null device id is not allowed!");
         }
 
-        return null;
+        return listDevices().stream().filter(de -> id.equals(de.getName())).findAny().get();
     }
 
     @Override
