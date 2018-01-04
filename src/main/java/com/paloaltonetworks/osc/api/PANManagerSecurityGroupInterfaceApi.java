@@ -99,6 +99,7 @@ public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroup
 
         List<AddressEntry> addresses = this.panClient.getAddressEntries(this.devGroup)
                                                     .stream()
+                                                    .filter(ae -> ae != null && ae.getTagNames() != null)
                                                     .filter(ae -> ae.getTagNames().contains(sgMgrId))
                                                     .collect(toList());
         if (addresses.isEmpty()) {
@@ -123,6 +124,11 @@ public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroup
         Map<String, ManagerSecurityGroupInterfaceElement> results = new HashMap<>();
 
         for (AddressEntry ae : this.panClient.getAddressEntries(this.devGroup)) {
+
+            if (ae == null || ae.getTagNames() == null) {
+                continue;
+            }
+
             String sgMgrId = ae.getTagNames().stream().filter(TagToSGIdUtil::isSGTag).findFirst().orElse(null);
 
             if (sgMgrId != null) {

@@ -15,6 +15,8 @@
 package com.paloaltonetworks.osc.api;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
+import static java.util.stream.Collectors.toSet;
 
 import java.util.HashSet;
 import java.util.List;
@@ -104,6 +106,7 @@ public class PANManagerSecurityGroupApi implements ManagerSecurityGroupApi {
     @Override
     public List<? extends ManagerSecurityGroupElement> getSecurityGroupList() throws Exception {
         return this.panClient.getAddressEntries(this.devGroup).stream()
+                        .filter(ae -> ae != null && ae.getTagNames() != null)
                         .map(ae -> ae.getTagNames())
                         .flatMap(list -> list.stream())
                         .filter(TagToSGIdUtil::isSGTag)
@@ -114,7 +117,7 @@ public class PANManagerSecurityGroupApi implements ManagerSecurityGroupApi {
     @Override
     public ManagerSecurityGroupElement getSecurityGroupById(String sgMgrId) throws Exception {
         if(sgMgrId == null) {
-            throw new IllegalArgumentException("Null Id is not allowed!");
+            return null;
         }
 
         return getSecurityGroupList().stream().filter(sg -> sgMgrId.equals(sg.getSGId())).findAny().orElse(null);
@@ -127,6 +130,11 @@ public class PANManagerSecurityGroupApi implements ManagerSecurityGroupApi {
     private String doUpdateSecurityGroup(String sgMgrId, String name, SecurityGroupMemberListElement memberList)
             throws Exception {
         LOG.info("Populating security group {} with members: {}", name, memberList.toString());
+
+        if (sgMgrId == null) {
+            LOG.error("Null SG Manager Id passed for a tag!");
+            return null;
+        }
 
         addSGTag(sgMgrId);
         Set<String> ipsToSet = computeIps(memberList);
@@ -154,7 +162,7 @@ public class PANManagerSecurityGroupApi implements ManagerSecurityGroupApi {
                 .fetchAddressesWithTag(sgTag, this.devGroup).stream()
                 .filter(ae -> ae != null)
                 .map(ae -> ae.getName())
-                .collect(Collectors.toSet());
+                .collect(toSet());
     }
 
     /**
@@ -167,14 +175,14 @@ public class PANManagerSecurityGroupApi implements ManagerSecurityGroupApi {
      */
     private Set<String> computeIps(SecurityGroupMemberListElement memberList) {
         if (memberList == null || memberList.getMembers() == null) {
-            throw new IllegalArgumentException("Null member lists are not allowed!");
+            return emptySet();
         }
 
         return memberList.getMembers().stream()
                 .filter(e -> e != null)
                 .map(e -> e.getIpAddresses())
                 .flatMap(list -> list.stream())
-                .collect(Collectors.toSet());
+                .collect(toSet());
     }
 
     private void addAddress(String ip) throws Exception {

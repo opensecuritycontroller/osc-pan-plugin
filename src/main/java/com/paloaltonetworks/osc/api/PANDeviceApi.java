@@ -146,7 +146,7 @@ public class PANDeviceApi implements ManagerDeviceApi {
 
     @Override
     public void updateVSSDevice(ManagerDeviceElement device) throws Exception {
-
+        createVSSDevice();
     }
 
     @Override
