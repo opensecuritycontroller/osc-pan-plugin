@@ -58,7 +58,7 @@ public class PANDeviceApi implements ManagerDeviceApi {
 
     // TODO: use properties to configure!
     private static final long DEVGPS_SLEEP_MS = 1000L;
-    private static final int DEVGPS_TIMEOUT_TRIES = 10;
+    private static final int DEVGPS_TIMEOUT_TRIES = 900;
 
     private String vmAuthKey = null;
     private VirtualSystemElement vs;
@@ -173,7 +173,7 @@ public class PANDeviceApi implements ManagerDeviceApi {
             Thread.sleep(DEVGPS_SLEEP_MS);
         }
 
-        if (mde == null) {
+        if (mde != null) {
             throw new IllegalStateException("Failed to delete the device group: " + devGroup);
         }
     }
