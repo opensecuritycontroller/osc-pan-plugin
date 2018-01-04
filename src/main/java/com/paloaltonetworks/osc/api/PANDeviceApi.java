@@ -174,7 +174,7 @@ public class PANDeviceApi implements ManagerDeviceApi {
         }
 
         if (mde != null) {
-            throw new IllegalStateException("Failed to delete the device group: " + devGroup);
+            LOG.error("Failed to delete {}. Delete manually from the appliance!" );
         }
     }
 
