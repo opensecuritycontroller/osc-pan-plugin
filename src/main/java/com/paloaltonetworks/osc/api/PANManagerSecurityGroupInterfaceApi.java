@@ -121,44 +121,30 @@ public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroup
 
     @Override
     public List<? extends ManagerSecurityGroupInterfaceElement> listSecurityGroupInterfaces() throws Exception {
-        Map<String, ManagerSecurityGroupInterfaceElement> results = new HashMap<>();
+        Map<String, PANSecurityGroupInterfaceElement> elementsBySGManagerId = new HashMap<>();
 
         for (AddressEntry ae : this.panClient.getAddressEntries(this.devGroup)) {
-
-            if (ae.getTagNames() == null) {
+            if (!shouldListIncludeAddressEntry(ae)) {
                 continue;
             }
 
             String sgMgrId = ae.getTagNames().stream().filter(TagToSGIdUtil::isSGTag).findFirst().orElse(null);
+            String sgInterfaceMgrId = generateSGIntefaceId(sgMgrId, this.vs.getName());
 
-            if (sgMgrId == null) {
-                LOG.error("Address object {} detected under {} with no security group", ae.getName(), this.devGroup);
-                continue;
+            // Group SecurityGroupInterfaceElements by security group id and collect all policy tags
+            // from all address element into the corresponding securityGroupElement
+            PANSecurityGroupInterfaceElement sgInterfaceElement = elementsBySGManagerId.get(sgMgrId);
+            if (sgInterfaceElement == null) {
+                sgInterfaceElement = new PANSecurityGroupInterfaceElement(sgInterfaceMgrId, sgInterfaceMgrId,
+                        new HashSet<>(), sgInterfaceMgrId, sgMgrId);
+                elementsBySGManagerId.put(sgMgrId, sgInterfaceElement);
             }
 
-            // This method gets called after SG addresses have been created, but
-            // before the call to createSecurityGroupInterface (above). Without the following
-            // check, the address objects just created for the SG end up on the to-delete list
-            // inside MgrSecurityGroupInterfacesCheckMetaTask. They will be deleted right after
-            // they were created.
-            if (ae.getTagNames().size() < 2) {
-                LOG.info("Address object {} is not bound yet. Not part of any SG interface.", ae.getName());
-                continue;
-            }
-
-            String sgInfcMgrId = combineToSGIntefaceId(sgMgrId, this.vs.getName());
-            PANSecurityGroupInterfaceElement res = (PANSecurityGroupInterfaceElement) results.get(sgInfcMgrId);
-            if (res == null) {
-                res = new PANSecurityGroupInterfaceElement(sgInfcMgrId, sgInfcMgrId,
-                        new HashSet<>(), sgInfcMgrId, sgMgrId);
-                results.put(sgInfcMgrId, res);
-            }
-
-            Set<ManagerPolicyElement> currElements = extractPolicyElements(ae);
-            res.addManagerPolicyElements(currElements);
+            Set<ManagerPolicyElement> currPolicyElements = extractPolicyElements(ae);
+            sgInterfaceElement.addManagerPolicyElements(currPolicyElements);
         }
 
-        return new ArrayList<>(results.values());
+        return new ArrayList<>(elementsBySGManagerId.values());
     }
 
     @Override
@@ -169,7 +155,7 @@ public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroup
     private String doUpdateSecurityGroupInterface(SecurityGroupInterfaceElement sgiElement)
             throws Exception {
         String sgMgrId = sgiElement.getManagerSecurityGroupId();
-        String sgInterfaceId = combineToSGIntefaceId(sgMgrId, this.vs.getName());
+        String sgInterfaceId = generateSGIntefaceId(sgMgrId, this.vs.getName());
         Collection<ManagerPolicyElement> policies = sgiElement.getManagerPolicyElements();
 
         LOG.info("Populating SGI {} with  policies {}.", sgInterfaceId,
@@ -196,7 +182,12 @@ public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroup
                 tagsToRemove.remove(sgMgrId);
 
                 Set<String> tagsToAdd = new HashSet<>(policyTags);
-                tagsToAdd.removeAll(tagsToRemove);
+
+                // TODO The following line should be removed and the next one uncommented
+                // after removeTagsFromAllAddresses is fixed
+                tagsToAdd.add(sgMgrId);
+//                tagsToAdd.removeAll(tagsToRemove);
+
                 tagsToRemove.removeAll(policyTags);
 
                 removeTagsFromAllAddresses(entry, tagsToRemove);
@@ -261,7 +252,7 @@ public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroup
      * @param vsName
      * @return Security InterfaceGroup Id on the appliance manager (Panorama).
      */
-    private static String combineToSGIntefaceId(String sgId, String vsName) {
+    private static String generateSGIntefaceId(String sgId, String vsName) {
         return sgId + IDSTRING_SEPARATOR + vsName;
     }
 
@@ -274,5 +265,42 @@ public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroup
                 .filter(s -> !TagToSGIdUtil.isSGTag(s))
                 .map(s -> new PANPolicyListElement(s, s, ""))
                 .collect(Collectors.toSet());
+    }
+
+    /**
+     * Return true if the address entry:
+     * <li> contains a Security Group marker tag </li>
+     * <li> has at least one other tag, which is presumed to be a policy tag </li></ul>
+     * <p/>
+     * The last condition is needed, because {@code listSecurityGroupInterfaces()} gets called
+     * after SG addresses have been created, but before the call to {@code createSecurityGroupInterface}.
+     * <p/>
+     *  Without this last condition, the address objects just created for the SG have only end up on
+     *  the to-delete list inside {@code MgrSecurityGroupInterfacesCheckMetaTask}.
+     *  They will be deleted right after they were created.
+     *
+     * @param ae
+     * @return True if the above checks all pass
+     *
+     * @see MgrSecurityGroupInterfacesCheckMetaTask
+     */
+    private boolean shouldListIncludeAddressEntry(AddressEntry ae) {
+        if (ae.getTagNames() == null) {
+            return false;
+        }
+
+        String sgMgrId = ae.getTagNames().stream().filter(TagToSGIdUtil::isSGTag).findFirst().orElse(null);
+
+        if (sgMgrId == null) {
+            LOG.error("Address object {} detected under {} with no security group", ae.getName(), this.devGroup);
+            return false;
+        }
+
+        if (ae.getTagNames().size() < 2) {
+            LOG.info("Address object {} is not bound yet. Not part of any SG interface.", ae.getName());
+            return false;
+        }
+
+        return true;
     }
 }
