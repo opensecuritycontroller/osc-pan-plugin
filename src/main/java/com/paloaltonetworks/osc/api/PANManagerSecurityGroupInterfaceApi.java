@@ -124,19 +124,19 @@ public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroup
         Map<String, PANSecurityGroupInterfaceElement> elementsBySGManagerId = new HashMap<>();
 
         for (AddressEntry ae : this.panClient.getAddressEntries(this.devGroup)) {
-            if (!shouldListIncludeAddressEntry(ae)) {
+            if (!isManagedAddressEntry(ae)) {
                 continue;
             }
 
             String sgMgrId = ae.getTagNames().stream().filter(TagToSGIdUtil::isSGTag).findFirst().orElse(null);
-            String sgInterfaceMgrId = generateSGIntefaceId(sgMgrId, this.vs.getName());
+            String sgInterfaceMgrId = generateSGInterfaceId(sgMgrId, this.vs.getName());
 
             // Group SecurityGroupInterfaceElements by security group id and collect all policy tags
             // from all address element into the corresponding securityGroupElement
             PANSecurityGroupInterfaceElement sgInterfaceElement = elementsBySGManagerId.get(sgMgrId);
             if (sgInterfaceElement == null) {
                 sgInterfaceElement = new PANSecurityGroupInterfaceElement(sgInterfaceMgrId, sgInterfaceMgrId,
-                        new HashSet<>(), sgInterfaceMgrId, sgMgrId);
+                        new HashSet<>(), null, sgMgrId);
                 elementsBySGManagerId.put(sgMgrId, sgInterfaceElement);
             }
 
@@ -155,7 +155,7 @@ public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroup
     private String doUpdateSecurityGroupInterface(SecurityGroupInterfaceElement sgiElement)
             throws Exception {
         String sgMgrId = sgiElement.getManagerSecurityGroupId();
-        String sgInterfaceId = generateSGIntefaceId(sgMgrId, this.vs.getName());
+        String sgInterfaceId = generateSGInterfaceId(sgMgrId, this.vs.getName());
         Collection<ManagerPolicyElement> policies = sgiElement.getManagerPolicyElements();
 
         LOG.info("Populating SGI {} with  policies {}.", sgInterfaceId,
@@ -183,7 +183,7 @@ public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroup
 
                 Set<String> tagsToAdd = new HashSet<>(policyTags);
 
-                // TODO The following line should be removed and the next one uncommented
+                // TODO:dmitry The following line should be removed and the next one uncommented
                 // after removeTagsFromAllAddresses is fixed
                 tagsToAdd.add(sgMgrId);
 //                tagsToAdd.removeAll(tagsToRemove);
@@ -252,7 +252,7 @@ public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroup
      * @param vsName
      * @return Security InterfaceGroup Id on the appliance manager (Panorama).
      */
-    private static String generateSGIntefaceId(String sgId, String vsName) {
+    private static String generateSGInterfaceId(String sgId, String vsName) {
         return sgId + IDSTRING_SEPARATOR + vsName;
     }
 
@@ -284,7 +284,7 @@ public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroup
      *
      * @see MgrSecurityGroupInterfacesCheckMetaTask
      */
-    private boolean shouldListIncludeAddressEntry(AddressEntry ae) {
+    private boolean isManagedAddressEntry(AddressEntry ae) {
         if (ae.getTagNames() == null) {
             return false;
         }
