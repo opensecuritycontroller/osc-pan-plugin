@@ -59,6 +59,7 @@ public class PANDeviceApi implements ManagerDeviceApi {
     // TODO: use properties to configure!
     private static final long DEVGPS_SLEEP_MS = 1000L;
     private static final int DEVGPS_TIMEOUT_TRIES = 900;
+    private static final int DEVGPS_TIMEOUT_TRIES_SHORT = 30;
 
     private String vmAuthKey = null;
     private VirtualSystemElement vs;
@@ -111,6 +112,7 @@ public class PANDeviceApi implements ManagerDeviceApi {
         return emptyList();
     }
 
+    @SuppressWarnings("boxing")
     @Override
     public String createVSSDevice() throws Exception {
         // Create a device group in panorama
@@ -135,11 +137,17 @@ public class PANDeviceApi implements ManagerDeviceApi {
         ManagerDeviceElement mde;
         for (int i = 0; (mde = getDeviceById(devGroup)) == null && i < DEVGPS_TIMEOUT_TRIES; i++) {
             Thread.sleep(DEVGPS_SLEEP_MS);
+            if (i > DEVGPS_TIMEOUT_TRIES_SHORT) {
+                LOG.warn("Device group {} still not added after {} seconds. Will keep trying for {} seconds", devGroup,
+                        i + 1, DEVGPS_TIMEOUT_TRIES - i - 1);
+            }
         }
 
         if (mde == null) {
             throw new IllegalStateException("Failed to add the device group after multiple tries: " + devGroup);
         }
+
+        LOG.info("Device group {} added successfully.", devGroup);
 
         return devGroup;  // TODO : one per vs?
     }
@@ -169,12 +177,12 @@ public class PANDeviceApi implements ManagerDeviceApi {
         this.panClient.configCommitOrThrow(errorMessage);
 
         ManagerDeviceElement mde;
-        for (int i = 0; (mde = getDeviceById(devGroup)) != null && i < DEVGPS_TIMEOUT_TRIES; i++) {
+        for (int i = 0; (mde = getDeviceById(devGroup)) != null && i < DEVGPS_TIMEOUT_TRIES_SHORT; i++) {
             Thread.sleep(DEVGPS_SLEEP_MS);
         }
 
         if (mde != null) {
-            LOG.error("Failed to delete {}. Delete manually from the appliance!" );
+            LOG.error("Failed to delete {}. Delete manually from the appliance!", devGroup );
         }
     }
 

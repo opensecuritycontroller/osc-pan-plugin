@@ -48,7 +48,7 @@ import com.paloaltonetworks.utils.SSLContextFactory;
    property = { PLUGIN_NAME + "=Panorama", VENDOR_NAME + "=Palo Alto Networks", SERVICE_NAME + "=Panorama",
                 EXTERNAL_SERVICE_NAME + "=Pan-nsx", AUTHENTICATION_TYPE + "=BASIC_AUTH", NOTIFICATION_TYPE + "=NONE",
                 SYNC_SECURITY_GROUP + ":Boolean=true", PROVIDE_DEVICE_STATUS + ":Boolean=false",
-                SYNC_POLICY_MAPPING + ":Boolean=true", SUPPORT_MULTIPLE_POLICIES + ":Boolean=false" })
+                SYNC_POLICY_MAPPING + ":Boolean=true", SUPPORT_MULTIPLE_POLICIES + ":Boolean=true" })
 public class PANApplianceManagerApi implements ApplianceManagerApi {
 
     private static final Logger LOG = LoggerFactory.getLogger(PANApplianceManagerApi.class);

@@ -125,26 +125,37 @@ public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroup
 
         for (AddressEntry ae : this.panClient.getAddressEntries(this.devGroup)) {
 
-            if (ae == null || ae.getTagNames() == null) {
+            if (ae.getTagNames() == null) {
                 continue;
             }
 
             String sgMgrId = ae.getTagNames().stream().filter(TagToSGIdUtil::isSGTag).findFirst().orElse(null);
 
-            if (sgMgrId != null) {
-                String sgInfcMgrId = combineToSGIntefaceId(sgMgrId, this.vs.getName());
-                PANSecurityGroupInterfaceElement res = (PANSecurityGroupInterfaceElement) results.get(sgInfcMgrId);
-                if (res == null) {
-                    res = new PANSecurityGroupInterfaceElement(sgInfcMgrId, sgInfcMgrId,
-                                                               new HashSet<>(), sgInfcMgrId, sgMgrId);
-                    results.put(sgInfcMgrId, res);
-                }
-
-                Set<ManagerPolicyElement> currElements = extractPolicyElements(ae);
-                res.addManagerPolicyElements(currElements);
-            } else {
+            if (sgMgrId == null) {
                 LOG.error("Address object {} detected under {} with no security group", ae.getName(), this.devGroup);
+                continue;
             }
+
+            // This method gets called after SG addresses have been created, but
+            // before the call to createSecurityGroupInterface (above). Without the following
+            // check, the address objects just created for the SG end up on the to-delete list
+            // inside MgrSecurityGroupInterfacesCheckMetaTask. They will be deleted right after
+            // they were created.
+            if (ae.getTagNames().size() < 2) {
+                LOG.info("Address object {} is not bound yet. Not part of any SG interface.", ae.getName());
+                continue;
+            }
+
+            String sgInfcMgrId = combineToSGIntefaceId(sgMgrId, this.vs.getName());
+            PANSecurityGroupInterfaceElement res = (PANSecurityGroupInterfaceElement) results.get(sgInfcMgrId);
+            if (res == null) {
+                res = new PANSecurityGroupInterfaceElement(sgInfcMgrId, sgInfcMgrId,
+                        new HashSet<>(), sgInfcMgrId, sgMgrId);
+                results.put(sgInfcMgrId, res);
+            }
+
+            Set<ManagerPolicyElement> currElements = extractPolicyElements(ae);
+            res.addManagerPolicyElements(currElements);
         }
 
         return new ArrayList<>(results.values());
@@ -159,8 +170,11 @@ public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroup
             throws Exception {
         String sgMgrId = sgiElement.getManagerSecurityGroupId();
         String sgInterfaceId = combineToSGIntefaceId(sgMgrId, this.vs.getName());
+        Collection<ManagerPolicyElement> policies = sgiElement.getManagerPolicyElements();
 
-        LOG.info("Creating SGI {} for security group {}.", sgInterfaceId, sgMgrId);
+        LOG.info("Populating SGI {} with  policies {}.", sgInterfaceId,
+                        policies != null ? policies.stream().map(e -> e.getName())
+                                                   .reduce("", (s1, s2) -> s1 + s2) : "");
 
         List<AddressEntry> ipsOnMgr = this.panClient.fetchAddressesWithTag(sgMgrId, this.devGroup);
 
@@ -172,20 +186,21 @@ public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroup
         Set<String> policyTags = emptySet();
         if (sgiElement.getManagerPolicyElements() != null) {
             policyTags = sgiElement.getManagerPolicyElements().stream().filter(e -> e != null)
-                                   .map(e -> e.getName()).collect(toSet());
+                                   .map(e -> e.getName())
+                                   .collect(toSet());
         }
 
         try {
             for (AddressEntry entry : ipsOnMgr) {
-                List<String> tags = entry.getTagNames();
-                tags.remove(sgMgrId);
+                List<String> tagsToRemove = entry.getTagNames();
+                tagsToRemove.remove(sgMgrId);
 
-                Set<String> tmp = new HashSet<>(policyTags);
-                tmp.removeAll(tags);
-                tags.removeAll(policyTags);
+                Set<String> tagsToAdd = new HashSet<>(policyTags);
+                tagsToAdd.removeAll(tagsToRemove);
+                tagsToRemove.removeAll(policyTags);
 
-                removeTagsFromAllAddresses(entry, tags);
-                addTagsToAllAddresses(entry, tmp);
+                removeTagsFromAllAddresses(entry, tagsToRemove);
+                addTagsToAllAddresses(entry, tagsToAdd);
             }
         } catch (Exception e) {
             LOG.error(String.format("Exception conforming SGI for security group %s on VS %d .", sgInterfaceId, this.vs.getName()), e);
