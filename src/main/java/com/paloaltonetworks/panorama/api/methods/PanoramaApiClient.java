@@ -85,7 +85,7 @@ public class PanoramaApiClient {
     // Values for xpath parameter
 
     private static final String XPATH_ADDRESS_TEMPL = XPATH_DEVGROUP_TEMPL + "/address";
-    private static final String XPATH_ADDRESS_TAGMEMBER_TEMPL = XPATH_ADDRESS_TEMPL + "/entry[ @name=\"%s\" ]/tag"
+    private static final String XPATH_ADDRESS_TAG_MEMBER_TEMPL = XPATH_ADDRESS_TEMPL + "/entry[ @name=\"%s\" ]/tag"
                                                             + "/member[text()='%s']";
 
     private static final String GENKEY_CMD_TEMPL = "<request><bootstrap><vm-auth-key><generate><lifetime> %s"
@@ -182,7 +182,7 @@ public class PanoramaApiClient {
 
     public void removeTagFromAddress(String ip, String tag, String devGroup) throws Exception {
         LOG.info("Removing tag {} from address {}", tag, ip);
-        String xpath = String.format(XPATH_ADDRESS_TAGMEMBER_TEMPL, devGroup, ip, tag);
+        String xpath = String.format(XPATH_ADDRESS_TAG_MEMBER_TEMPL, devGroup, ip, tag);
         Map<String, String> queryStrings = makeDeleteConfigRequestParams(xpath, null, null);
         getRequest(queryStrings, GetAddressResponse.class);
     }
