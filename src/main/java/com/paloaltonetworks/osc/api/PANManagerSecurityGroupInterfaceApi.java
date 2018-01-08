@@ -182,12 +182,7 @@ public class PANManagerSecurityGroupInterfaceApi implements ManagerSecurityGroup
                 tagsToRemove.remove(sgMgrId);
 
                 Set<String> tagsToAdd = new HashSet<>(policyTags);
-
-                // TODO:dmitry The following line should be removed and the next one uncommented
-                // after removeTagsFromAllAddresses is fixed
-                tagsToAdd.add(sgMgrId);
-//                tagsToAdd.removeAll(tagsToRemove);
-
+                tagsToAdd.removeAll(tagsToRemove);
                 tagsToRemove.removeAll(policyTags);
 
                 removeTagsFromAllAddresses(entry, tagsToRemove);
